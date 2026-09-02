@@ -1,0 +1,45 @@
+<%# Card cho TRANG PUBLIC. Cố ý KHÔNG dùng lại shared/_place_card và
+    shared/_place_media — cả hai đều render dữ liệu riêng tư (source_url,
+    priority, trạng thái review, my_rating). Plan §23.4.
+
+    ĐƯỢC hiện: label, ảnh, district/city, tag, status, số lần đến.
+    KHÔNG hiện: source_url · google_review_state · reviewed_at ·
+                review_body_draft · my_rating · priority · lat/lng · distance ·
+                visits.companions · visits.note · note (trừ khi share_notes).
+
+    locals: user_place, share_notes %>
+<% place = user_place.place %>
+<% photo = user_place.cover_photo %>
+
+<article class="flex flex-col overflow-hidden rounded-lg border border-line bg-surface">
+  <div class="media-skeleton relative aspect-[4/3]"
+       style="<%= placeholder_gradient_style(user_place.tags.first&.name || user_place.label) if photo.blank? %>">
+    <%= photo_image_tag(photo, sizes: "(max-width: 640px) 45vw, 220px") if photo.present? %>
+    <span class="absolute left-2 top-2 backdrop-blur-[6px] <%= status_pill_class(user_place) %>">
+      <%= status_label(user_place) %>
+    </span>
+  </div>
+
+  <div class="flex flex-col gap-0.5 px-2.5 pb-2.5 pt-2.5">
+    <span class="text-md font-semibold leading-tight tracking-tight text-ink"><%= user_place.label %></span>
+
+    <span class="text-xs text-muted">
+      <%= place.district.presence || place.city.presence || t("common.unknown_area") %>
+      <% if user_place.visits_count.positive? %>
+        · <span class="num"><%= t("common.visits_count", count: user_place.visits_count) %></span>
+      <% end %>
+    </span>
+
+    <% if user_place.tags.any? %>
+      <span class="mt-0.5 flex flex-wrap gap-1">
+        <% user_place.tags.first(3).each do |tag| %>
+          <span class="tag-mini"><%= tag.name %></span>
+        <% end %>
+      </span>
+    <% end %>
+
+    <% if share_notes && user_place.note.present? %>
+      <p class="mt-1 text-sm text-ink-soft"><%= user_place.note %></p>
+    <% end %>
+  </div>
+</article>

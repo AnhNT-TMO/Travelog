@@ -1,0 +1,14 @@
+<%# Chip lọc vibe. Chọn nhiều chip = AND (giao), không phải OR — plan §5.3.
+    locals: tags, selected_ids, base_params, url %>
+<div class="flex flex-wrap gap-1.5">
+  <% tags.each do |tag| %>
+    <% pressed = selected_ids.map(&:to_s).include?(tag.id.to_s) %>
+    <% next_ids = pressed ? selected_ids.map(&:to_s) - [tag.id.to_s] : selected_ids.map(&:to_s) + [tag.id.to_s] %>
+
+    <%= link_to url_for(base_params.merge(vibe: next_ids)),
+          "aria-pressed": pressed.to_s,
+          class: "chip" do %>
+      <%= tag.name %><% if pressed %><span class="text-2xs opacity-70">✕</span><% end %>
+    <% end %>
+  <% end %>
+</div>

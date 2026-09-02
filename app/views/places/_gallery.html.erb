@@ -1,0 +1,57 @@
+<%# Hero + dải thumbnail — mockup D3 / M3.
+    Ảnh cover có viền men ngọc trong dải; bấm một ảnh khác rồi "đặt làm cover".
+    locals: user_place, photos %>
+<div class="relative">
+  <%= render "shared/place_media", user_place: user_place,
+             ratio: "aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:h-[280px]",
+             sizes: "(max-width: 1023px) 100vw, 760px",
+             derivative_size: Photos::ThumbnailUrl::PREVIEW,
+             show_status: false %>
+
+  <% if user_place.photos_count.positive? %>
+    <span class="num absolute bottom-2.5 right-2.5 rounded-pill bg-black/50 px-2 py-0.5 text-2xs text-white backdrop-blur-[6px]">
+      <%= t(".photos_count", count: user_place.photos_count) %>
+    </span>
+  <% end %>
+</div>
+
+<div class="flex items-center gap-1.5 overflow-x-auto bg-surface-2 p-2">
+  <% photos.each do |photo| %>
+    <div class="group relative h-[52px] w-[52px] flex-none">
+      <div class="media-skeleton h-full w-full overflow-hidden rounded-sm <%= "outline-2 outline-offset-1 outline-primary" if user_place.cover_photo_id == photo.id %>">
+        <%= photo_image_tag photo, sizes: "52px", derivative_size: Photos::ThumbnailUrl::THUMB %>
+      </div>
+
+      <%# Chỉ hiện khi hover/focus: dải thumbnail phải đọc được như ảnh trước đã. %>
+      <div class="absolute inset-0 hidden place-items-center gap-1 rounded-sm bg-black/55 group-hover:grid group-focus-within:grid">
+        <div class="flex gap-1">
+          <% unless user_place.cover_photo_id == photo.id %>
+            <%= button_to "★", make_cover_place_photo_path(user_place, photo), method: :patch,
+                  class: "text-2xs text-white", title: t(".make_cover") %>
+          <% end %>
+          <%= button_to "✕", place_photo_path(user_place, photo), method: :delete,
+                class: "text-2xs text-white", title: t(".destroy"),
+                form: { data: { turbo_confirm: t(".destroy_confirm") } } %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Direct upload. Active Storage chặn sự kiện submit, PUT ảnh thẳng lên S3,
+      thay input file bằng hidden field chứa signed id, RỒI mới submit thật —
+      nên chỉ cần submit một lần lúc chọn ảnh, không chờ direct-upload:idle. %>
+  <%= form_with url: place_photos_path(user_place), class: "flex-none",
+                data: {
+                  controller: "autosubmit direct-upload",
+                  action: "direct-upload:start->direct-upload#start " \
+                          "direct-upload:progress->direct-upload#progress " \
+                          "direct-upload:end->direct-upload#end"
+                } do |form| %>
+    <label class="btn btn--outline btn--sm h-[52px] cursor-pointer">
+      <%= t(".add_photos") %>
+      <%= file_field_tag "photos[]", multiple: true, accept: "image/*", class: "sr-only",
+            "data-direct-upload-url": place_direct_uploads_url(user_place),
+            data: { action: "change->autosubmit#submit" } %>
+    </label>
+  <% end %>
+</div>

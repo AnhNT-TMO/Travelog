@@ -1,0 +1,37 @@
+# Cấu hình theo môi trường — đọc qua `Rails.application.config.settings`
+# (config/initializers/settings.rb).
+#
+# Ba quy tắc:
+#   1. Giá trị nào KHÁC nhau giữa các môi trường thì nằm ở đây.
+#   2. Bí mật thì để `ENV.fetch(...)`, đừng viết thẳng — file này vào git.
+#   3. Kết nối Postgres KHÔNG nằm ở đây. `config/database.yml` được nạp trước
+#      initializer nên nó tự đọc ENV; hai nguồn sự thật là lỗi chờ xảy ra.
+development:
+  # Host dùng để dựng URL tuyệt đối (mailer, link chia sẻ /s/:token).
+  app_host: <%= ENV.fetch("APP_HOST", "localhost:3000") %>
+  app_protocol: http
+
+  # S3 THẬT, không phải MinIO. Local dùng bucket riêng của môi trường
+  # development (terraform apply với environment = "development") để những gì
+  # test ở máy đúng bằng những gì chạy trên server: cùng CORS, cùng presigned
+  # URL, cùng CloudFront.
+  s3:
+    region: <%= ENV.fetch("AWS_REGION", "ap-southeast-1") %>
+    bucket_originals: <%= ENV.fetch("S3_BUCKET_ORIGINALS") %>
+    bucket_derivatives: <%= ENV.fetch("S3_BUCKET_DERIVATIVES") %>
+
+  # CloudFront đứng trước bucket derivatives — `terraform output cdn_host`.
+  cdn_host: <%= ENV.fetch("CDN_HOST") %>
+
+  # Kích thước Lambda sinh ra. PHẢI khớp `image_sizes` trong Terraform và
+  # `Photos::ThumbnailUrl::SIZES` — xem "Cross-App Contracts" trong CLAUDE.md.
+  photo_sizes: [ 400, 1200 ]
+
+  mailer_sender: <%= ENV.fetch("MAILER_SENDER", "no-reply@travelog.local") %>
+
+  google:
+    # Key server-side, restrict theo IP. KHÔNG BAO GIỜ để lọt ra template.
+    places_api_key: <%= ENV.fetch("GOOGLE_MAPS_API_KEY", "") %>
+    # Key browser, restrict theo HTTP referrer. Được phép hiện trong page.
+    maps_browser_key: <%= ENV.fetch("GOOGLE_MAPS_BROWSER_KEY", "") %>
+    maps_map_id: <%= ENV.fetch("GOOGLE_MAPS_MAP_ID", "") %>

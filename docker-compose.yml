@@ -1,0 +1,73 @@
+name: location_project
+
+x-rails: &rails
+  build:
+    context: .
+    dockerfile: Dockerfile.dev
+    args:
+      RUBY_VERSION: "3.4.10"
+      RAILS_VERSION: "8.1.3.1"
+  image: location_project-dev:latest
+  platform: ${DOCKER_PLATFORM:-linux/arm64}
+  env_file: .env
+  volumes:
+    - .:/rails
+    - bundle:/usr/local/bundle
+  tmpfs:
+    - /rails/tmp/pids
+  depends_on:
+    db:
+      condition: service_healthy
+  entrypoint: ["bin/docker-dev-entrypoint"]
+
+services:
+  db:
+    image: postgres:17-alpine
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: postgres
+    ports:
+      - "${POSTGRES_PORT_HOST:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    <<: *rails
+    command: bash -c "bin/rails db:prepare && bin/rails server -b 0.0.0.0 -p 3000"
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/up > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    depends_on:
+      db:
+        condition: service_healthy
+
+  css:
+    <<: *rails
+    command: bash -c 'bin/rails "tailwindcss:watch[always]"'
+
+  worker:
+    <<: *rails
+    command: bin/jobs start
+    depends_on:
+      db:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  bundle:

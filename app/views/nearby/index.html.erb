@@ -1,0 +1,6 @@
+<% content_for :title, "#{t(".title")} · #{t("app.name")}" %>
+<% content_for :topbar do %>
+  <%= render "shared/topbar", title: t(".title") %>
+<% end %>
+
+<%= render "nearby/content" %>

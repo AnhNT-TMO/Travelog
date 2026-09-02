@@ -1,0 +1,12 @@
+<%# locals: title, crumb: nil, title_class: nil %>
+<% crumb       = local_assigns.fetch(:crumb, nil) %>
+<% title_class = local_assigns.fetch(:title_class, "text-lg font-bold tracking-tight") %>
+
+<div class="flex flex-none flex-wrap items-center gap-2.5 border-b border-line bg-surface px-3.5 py-2.5">
+  <% if crumb.present? %>
+    <span class="text-xs text-muted"><%= crumb %> ›</span>
+  <% end %>
+  <span class="<%= title_class %>"><%= title %></span>
+  <span class="flex-1"></span>
+  <%= content_for(:topbar_actions) %>
+</div>

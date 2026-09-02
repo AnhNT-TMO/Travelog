@@ -1,0 +1,70 @@
+#!/bin/bash
+# Kamal, chạy trong Docker trên MÁY MAC (không phải trong container web).
+#
+#   bin/kamal setup
+#   bin/kamal deploy
+#   bin/kamal app logs -f
+#
+# Ngược với mọi binstub khác trong bin/: cái này chạy ở HOST. Máy không có
+# Ruby (xem CLAUDE.md) nên không gọi được `bundle exec kamal`, mà chạy trong
+# container `web` cũng không được — Kamal cần docker daemon của host để build
+# và ssh-agent của host để vào EC2.
+#
+# Cần: Docker Desktop đang chạy, ssh-agent đã add key của EC2
+# (ssh-add ~/.ssh/travelog-ec2.pem), và AWS CLI đã cấu hình (để lấy token ECR).
+set -euo pipefail
+
+# Khớp Gemfile.lock (kamal 2.12.0) để bản chạy tay và bản CI không lệch nhau.
+KAMAL_VERSION="${KAMAL_VERSION:-v2.12.0}"
+
+# HAI AWS ACCOUNT, và chỉ một trong hai liên quan tới file này:
+#
+#   account "compute" — EC2 + ECR. Duy nhất chỗ này cần, để lấy token ECR.
+#                       Chọn account bằng ECR_PROFILE (profile của AWS CLI).
+#   account "media"   — S3 + Lambda + CloudFront (infra/terraform).
+#                       Rails vào đó bằng AWS_ACCESS_KEY_ID/SECRET tĩnh trong
+#                       .env.production (config/storage.yml), không qua
+#                       instance profile — nên account của EC2 không ảnh hưởng.
+#
+# Đặt cố định vào ~/.zshrc nếu không muốn export mỗi lần:
+#   export ECR_PROFILE=travelog-compute
+ECR_REGION="${ECR_REGION:-ap-southeast-1}"
+ECR_PROFILE="${ECR_PROFILE:-}"
+
+if [[ -z "${SSH_AUTH_SOCK:-}" ]]; then
+  echo "bin/kamal: chưa có ssh-agent. Chạy: ssh-add ~/.ssh/<key>.pem" >&2
+  echo "Kamal trong container không đọc được ~/.ssh của host, nó đi qua agent." >&2
+  exit 1
+fi
+
+# Token ECR phải lấy Ở ĐÂY: image ghcr.io/basecamp/kamal không có AWS CLI,
+# nên .kamal/secrets gọi bin/kamal-secret và biến này được ưu tiên đọc từ env.
+if [[ -z "${KAMAL_REGISTRY_PASSWORD:-}" ]]; then
+  if command -v aws >/dev/null 2>&1; then
+    aws_args=(ecr get-login-password --region "$ECR_REGION")
+    if [[ -n "$ECR_PROFILE" ]]; then
+      aws_args+=(--profile "$ECR_PROFILE")
+    fi
+
+    # Không nuốt lỗi: token rỗng thì kamal chạy tiếp rồi chết ở `docker login`
+    # trên server với thông báo chẳng liên quan gì tới nguyên nhân thật.
+    if ! KAMAL_REGISTRY_PASSWORD="$(aws "${aws_args[@]}")"; then
+      echo "bin/kamal: lấy token ECR thất bại." >&2
+      echo "  ECR_REGION=$ECR_REGION ECR_PROFILE=${ECR_PROFILE:-<default>}" >&2
+      echo "  Profile này phải trỏ account chứa ECR repo (account của EC2)," >&2
+      echo "  KHÔNG phải account chứa S3/Lambda. Xem infra/ec2/README.md." >&2
+      exit 1
+    fi
+  else
+    # Dùng GHCR thì không cần AWS CLI — .kamal/secrets tự đọc GITHUB_TOKEN.
+    echo "bin/kamal: không thấy AWS CLI, bỏ qua bước lấy token ECR." >&2
+  fi
+fi
+
+exec docker run --rm -it \
+  --volume "${PWD}:/workdir" \
+  --volume "${SSH_AUTH_SOCK}:/ssh-agent" \
+  --volume /var/run/docker.sock:/var/run/docker.sock \
+  --env SSH_AUTH_SOCK=/ssh-agent \
+  --env "KAMAL_REGISTRY_PASSWORD=${KAMAL_REGISTRY_PASSWORD:-}" \
+  "ghcr.io/basecamp/kamal:${KAMAL_VERSION}" "$@"

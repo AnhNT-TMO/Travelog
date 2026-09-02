@@ -1,0 +1,50 @@
+<% content_for :title, "#{@tag.name} · #{t("app.name")}" %>
+<% content_for :topbar_actions do %>
+  <%= link_to t(".filter_radius"), nearby_path, class: "btn btn--outline btn--sm" %>
+  <%= link_to t(".add_place"), new_place_path, class: "btn btn--primary btn--sm" %>
+<% end %>
+<% content_for :topbar do %>
+  <%= render "shared/topbar", title: @tag.name, crumb: t(".crumb") %>
+<% end %>
+
+<% base_params = { controller: "tags", action: "places", id: @tag.slug, vibe: @vibe_ids, state: @state, sort: @sort }.compact %>
+
+<div class="flex flex-col gap-3">
+  <div class="flex flex-wrap items-center gap-2.5">
+    <%= render "shared/segmented",
+               current: @state,
+               counts: @counts,
+               base_params: base_params,
+               url: nil %>
+
+    <% if @vibe_tags.any? %>
+      <%= render "shared/tag_chips",
+                 tags: @vibe_tags,
+                 selected_ids: @vibe_ids,
+                 base_params: base_params,
+                 url: nil %>
+    <% end %>
+
+    <span class="flex-1"></span>
+
+    <%# Sort là <select> submit ngay: giữ trong URL để bookmark được, giống
+        segmented control (plan §16.5). %>
+    <%= form_with url: places_tag_path(@tag), method: :get, data: { controller: "autosubmit" },
+                  class: "flex items-center gap-1.5" do |form| %>
+      <%= form.hidden_field :state, value: @state %>
+      <% @vibe_ids.each do |vibe_id| %>
+        <%= hidden_field_tag "vibe[]", vibe_id, id: nil %>
+      <% end %>
+      <%= form.select :sort,
+            TagsController::SORTS.map { |value| [ t("filters.sort.#{value}"), value ] },
+            { selected: @sort },
+            class: "select w-auto py-1.5 text-sm", data: { action: "change->autosubmit#submit" } %>
+    <% end %>
+  </div>
+
+  <% if @sort == "distance" %>
+    <span class="hint"><%= t(".distance_sort_hint") %></span>
+  <% end %>
+
+  <%= render "shared/place_grid", user_places: @user_places %>
+</div>

@@ -1,0 +1,6 @@
+<% content_for :title, "#{t(".title")} · #{t("app.name")}" %>
+<% content_for :topbar do %>
+  <%= render "shared/topbar", title: t(".title"), crumb: t("nav.collections") %>
+<% end %>
+
+<%= render "places/form", user_place: @user_place, area_tags: @area_tags, vibe_tags: @vibe_tags %>

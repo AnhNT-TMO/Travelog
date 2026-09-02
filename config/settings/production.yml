@@ -1,0 +1,20 @@
+# Production. Xem chú thích ở config/settings/development.yml.
+# Bí mật (AWS key, mật khẩu Postgres) đến từ
+# .kamal/secrets, không nằm trong file này.
+production:
+  app_host: <%= ENV.fetch("APP_HOST", "travelog.com") %>
+  app_protocol: https
+
+  s3:
+    region: <%= ENV.fetch("AWS_REGION", "ap-southeast-1") %>
+    bucket_originals: <%= ENV.fetch("S3_BUCKET_ORIGINALS") %>
+    bucket_derivatives: <%= ENV.fetch("S3_BUCKET_DERIVATIVES") %>
+
+  cdn_host: <%= ENV.fetch("CDN_HOST") %>
+  photo_sizes: [ 400, 1200 ]
+  mailer_sender: <%= ENV.fetch("MAILER_SENDER", "no-reply@travelog.com") %>
+
+  google:
+    places_api_key: <%= ENV.fetch("GOOGLE_MAPS_API_KEY", "") %>
+    maps_browser_key: <%= ENV.fetch("GOOGLE_MAPS_BROWSER_KEY", "") %>
+    maps_map_id: <%= ENV.fetch("GOOGLE_MAPS_MAP_ID", "") %>

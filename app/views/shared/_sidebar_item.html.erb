@@ -1,0 +1,23 @@
+<%# locals: label, path, current, icon: nil, dot: nil, count: nil %>
+<% icon  = local_assigns.fetch(:icon, nil) %>
+<% dot   = local_assigns.fetch(:dot, nil) %>
+<% count = local_assigns.fetch(:count, nil) %>
+
+<%= link_to path,
+      "aria-current": (current ? "page" : nil),
+      class: "group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm no-underline transition-colors duration-150 ease-brand " +
+             (current ? "bg-primary-tint font-semibold text-primary" : "text-ink-soft hover:bg-surface-2 hover:text-ink") do %>
+  <% if dot.present? %>
+    <span class="h-[7px] w-[7px] flex-none rounded-full" style="background: <%= dot %>"></span>
+  <% elsif icon.present? %>
+    <span class="w-[1.1rem] flex-none text-center text-md"><%= icon %></span>
+  <% else %>
+    <span class="w-[1.1rem] flex-none text-center text-muted">·</span>
+  <% end %>
+
+  <span class="truncate"><%= label %></span>
+
+  <% if count.present? %>
+    <span class="num ml-auto text-xs <%= current ? "text-primary" : "text-muted" %>"><%= count %></span>
+  <% end %>
+<% end %>

@@ -1,0 +1,35 @@
+<% content_for :title, "#{t(".title")} · #{t("app.name")}" %>
+<% content_for :topbar do %>
+  <%= render "shared/topbar", title: t(".title") %>
+<% end %>
+
+<div class="mx-auto flex max-w-[440px] flex-col gap-3.5">
+  <div class="flex items-center gap-2.5 rounded-lg border border-line bg-surface p-3.5">
+    <span class="grid h-10 w-10 place-items-center rounded-full bg-surface-3 text-md font-bold text-ink-soft"><%= current_user.initials %></span>
+    <div class="flex min-w-0 flex-col">
+      <span class="text-md font-semibold"><%= current_user.label %></span>
+      <span class="truncate text-xs text-muted"><%= current_user.email %></span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-2.5">
+    <% [ [ t(".places"), @places_count ], [ t(".visits"), @visits_count ], [ t(".tags"), @tags_count ] ].each do |label, count| %>
+      <div class="flex flex-col items-center gap-0.5 rounded-lg border border-line bg-surface p-3">
+        <span class="num text-xl font-semibold text-ink"><%= count %></span>
+        <span class="text-xs text-muted"><%= label %></span>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="flex flex-col overflow-hidden rounded-lg border border-line bg-surface">
+    <%= link_to t(".manage_tags"), tags_path, class: "border-b border-line-soft px-3 py-2.5 text-sm text-ink no-underline hover:bg-surface-2" %>
+    <%= link_to t(".all_places"), places_path, class: "border-b border-line-soft px-3 py-2.5 text-sm text-ink no-underline hover:bg-surface-2" %>
+    <div class="flex items-center gap-2 px-3 py-2.5">
+      <span class="text-sm text-ink-soft"><%= t("nav.switch_language") %></span>
+      <%= render "shared/locale_switch", css_class: "ml-auto" %>
+    </div>
+  </div>
+
+  <%= button_to t("nav.sign_out"), destroy_user_session_path, method: :delete,
+        class: "btn btn--danger btn--block", form: { data: { turbo: false } } %>
+</div>

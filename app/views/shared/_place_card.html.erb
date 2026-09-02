@@ -1,0 +1,30 @@
+<%# Card địa điểm trong grid — mockup D1/D2.
+    CHỨA DỮ LIỆU RIÊNG TƯ (source_url, my_rating, trạng thái review).
+    TUYỆT ĐỐI không dùng lại partial này ở trang public — plan §23.4.
+    locals: user_place %>
+<%= link_to place_path(user_place),
+      id: dom_id(user_place),
+      class: "group flex cursor-pointer flex-col overflow-hidden rounded-lg border border-line bg-surface no-underline transition duration-150 ease-brand hover:-translate-y-0.5 hover:border-muted hover:shadow-e2",
+      data: { turbo_frame: "_top" } do %>
+  <%= render "shared/place_media", user_place: user_place %>
+
+  <div class="flex flex-col gap-0.5 px-2.5 pb-2.5 pt-2.5">
+    <span class="text-md font-semibold leading-tight tracking-tight text-ink"><%= user_place.label %></span>
+
+    <span class="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+      <% if user_place.respond_to?(:distance_m) && user_place[:distance_m].present? %>
+        <span class="num"><%= distance_label(user_place[:distance_m]) %></span>
+        <span>·</span>
+      <% end %>
+      <span><%= user_place.place.district.presence || user_place.place.city.presence || t("common.unknown_area") %></span>
+    </span>
+
+    <% if user_place.tags.any? %>
+      <span class="mt-0.5 flex flex-wrap gap-1">
+        <% user_place.tags.first(3).each do |tag| %>
+          <span class="tag-mini"><%= tag.name %></span>
+        <% end %>
+      </span>
+    <% end %>
+  </div>
+<% end %>

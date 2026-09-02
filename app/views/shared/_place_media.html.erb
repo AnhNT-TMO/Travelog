@@ -1,0 +1,29 @@
+<%# Ảnh cover của một user_place.
+    aspect-ratio CỐ ĐỊNH — ảnh của bạn đủ mọi tỉ lệ, để chiều cao ảnh quyết định
+    chiều cao card thì grid nhảy loạn (plan §16.4).
+    locals: user_place, ratio: "aspect-[4/3]", sizes:,
+            derivative_size: 400, show_status: true %>
+<% ratio           = local_assigns.fetch(:ratio, "aspect-[4/3]") %>
+<% sizes           = local_assigns.fetch(:sizes, "(max-width: 640px) 45vw, 220px") %>
+<% derivative_size = local_assigns.fetch(:derivative_size, Photos::ThumbnailUrl::THUMB) %>
+<% show_status     = local_assigns.fetch(:show_status, true) %>
+<% photo           = user_place.cover_photo %>
+<%# Seed theo tên địa điểm chứ không theo tag: cùng một tag thì mọi card
+    sẽ ra đúng một gradient và grid trông như một mảng màu phẳng. %>
+<% gradient    = photo.blank? ? placeholder_gradient_style(user_place.label) : nil %>
+
+<div class="media-skeleton relative <%= ratio %>" style="<%= gradient %>">
+  <%= photo_image_tag(photo, sizes: sizes, derivative_size: derivative_size) if photo.present? %>
+
+  <% if show_status %>
+    <%# Pill trạng thái nằm TRÊN ảnh, góc trên trái: quét mắt qua 12 card thấy
+        trạng thái trước khi đọc tên. %>
+    <span class="absolute left-2 top-2 backdrop-blur-[6px] <%= status_pill_class(user_place) %>">
+      <%= status_label(user_place) %>
+    </span>
+  <% end %>
+
+  <% if show_status && user_place.priority? %>
+    <span class="absolute right-1.5 top-1.5 grid h-[26px] w-[26px] place-items-center rounded-full bg-black/40 text-xs text-white">★</span>
+  <% end %>
+</div>

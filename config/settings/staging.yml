@@ -1,0 +1,20 @@
+# Staging — bản sao production, khác mỗi bucket, domain và mức log.
+# Mọi giá trị đều BẮT BUỘC có ENV: thiếu thì `ENV.fetch` ném lỗi lúc boot, tốt
+# hơn là chạy được rồi ghi ảnh nhầm vào bucket production.
+staging:
+  app_host: <%= ENV.fetch("APP_HOST", "staging.travelog.com") %>
+  app_protocol: https
+
+  s3:
+    region: <%= ENV.fetch("AWS_REGION", "ap-southeast-1") %>
+    bucket_originals: <%= ENV.fetch("S3_BUCKET_ORIGINALS") %>
+    bucket_derivatives: <%= ENV.fetch("S3_BUCKET_DERIVATIVES") %>
+
+  cdn_host: <%= ENV.fetch("CDN_HOST") %>
+  photo_sizes: [ 400, 1200 ]
+  mailer_sender: <%= ENV.fetch("MAILER_SENDER", "no-reply@staging.travelog.com") %>
+
+  google:
+    places_api_key: <%= ENV.fetch("GOOGLE_MAPS_API_KEY", "") %>
+    maps_browser_key: <%= ENV.fetch("GOOGLE_MAPS_BROWSER_KEY", "") %>
+    maps_map_id: <%= ENV.fetch("GOOGLE_MAPS_MAP_ID", "") %>

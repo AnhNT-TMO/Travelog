@@ -1,0 +1,19 @@
+<% content_for :title, "#{@tag.name} · #{t(".kicker")}" %>
+
+<header class="mb-6 flex flex-col gap-1">
+  <span class="num text-2xs uppercase tracking-[0.14em] text-muted"><%= t(".kicker") %></span>
+  <h1 class="text-2xl font-bold tracking-tight text-ink"><%= @tag.name %></h1>
+  <p class="num text-sm text-muted [&_b]:font-semibold [&_b]:text-ink-soft">
+    <%= t(".counts_html", visited: @counts[:visited], wishlist: @counts[:wishlist]) %>
+  </p>
+</header>
+
+<% if @user_places.any? %>
+  <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+    <% @user_places.each do |user_place| %>
+      <%= render "public_collections/place_card", user_place: user_place, share_notes: @tag.share_notes? %>
+    <% end %>
+  </div>
+<% else %>
+  <p class="text-sm text-muted"><%= t(".empty") %></p>
+<% end %>

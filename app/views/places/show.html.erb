@@ -1,0 +1,49 @@
+<% content_for :title, "#{@user_place.label} · #{t("app.name")}" %>
+<% content_for :topbar_actions do %>
+  <%# Pill lặp lại ngay trong panel bên dưới — trên mobile giấu đi để topbar
+      không xuống dòng. %>
+  <span class="hidden sm:inline-flex <%= status_pill_class(@user_place) %>"><%= status_label(@user_place) %></span>
+  <% if @user_place.visited? %>
+    <span class="hidden sm:inline-flex <%= review_pill_class(@user_place) %>"><%= review_label(@user_place) %></span>
+  <% end %>
+  <%= link_to t(".edit"), edit_place_path(@user_place), class: "btn btn--outline btn--sm" %>
+<% end %>
+<% content_for :topbar do %>
+  <%= render "shared/topbar", title: @user_place.label, crumb: t(".crumb") %>
+<% end %>
+
+<div data-controller="sheet">
+  <%# Bố cục D3: gallery + các lần đến ở cột trái, chi tiết + kit review ở panel
+      phải. Trên mobile grid sập thành một cột và thứ tự nguồn (gallery → chi
+      tiết → các lần đến) chính là thứ tự của M3 — một view, hai breakpoint. %>
+  <div class="mx-auto flex max-w-[1180px] flex-col gap-3.5
+              lg:grid lg:grid-cols-[minmax(0,1fr)_372px] lg:grid-rows-[auto_auto] lg:items-start">
+
+    <section class="overflow-hidden rounded-lg border border-line bg-surface lg:col-start-1 lg:row-start-1">
+      <%= render "places/gallery", user_place: @user_place, photos: @photos %>
+    </section>
+
+    <aside class="overflow-hidden rounded-lg border border-line bg-surface lg:col-start-2 lg:row-span-2 lg:row-start-1">
+      <%= render "shared/place_detail", user_place: @user_place %>
+    </aside>
+
+    <section class="rounded-lg border border-line bg-surface p-3.5 lg:col-start-1 lg:row-start-2">
+      <div class="mb-2 flex items-baseline gap-2">
+        <h3 class="text-md font-bold tracking-tight"><%= t("shared.visit_timeline.title") %></h3>
+        <span class="num text-xs text-muted">
+          <%= t("common.visits_count", count: @visits.size) %> · <%= t("common.photos_count", count: @user_place.photos_count) %>
+        </span>
+        <button type="button" class="ml-auto text-sm font-semibold text-primary"
+                data-action="sheet#open"><%= t(".add_visit") %></button>
+      </div>
+
+      <% if @visits.any? %>
+        <%= render "shared/visit_timeline", visits: @visits %>
+      <% else %>
+        <%= render "shared/empty", icon: "◷", title: t(".no_visits_title"), description: t(".no_visits_description") %>
+      <% end %>
+    </section>
+  </div>
+
+  <%= render "places/checkin_sheet", user_place: @user_place %>
+</div>

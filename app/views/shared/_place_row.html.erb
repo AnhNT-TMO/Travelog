@@ -1,0 +1,35 @@
+<%# Dòng compact cho panel hẹp / trang Quanh đây — mockup D4, M1.
+    locals: user_place, active: false, index: nil
+
+    index là số hiệu khớp với số in trên pin bản đồ (Quanh đây). Không truyền
+    thì dòng không có số — các trang khác không có bản đồ để đối chiếu.
+    data-place-row-id là mối nối để nearby_map_controller sáng đúng dòng khi
+    bấm vào pin; đổi tên nó thì việc đó im lặng ngừng hoạt động. %>
+<% active = local_assigns.fetch(:active, false) %>
+<% index = local_assigns.fetch(:index, nil) %>
+
+<%= link_to place_path(user_place),
+      class: "flex cursor-pointer items-center gap-2.5 rounded-md p-2 no-underline " +
+             (active ? "bg-primary-tint" : "hover:bg-surface-2"),
+      data: { turbo_frame: "_top", place_row_id: user_place.id } do %>
+  <% if index.present? %>
+    <span class="num flex h-[18px] w-[18px] flex-none items-center justify-center
+                 rounded-full text-2xs font-semibold text-on-primary
+                 <%= user_place.visited? ? "bg-primary" : "bg-ochre" %>"><%= index %></span>
+  <% end %>
+  <div class="h-[46px] w-[46px] flex-none overflow-hidden rounded-md">
+    <%# Pill trạng thái không đọc được ở 46px — trạng thái đã nằm ở dòng phụ. %>
+    <%= render "shared/place_media", user_place: user_place, ratio: "aspect-square", sizes: "46px", show_status: false %>
+  </div>
+
+  <div class="flex min-w-0 flex-1 flex-col gap-px">
+    <span class="truncate text-sm font-semibold text-ink"><%= user_place.label %></span>
+    <span class="truncate text-xs text-muted">
+      <%= status_label(user_place) %>
+      <% if user_place.respond_to?(:distance_m) && user_place[:distance_m].present? %>
+        · <span class="num"><%= distance_label(user_place[:distance_m]) %></span>
+      <% end %>
+      <% if user_place.place.district.present? %>· <%= user_place.place.district %><% end %>
+    </span>
+  </div>
+<% end %>

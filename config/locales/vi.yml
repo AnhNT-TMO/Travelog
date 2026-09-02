@@ -1,0 +1,347 @@
+---
+vi:
+  account:
+    show:
+      all_places: Tất cả địa điểm
+      manage_tags: Quản lý tag
+      places: Địa điểm
+      tags: Tag
+      title: Tôi
+      visits: Lần đến
+  activerecord:
+    attributes:
+      tag:
+        kind: Loại
+        name: Tên tag
+      user_place:
+        my_rating: Tôi chấm
+        nickname: Tên tôi đặt
+        note: Ghi chú
+        source_url: Nguồn
+        status: Trạng thái
+      visit:
+        companions: Đi cùng
+        visited_at: Thời điểm đến
+    models:
+      photo: Ảnh
+      place: Địa điểm
+      tag: Tag
+      user_place: Địa điểm
+      visit: Lần đến
+  album:
+    index:
+      empty_description: Check-in một địa điểm hoặc mở rộng khoảng thời gian.
+      empty_title: Chưa có lần đến nào trong khoảng này
+      export_pdf: Xuất PDF (phase 2)
+      export_pdf_title: Phase 2
+      from: Từ ngày
+      month_summary: "%{month} — %{places} nơi · %{photos} ảnh"
+      submit: Xem
+      title: Album
+      to: Đến ngày
+  api:
+    places:
+      unavailable: Không thể kết nối Google Maps lúc này. Vui lòng thử lại.
+  app:
+    name: Travelog
+  collections:
+    index:
+      add_place: "＋ Thêm địa điểm"
+      by_area: Theo khu vực
+      by_vibe: Theo vibe
+      manage_tags: Quản lý tag
+      recent: Mới lưu
+      see_all: Xem tất cả
+      title: Bộ sưu tập
+  common:
+    distance_km: "%{value} km"
+    groups_count:
+      one: "%{count} nhóm"
+      other: "%{count} nhóm"
+    image_unavailable: Ảnh không tải được
+    photos_count:
+      one: "%{count} ảnh"
+      other: "%{count} ảnh"
+    places_pending:
+      one: "%{count} chỗ chờ đi"
+      other: "%{count} chỗ chờ đi"
+    powered_by_google: Powered by Google
+    unknown_area: Chưa rõ khu vực
+    visits_count:
+      one: "%{count} lần đến"
+      other: "%{count} lần đến"
+  date:
+    formats:
+      default: "%d.%m.%Y"
+      long: "%d tháng %-m, %Y"
+      short: "%d.%m"
+  devise:
+    passwords:
+      edit:
+        hint: Tối thiểu %{count} ký tự.
+        password: Mật khẩu mới
+        password_confirmation: Nhập lại mật khẩu
+        submit: Đổi mật khẩu
+        title: Đặt mật khẩu mới
+      new:
+        back_to_sign_in: Quay lại đăng nhập
+        email: Email
+        hint: Chúng tôi sẽ gửi link đặt lại mật khẩu tới email này.
+        submit: Gửi link đặt lại
+        title: Quên mật khẩu
+    sessions:
+      new:
+        email: Email
+        forgot_password: Quên mật khẩu?
+        password: Mật khẩu
+        remember_me: Ghi nhớ tôi
+        submit: Đăng nhập
+        title: Đăng nhập
+  filters:
+    sort:
+      distance: Gần tôi nhất
+      priority: Ưu tiên cao
+      recent: Mới thêm trước
+    state:
+      all: Tất cả
+      visited: Đã đến
+      wishlist: Chưa đến
+  locale_name:
+    en: English
+    vi: Tiếng Việt
+  nav:
+    add_place: Thêm địa điểm
+    album: Album
+    collections: Bộ sưu tập
+    group_area: Khu vực
+    group_vibe: Vibe
+    manage_tags: Quản lý tag
+    me: Tôi
+    nearby: Quanh đây
+    sign_out: Đăng xuất
+    switch_language: Đổi ngôn ngữ
+  nearby:
+    index:
+      as_the_crow_flies: Khoảng cách là đường chim bay, tính bằng earth_distance của
+        Postgres.
+      center: Điểm trung tâm
+      center_default: Hồ Gươm (mặc định)
+      center_placeholder: Tìm địa điểm trên Google Maps
+      current_location: Vị trí hiện tại
+      custom_center: Điểm đã chọn trên bản đồ
+      missing_coords:
+        one: "%{count} nơi không có toạ độ nên không tính được khoảng cách."
+        other: "%{count} nơi không có toạ độ nên không tính được khoảng cách."
+      out_of_radius: Ngoài bán kính
+      radius: Bán kính
+      title: Quanh đây
+      use_my_location: "⌖ Dùng vị trí hiện tại"
+      within: Trong %{radius}
+  photos:
+    create:
+      created: Đã thêm ảnh.
+    destroy:
+      destroyed: Đã xoá ảnh.
+  place_type:
+    cafe: Cafe
+    food: Ăn uống
+    other: Khác
+    sight: Tham quan
+  places:
+    autocomplete:
+      error: Không thể tải gợi ý Google Maps. Bạn vẫn có thể nhập tay.
+    checkin_sheet:
+      cancel: Huỷ
+      close: Đóng
+      companions: Đi cùng
+      companions_placeholder: Linh, Minh
+      note: Ghi chú (không bắt buộc)
+      note_placeholder: Đi với ai, ngồi đâu, ăn gì…
+      pick_photos: "＋ Chọn ảnh từ máy"
+      pick_photos_hint: Ảnh lưu vào kho ảnh của bạn.
+      submit: Lưu lần đến
+      title: Check-in
+      visited_at: Ngày & giờ
+    create:
+      created: Đã lưu vào sổ.
+    destroy:
+      destroyed: Đã xoá khỏi sổ.
+    edit:
+      destroy: Xoá khỏi sổ
+      destroy_confirm: Xoá địa điểm này khỏi sổ của bạn? Ảnh và các lần đến sẽ mất
+        theo.
+      title: Sửa địa điểm
+    form:
+      address: Địa chỉ
+      address_placeholder: 614 Lạc Long Quân, Tây Hồ, Hà Nội
+      autocomplete_hint: Nhập ít nhất 3 ký tự rồi chọn một gợi ý từ Google Maps; địa
+        chỉ và toạ độ sẽ được điền tự động.
+      cancel: Huỷ
+      city: Tỉnh / thành
+      city_placeholder: Hà Nội
+      coords_hint: Thiếu toạ độ thì nơi này không bao giờ xuất hiện ở trang Quanh
+        đây.
+      create: Lưu vào sổ
+      display_name: Tên địa điểm
+      display_name_placeholder: Sen Tây Hồ Deli
+      district: Quận / huyện
+      district_placeholder: Tây Hồ
+      lat: Vĩ độ
+      lng: Kinh độ
+      nickname: Tên tôi đặt (không bắt buộc)
+      nickname_placeholder: Quán bánh sen ngõ 614
+      note: Ghi chú
+      note_placeholder: Nghe nói bánh sen ngon, đi buổi chiều muộn.
+      place_type: Loại
+      priority: Đánh dấu ưu tiên
+      save: Lưu thay đổi
+      source_url: Link TikTok / Facebook
+      source_url_placeholder: Dán link để sau xem lại
+      status: Trạng thái
+      tags: Tag
+      tags_hint_html: Chưa có tag phù hợp? %{link}.
+      tags_manage: Tạo tag mới
+    gallery:
+      add_photos: "＋ Thêm ảnh"
+      destroy: Xoá ảnh
+      destroy_confirm: Xoá ảnh này?
+      make_cover: Đặt làm ảnh bìa
+      photos_count:
+        one: "%{count} ảnh"
+        other: "%{count} ảnh"
+    index:
+      add_place: "＋ Thêm địa điểm"
+      title: Tất cả địa điểm
+    new:
+      title: Thêm địa điểm
+    show:
+      add_visit: "＋ Thêm lần đến"
+      crumb: Bộ sưu tập
+      edit: "✎ Sửa"
+      no_visits_description: Bấm “Đã đi rồi” để ghi lại lần đầu tiên.
+      no_visits_title: Chưa có lần đến nào
+    update:
+      updated: Đã cập nhật.
+  public_collections:
+    layout:
+      footer_html: Bộ sưu tập chia sẻ từ <span>%{app}</span>
+      title: Bộ sưu tập chia sẻ · Travelog
+    show:
+      counts_html: "<b>%{visited}</b> đã đến · <b>%{wishlist}</b> muốn đến"
+      empty: Bộ sưu tập này chưa có địa điểm nào.
+      kicker: Bộ sưu tập chia sẻ
+  review:
+    not_reviewed: Chưa review
+    reviewed: Đã review
+  review_kits:
+    mark_reviewed:
+      marked: 'Đã ghi nhận: bạn đã đăng review.'
+    photos_zip:
+      nothing_selected: Chưa chọn ảnh nào để tải.
+  shared:
+    collection_card:
+      counts_html: "<b>%{wishlist}</b> chưa đến"
+      visited_html: "<b>%{visited}</b> đã đến"
+    place_detail:
+      area: Khu vực
+      check_in: Đã đi rồi — check-in
+      check_in_again: "＋ Check-in lần nữa"
+      distance: Cách tôi
+      edit: Sửa
+      my_rating: Tôi chấm
+      no_address: Chưa có địa chỉ
+      note: Ghi chú
+      saved_at: Đã lưu
+      source: Nguồn
+    place_grid:
+      empty_description: Thêm địa điểm hoặc đổi bộ lọc phía trên.
+      empty_title: Chưa có chỗ nào ở đây
+    place_row_list:
+      empty_description: Kéo slider rộng ra hoặc đổi điểm trung tâm.
+      empty_title: Không có chỗ nào trong bán kính này
+    review_kit:
+      autosave_hint: Tự lưu nháp sau khi bạn ngừng gõ.
+      copy: Copy nội dung
+      directions: Chỉ đường
+      download_photos:
+        one: Tải %{count} ảnh
+        other: Tải %{count} ảnh
+      draft: Nội dung sẽ đăng
+      draft_placeholder: Ban công tầng 3 nhìn thẳng ra hồ, chiều muộn nắng xiên rất
+        đẹp…
+      fallback_link: Thử link này
+      fallback_prefix: Không mở được?
+      mark_hint: Sau khi đăng xong, bấm “Đã đăng” để app ghi nhận.
+      mark_reviewed: 'Đánh dấu: đã đăng review'
+      not_visited: Chưa đến nên chưa review
+      open_maps: Mở trên Google Maps ↗
+      pick_photos:
+        one: Ảnh gửi kèm — đã chọn %{count}
+        other: Ảnh gửi kèm — đã chọn %{count}
+      section: Bộ kit review Google
+      title: Review Google
+      toggle_photo: Chọn / bỏ ảnh này
+    search_field:
+      placeholder: Tìm hoặc dán link…
+    visit_timeline:
+      companions: 'Cùng: %{names}'
+      title: Các lần đến
+  status:
+    priority: Ưu tiên
+    visited: Đã đến
+    wishlist: Muốn đến
+  tag_kind:
+    area: Khu vực
+    free: Tự do
+    vibe: Vibe
+  tags:
+    create:
+      created: Đã tạo tag.
+    destroy:
+      destroyed: Đã xoá tag.
+    edit:
+      title: Sửa tag
+    form:
+      cancel: Huỷ
+      color: Màu chấm
+      kind: Loại tag
+      kind_hint: Khu vực hiện ở nhóm trên của sidebar, vibe hiện ở nhóm dưới và dùng
+        làm chip lọc.
+      name: Tên tag
+      name_placeholder: Hồ Tây
+      submit: Lưu
+    index:
+      empty_description: Tạo tag để gom các địa điểm lại thành bộ sưu tập.
+      empty_title: Chưa có tag nào ở nhóm này
+      new_tag: "＋ Tag mới"
+      title: Quản lý tag
+    new:
+      title: Tag mới
+    places:
+      add_place: "＋ Thêm vào nhóm này"
+      crumb: Bộ sưu tập
+      distance_sort_hint: Sắp theo khoảng cách tính từ điểm trung tâm bạn chọn lần
+        cuối ở trang Quanh đây.
+      filter_radius: "⌖ Lọc theo bán kính"
+    row:
+      copy_link: Copy link
+      destroy: Xoá
+      destroy_confirm: Xoá tag này? Các địa điểm vẫn còn, chỉ mất nhãn.
+      edit: Sửa
+      shared: Đang chia sẻ
+      start_sharing: Chia sẻ
+      start_sharing_confirm: Tạo link công khai cho tag này? Ai có link đều xem được.
+      stop_sharing: Tắt chia sẻ
+    update:
+      updated: Đã cập nhật tag.
+  time:
+    formats:
+      album: "%a · %H:%M"
+      default: "%d.%m.%Y %H:%M"
+      long: "%d.%m.%Y · %H:%M"
+      short: "%d.%m"
+  visits:
+    create:
+      created: Đã ghi lần đến.
+    destroy:
+      destroyed: Đã xoá lần đến.

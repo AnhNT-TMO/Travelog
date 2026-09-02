@@ -1,0 +1,36 @@
+<%# locals: tag %>
+<%= form_with model: tag, class: "mx-auto flex max-w-[440px] flex-col gap-3.5 rounded-lg border border-line bg-surface p-3.5" do |form| %>
+  <% if tag.errors.any? %>
+    <div class="rounded-md bg-lacquer-tint px-3 py-2 text-sm text-lacquer">
+      <%= tag.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name, t(".name"), class: "label" %>
+    <%= form.text_field :name, class: "input", required: true, placeholder: t(".name_placeholder") %>
+  </div>
+
+  <div class="field">
+    <span class="label"><%= t(".kind") %></span>
+    <div class="seg w-full">
+      <% Tag.kinds.keys.each do |value| %>
+        <label class="seg-item flex-1 justify-center has-[:checked]:bg-surface has-[:checked]:text-ink has-[:checked]:shadow-e1">
+          <%= form.radio_button :kind, value, class: "sr-only" %>
+          <%= t("tag_kind.#{value}") %>
+        </label>
+      <% end %>
+    </div>
+    <span class="hint"><%= t(".kind_hint") %></span>
+  </div>
+
+  <div class="field">
+    <%= form.label :color, t(".color"), class: "label" %>
+    <%= form.color_field :color, value: tag.color.presence || "#0E6E63", class: "input h-10 p-1" %>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <%= form.submit t(".submit"), class: "btn btn--primary flex-1" %>
+    <%= link_to t(".cancel"), tags_path, class: "btn btn--ghost" %>
+  </div>
+<% end %>

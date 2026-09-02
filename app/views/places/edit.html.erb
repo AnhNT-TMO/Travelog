@@ -1,0 +1,12 @@
+<% content_for :title, "#{t(".title")} · #{t("app.name")}" %>
+<% content_for :topbar do %>
+  <%= render "shared/topbar", title: t(".title"), crumb: @user_place.label %>
+<% end %>
+
+<%= render "places/form", user_place: @user_place, area_tags: @area_tags, vibe_tags: @vibe_tags %>
+
+<div class="mx-auto mt-3.5 flex max-w-[560px] justify-end">
+  <%= button_to t(".destroy"), place_path(@user_place), method: :delete,
+        class: "btn btn--danger btn--sm",
+        form: { data: { turbo_confirm: t(".destroy_confirm") } } %>
+</div>

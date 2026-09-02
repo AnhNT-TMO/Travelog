@@ -1,0 +1,64 @@
+<%# Bottom sheet check-in — mockup M4. Trên desktop cùng markup này hiện như
+    một modal ở giữa màn hình; không tách hai partial theo kích thước màn.
+    locals: user_place %>
+<div data-sheet-target="panel" hidden
+     data-action="keydown->sheet#closeOnEscape"
+     class="fixed inset-0 z-30 flex items-end justify-center lg:items-center">
+
+  <button type="button" class="absolute inset-0 bg-black/40" aria-label="<%= t(".close") %>"
+          data-action="sheet#close"></button>
+
+  <div class="relative flex max-h-[86vh] w-full flex-col gap-2.5 overflow-y-auto rounded-t-[18px] border-t border-line bg-surface px-3.5 pb-4 pt-3 shadow-e3
+              lg:max-w-[440px] lg:rounded-lg lg:border">
+    <span class="mx-auto h-1 w-[34px] flex-none rounded-sm bg-surface-3 lg:hidden"></span>
+    <span class="text-md font-bold"><%= t(".title") %></span>
+
+    <%# Direct upload: ảnh lên thẳng S3 trước, form chỉ gửi signed id. Nút Lưu
+        bị khoá trong lúc ảnh đang bay — xem direct_upload_controller. %>
+    <%= form_with url: place_visits_path(user_place), class: "flex flex-col gap-2.5",
+                  data: {
+                    controller: "direct-upload",
+                    action: "direct-upload:start->direct-upload#start " \
+                            "direct-upload:progress->direct-upload#progress " \
+                            "direct-upload:end->direct-upload#end"
+                  } do |form| %>
+      <%= fields_for :visit do |visit_form| %>
+        <div class="field">
+          <%= visit_form.label :visited_at, t(".visited_at"), class: "label" %>
+          <%= visit_form.datetime_field :visited_at, value: Time.current.strftime("%Y-%m-%dT%H:%M"),
+                class: "input", required: true %>
+        </div>
+
+        <label class="cursor-pointer rounded-md border-[1.5px] border-dashed border-line bg-ground px-3.5 py-3.5 text-center text-sm text-muted">
+          <%= t(".pick_photos") %>
+          <span class="block text-xs"><%= t(".pick_photos_hint") %></span>
+          <%= file_field_tag "photos[]", multiple: true, accept: "image/*", class: "sr-only",
+                "data-direct-upload-url": place_direct_uploads_url(user_place) %>
+        </label>
+
+        <div data-direct-upload-target="progress" hidden class="flex items-center gap-2">
+          <div class="h-1 flex-1 overflow-hidden rounded-sm bg-surface-3">
+            <div data-direct-upload-target="bar" class="h-full w-0 bg-primary transition-[width] duration-150 ease-brand"></div>
+          </div>
+          <span data-direct-upload-target="percent" class="num w-10 text-right text-xs text-primary">0%</span>
+        </div>
+
+        <div class="field">
+          <%= visit_form.label :note, t(".note"), class: "label" %>
+          <%= visit_form.text_field :note, class: "input", placeholder: t(".note_placeholder") %>
+        </div>
+
+        <div class="field">
+          <%= visit_form.label :companions, t(".companions"), class: "label" %>
+          <%= visit_form.text_field :companions, class: "input", placeholder: t(".companions_placeholder") %>
+        </div>
+      <% end %>
+
+      <div class="flex gap-2">
+        <button type="button" class="btn btn--ghost flex-none" data-action="sheet#close"><%= t(".cancel") %></button>
+        <%= form.submit t(".submit"), class: "btn btn--primary btn--lg flex-1",
+              data: { direct_upload_target: "submit" } %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,88 @@
+<%# Bộ kit review Google — mockup D3.
+    KHÔNG có API nào đăng review lên Google Maps và automation vi phạm ToS
+    (D12). App chỉ soạn nội dung, gói ảnh, mở deep link; người dùng tự tick.
+    locals: user_place %>
+<% place  = user_place.place %>
+<% photos = user_place.photos.ordered %>
+
+<div class="flex flex-col gap-2 rounded-md border border-line bg-ground px-3 py-2.5">
+  <div class="flex items-center gap-2">
+    <span class="text-sm font-bold">
+      <%= user_place.visited? ? t(".title") : t(".not_visited") %>
+    </span>
+    <% if user_place.visited? %>
+      <span class="ml-auto <%= review_pill_class(user_place) %>"><%= review_label(user_place) %></span>
+    <% end %>
+  </div>
+
+  <% if user_place.visited? %>
+    <div data-controller="clipboard">
+      <%= form_with url: place_review_kit_path(user_place), method: :patch,
+                    data: { controller: "autosave", action: "input->autosave#save" },
+                    class: "field" do |form| %>
+        <%= label_tag "user_place_review_body_draft", t(".draft"), class: "label" %>
+        <%= text_area_tag "user_place[review_body_draft]", user_place.review_body_draft,
+              id: "user_place_review_body_draft", class: "textarea",
+              placeholder: t(".draft_placeholder"),
+              data: { clipboard_target: "source" } %>
+        <span class="hint"><%= t(".autosave_hint") %></span>
+      <% end %>
+
+      <% if photos.any? %>
+        <div class="mt-2 flex flex-col gap-1">
+          <span class="label"><%= t(".pick_photos", count: photos.selected.size) %></span>
+          <div class="flex flex-wrap gap-1.5">
+            <% photos.each do |photo| %>
+              <%= button_to toggle_google_selection_place_photo_path(user_place, photo), method: :patch,
+                    class: "media-skeleton relative h-[42px] w-[42px] overflow-hidden rounded-sm",
+                    title: t(".toggle_photo") do %>
+                <%= photo_image_tag photo, sizes: "42px" %>
+                <% if photo.selected_for_google? %>
+                  <span class="absolute inset-0 grid place-items-center bg-primary/60 text-sm text-white">✓</span>
+                <% end %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="mt-2 flex flex-wrap gap-1.5">
+        <button type="button" class="btn btn--sm"
+                data-clipboard-target="button"
+                data-action="clipboard#copy"><%= t(".copy") %></button>
+
+        <% if photos.selected.any? %>
+          <%= link_to t(".download_photos", count: photos.selected.size),
+                photos_zip_place_review_kit_path(user_place), class: "btn btn--sm", data: { turbo: false } %>
+        <% end %>
+
+        <%= link_to t(".open_maps"), Google::ReviewLink.for(place),
+              target: "_blank", rel: "noopener", class: "btn btn--primary btn--sm" %>
+      </div>
+    </div>
+
+    <div class="flex items-start gap-2 text-sm text-ink-soft">
+      <span class="num mt-px flex-none rounded-sm bg-primary-tint px-1 text-2xs text-primary">✓</span>
+      <span><%= t(".mark_hint") %></span>
+    </div>
+
+    <% unless user_place.review_reviewed? %>
+      <%= button_to t(".mark_reviewed"), mark_reviewed_place_review_kit_path(user_place),
+            method: :patch, class: "btn btn--outline btn--sm btn--block" %>
+    <% end %>
+  <% else %>
+    <div class="flex flex-wrap gap-1.5">
+      <%= link_to t(".open_maps"), Google::ReviewLink.fallback_for(place),
+            target: "_blank", rel: "noopener", class: "btn btn--sm" %>
+      <%= link_to t(".directions"), Google::ReviewLink.directions_for(place),
+            target: "_blank", rel: "noopener", class: "btn btn--sm" %>
+    </div>
+  <% end %>
+
+  <%# Deep link writereview hoạt động không nhất quán theo vùng. %>
+  <span class="text-2xs text-muted">
+    <%= t(".fallback_prefix") %>
+    <%= link_to t(".fallback_link"), Google::ReviewLink.fallback_for(place),
+          target: "_blank", rel: "noopener", class: "text-primary" %>
+  </span>
+</div>

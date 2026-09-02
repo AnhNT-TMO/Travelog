@@ -1,0 +1,46 @@
+# Cấu hình cho gem i18n-tasks. Chạy qua test/i18n_test.rb, không phải chạy tay.
+#
+#   bin/rails test test/i18n_test.rb   -> fail khi thiếu key hoặc key thừa
+#   bundle exec i18n-tasks missing     -> xem key nào thiếu ở locale nào
+#   bundle exec i18n-tasks unused      -> xem key nào không còn ai dùng
+#   bundle exec i18n-tasks normalize   -> sắp xếp lại file locale cho thống nhất
+
+base_locale: vi
+locales: [vi, en]
+
+data:
+  read:
+    # CHỈ đọc file của app. Bản dịch từ rails-i18n / devise-i18n nằm trong gem
+    # và không phải việc của repo này.
+    - config/locales/%{locale}.yml
+  write:
+    - config/locales/%{locale}.yml
+
+search:
+  paths:
+    - app/
+  relative_roots:
+    - app/views
+    - app/controllers
+    - app/helpers
+  exclude:
+    # File hướng dẫn cho agent nằm cùng chỗ với code và có nhắc `t(...)` trong
+    # văn xuôi. Không loại ra thì scanner coi đó là key thật và báo thiếu key.
+    - "**/*.md"
+
+ignore_unused:
+  # Key gọi động bằng nội suy — scanner tĩnh không thấy được.
+  - status.*             # t("status.#{user_place.status}")
+  - review.*             # review_label
+  - filters.state.*      # t("filters.state.#{value}")
+  - place_type.*         # t("place_type.#{key}")
+  - tag_kind.*           # t("tag_kind.#{value}")
+  - filters.sort.*       # t("filters.sort.#{value}")
+  - locale_name.*        # nhãn ngôn ngữ, dùng khi cần hiển thị tên đầy đủ
+  - date.formats.*
+  - time.formats.*
+  - activerecord.*       # Rails tra cứu ngầm qua human_attribute_name
+
+ignore_missing:
+  # Do gem rails-i18n cung cấp cho cả vi lẫn en, không nằm trong file của app.
+  - date.month_names

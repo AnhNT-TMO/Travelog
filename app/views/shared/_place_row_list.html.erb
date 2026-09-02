@@ -1,0 +1,20 @@
+<%# locals: user_places, numbered: false
+
+    numbered chỉ bật ở trang Quanh đây: số hiệu của dòng là số in trên pin bản
+    đồ, nên hai bên phải cùng thứ tự khoảng cách mà server trả về. %>
+<% numbered = local_assigns.fetch(:numbered, false) %>
+<%= turbo_frame_tag "place_list" do %>
+  <% if user_places.any? %>
+    <div class="flex flex-col gap-0.5">
+      <% user_places.each_with_index do |user_place, index| %>
+        <%= render "shared/place_row", user_place: user_place,
+                   index: (numbered ? index + 1 : nil) %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render "shared/empty",
+               icon: "⌖",
+               title: t(".empty_title"),
+               description: t(".empty_description") %>
+  <% end %>
+<% end %>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <title><%= content_for(:title) || t("app.name") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="<%= t("app.name") %>">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="h-dvh overflow-hidden">
+    <div class="flex h-dvh">
+      <%= render "shared/sidebar" %>
+
+      <div class="flex min-w-0 flex-1 flex-col bg-ground">
+        <%= yield :topbar %>
+        <%= render "shared/flash" %>
+
+        <div class="flex min-h-0 flex-1">
+          <main class="flex-1 overflow-y-auto p-3.5 pb-24 lg:pb-3.5">
+            <%= yield %>
+          </main>
+
+          <%= yield :detail_panel %>
+        </div>
+
+        <%= render "shared/tabbar" %>
+      </div>
+    </div>
+  </body>
+</html>

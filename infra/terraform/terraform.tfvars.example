@@ -1,0 +1,24 @@
+# cp terraform.tfvars.example terraform.tfvars roi sua.
+# terraform.tfvars va terraform.tfstate KHONG duoc commit — xem .gitignore.
+#
+# Moi environment la mot stack rieng: bucket rieng, lambda rieng, CloudFront
+# rieng. Chay lai voi environment khac trong mot workspace khac (hoac mot thu
+# muc state khac), dung apply de len nhau.
+
+environment = "development"
+aws_region  = "ap-southeast-1"
+
+# Origin duoc PUT thang vao bucket originals. Voi development chinh la Rails
+# chay o may. Thieu dong nay thi direct upload chet o CORS preflight.
+cors_allowed_origins = ["http://localhost:3000"]
+
+# Phai khop Photos::ThumbnailUrl::SIZES va photo_sizes trong settings.
+image_sizes = [400, 1200]
+
+# --- staging ---
+# environment          = "staging"
+# cors_allowed_origins = ["https://staging.travelog.com"]
+
+# --- production ---
+# environment          = "production"
+# cors_allowed_origins = ["https://travelog.com"]

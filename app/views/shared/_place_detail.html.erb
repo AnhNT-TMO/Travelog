@@ -1,0 +1,82 @@
+<%# Panel chi tiết — DÙNG CHUNG cho cột phải (desktop >= lg) và phần chi tiết
+    trên trang mobile. Không viết hai nhánh view — plan §16.3.
+    Gallery và timeline nằm ở places/show, không ở đây: panel này chỉ mô tả
+    địa điểm và hành động trên nó.
+    locals: user_place %>
+<% place = user_place.place %>
+
+<div class="flex flex-col gap-3.5 px-3.5 py-3.5">
+  <div class="flex items-start gap-2">
+    <div class="min-w-0 flex-1">
+      <div class="text-lg font-bold tracking-tight"><%= user_place.label %></div>
+      <div class="text-xs text-muted"><%= place.cached_address.presence || t(".no_address") %></div>
+    </div>
+    <%= link_to "✎", edit_place_path(user_place), class: "btn btn--icon btn--ghost", title: t(".edit") %>
+  </div>
+
+  <div class="flex flex-wrap gap-1.5">
+    <span class="<%= status_pill_class(user_place) %>"><%= status_label(user_place) %></span>
+    <% if user_place.priority? %><span class="pill pill--soon"><%= t("status.priority") %></span><% end %>
+    <% if user_place.visited? %>
+      <span class="<%= review_pill_class(user_place) %>"><%= review_label(user_place) %></span>
+    <% end %>
+  </div>
+
+  <div class="flex gap-2">
+    <button type="button" class="btn btn--primary btn--lg flex-1" data-action="sheet#open">
+      <%= user_place.visited? ? t(".check_in_again") : t(".check_in") %>
+    </button>
+    <%= button_to (user_place.priority? ? "★" : "☆"), toggle_priority_place_path(user_place),
+          method: :patch, class: "btn btn--outline btn--icon", title: t("status.priority") %>
+  </div>
+
+  <dl class="grid grid-cols-[5.4rem_1fr] gap-x-2.5 gap-y-1 text-sm">
+    <% if user_place.respond_to?(:distance_m) && user_place[:distance_m].present? %>
+      <dt class="text-muted"><%= t(".distance") %></dt>
+      <dd class="num m-0 text-ink-soft"><%= distance_label(user_place[:distance_m]) %></dd>
+    <% end %>
+
+    <% if place.district.present? || place.city.present? %>
+      <dt class="text-muted"><%= t(".area") %></dt>
+      <dd class="m-0 text-ink-soft"><%= [ place.district, place.city ].compact_blank.join(" · ") %></dd>
+    <% end %>
+
+    <% if user_place.source_url.present? %>
+      <dt class="text-muted"><%= t(".source") %></dt>
+      <dd class="m-0 truncate text-ink-soft">
+        <%= link_to user_place.source_url, user_place.source_url, target: "_blank", rel: "noopener", class: "text-primary" %>
+      </dd>
+    <% end %>
+
+    <dt class="text-muted"><%= t(".saved_at") %></dt>
+    <dd class="num m-0 text-ink-soft"><%= l user_place.created_at.to_date, format: :default %></dd>
+
+    <% if user_place.my_rating.present? %>
+      <dt class="text-muted"><%= t(".my_rating") %></dt>
+      <dd class="m-0 tracking-wide text-ochre"><%= "★" * user_place.my_rating %></dd>
+    <% end %>
+  </dl>
+
+  <% if user_place.tags.any? %>
+    <div class="flex flex-wrap gap-1.5">
+      <% user_place.tags.each do |tag| %>
+        <%= link_to tag.name, places_tag_path(tag), class: "chip", "aria-pressed": "true" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if user_place.note.present? %>
+    <div class="h-px bg-line-soft"></div>
+    <div class="field">
+      <span class="label"><%= t(".note") %></span>
+      <div class="text-sm text-ink-soft"><%= simple_format user_place.note %></div>
+    </div>
+  <% end %>
+
+  <div class="h-px bg-line-soft"></div>
+
+  <div class="mb-1 flex items-baseline gap-2">
+    <h3 class="text-md font-bold tracking-tight"><%= t("shared.review_kit.section") %></h3>
+  </div>
+  <%= render "shared/review_kit", user_place: user_place %>
+</div>

@@ -1,0 +1,40 @@
+<%# Sidebar desktop (>= lg). Mobile dùng shared/_tabbar. %>
+<aside class="hidden w-[236px] flex-none flex-col overflow-hidden border-r border-line bg-surface lg:flex">
+  <div class="flex items-center gap-2 border-b border-line-soft px-3.5 py-3">
+    <%= image_tag "logo.png", alt: t("app.name"), class: "h-7 w-7 flex-none object-contain" %>
+    <span class="text-md font-bold tracking-tight"><%= t("app.name") %></span>
+  </div>
+
+  <nav class="flex flex-col gap-px overflow-y-auto px-2 py-2.5">
+    <%= render "shared/sidebar_item", label: t("nav.collections"), icon: "◎", path: root_path, current: current_page?(root_path) %>
+    <%= render "shared/sidebar_item", label: t("nav.nearby"), icon: "⌖", path: nearby_path, current: current_page?(nearby_path) %>
+    <%= render "shared/sidebar_item", label: t("nav.album"), icon: "▤", path: album_path, current: current_page?(album_path) %>
+    <%= render "shared/sidebar_item", label: t("nav.manage_tags"), icon: "⌗", path: tags_path, current: current_page?(tags_path) %>
+
+    <% [[t("nav.group_area"), :area], [t("nav.group_vibe"), :vibe]].each do |group_label, kind| %>
+      <% tags = Array(@sidebar_tags).select { |tag| tag.kind == kind.to_s } %>
+      <% next if tags.empty? %>
+
+      <div class="px-1.5 pb-1 pt-3 font-mono text-2xs uppercase tracking-[0.1em] text-muted"><%= group_label %></div>
+      <% tags.each do |tag| %>
+        <%= render "shared/sidebar_item",
+                   label: tag.name,
+                   icon: nil,
+                   dot: tag.color,
+                   count: tag.user_places_count,
+                   path: places_tag_path(tag),
+                   current: current_page?(places_tag_path(tag)) %>
+      <% end %>
+    <% end %>
+  </nav>
+
+  <div class="mt-auto flex flex-col gap-1.5 border-t border-line-soft px-2.5 py-2.5">
+    <%= render "shared/locale_switch" %>
+
+    <div class="flex items-center gap-2">
+    <span class="grid h-[26px] w-[26px] place-items-center rounded-full bg-surface-3 text-xs font-bold text-ink-soft"><%= current_user.initials %></span>
+    <span class="truncate text-sm text-ink-soft"><%= current_user.label %></span>
+      <%= button_to destroy_user_session_path, method: :delete, class: "btn btn--icon btn--ghost ml-auto", form: { data: { turbo: false } }, title: t("nav.sign_out") do %>⏻<% end %>
+    </div>
+  </div>
+</aside>

@@ -1,0 +1,31 @@
+<%# locals: builder, method, value, label, placeholder, required, input_data %>
+<% input_data = local_assigns.fetch(:input_data, {}) %>
+<% results_id = "#{builder.object_name.to_s.tr('[]', '_')}_#{method}_predictions" %>
+
+<div class="field relative">
+  <%= builder.label method, label, class: "label" %>
+  <%= builder.text_field method,
+        value: value,
+        required: required,
+        placeholder: placeholder,
+        autocomplete: "off",
+        role: "combobox",
+        aria: { autocomplete: "list", controls: results_id, expanded: "false" },
+        class: "input",
+        data: input_data.merge(
+          place_autocomplete_target: "input",
+          action: "input->place-autocomplete#search keydown->place-autocomplete#navigate"
+        ) %>
+
+  <div id="<%= results_id %>"
+       data-place-autocomplete-target="results"
+       hidden
+       class="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-md border border-line bg-surface shadow-e2">
+    <div data-place-autocomplete-target="list" role="listbox"></div>
+    <div class="border-t border-line-soft px-2.5 py-1.5 text-right text-2xs text-muted">
+      <%= t("common.powered_by_google") %>
+    </div>
+  </div>
+
+  <span data-place-autocomplete-target="status" hidden class="hint" role="status"></span>
+</div>

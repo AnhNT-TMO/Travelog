@@ -1,0 +1,348 @@
+---
+en:
+  account:
+    show:
+      all_places: All places
+      manage_tags: Manage tags
+      places: Places
+      tags: Tags
+      title: Me
+      visits: Visits
+  activerecord:
+    attributes:
+      tag:
+        kind: Kind
+        name: Tag name
+      user_place:
+        my_rating: My rating
+        nickname: My name for it
+        note: Note
+        source_url: Source
+        status: Status
+      visit:
+        companions: With
+        visited_at: Visited at
+    models:
+      photo: Photo
+      place: Place
+      tag: Tag
+      user_place: Place
+      visit: Visit
+  album:
+    index:
+      empty_description: Check in somewhere, or widen the date range.
+      empty_title: No visits in this range yet
+      export_pdf: Export PDF (phase 2)
+      export_pdf_title: Phase 2
+      from: From
+      month_summary: "%{month} — %{places} places · %{photos} photos"
+      submit: Show
+      title: Album
+      to: To
+  api:
+    places:
+      unavailable: Google Maps is unavailable right now. Please try again.
+  app:
+    name: Travelog
+  collections:
+    index:
+      add_place: "＋ Add place"
+      by_area: By area
+      by_vibe: By vibe
+      manage_tags: Manage tags
+      recent: Recently saved
+      see_all: See all
+      title: Collections
+  common:
+    distance_km: "%{value} km"
+    groups_count:
+      one: "%{count} group"
+      other: "%{count} groups"
+    image_unavailable: Image unavailable
+    photos_count:
+      one: "%{count} photo"
+      other: "%{count} photos"
+    places_pending:
+      one: "%{count} place to go"
+      other: "%{count} places to go"
+    powered_by_google: Powered by Google
+    unknown_area: Area unknown
+    visits_count:
+      one: "%{count} visit"
+      other: "%{count} visits"
+  date:
+    formats:
+      default: "%d.%m.%Y"
+      long: "%B %-d, %Y"
+      short: "%d.%m"
+  devise:
+    passwords:
+      edit:
+        hint: At least %{count} characters.
+        password: New password
+        password_confirmation: Confirm password
+        submit: Change password
+        title: Set a new password
+      new:
+        back_to_sign_in: Back to sign in
+        email: Email
+        hint: We'll send a password reset link to this address.
+        submit: Send reset link
+        title: Forgot password
+    sessions:
+      new:
+        email: Email
+        forgot_password: Forgot your password?
+        password: Password
+        remember_me: Remember me
+        submit: Sign in
+        title: Sign in
+  filters:
+    sort:
+      distance: Nearest to me
+      priority: Priority first
+      recent: Recently added
+    state:
+      all: All
+      visited: Been there
+      wishlist: Not yet
+  locale_name:
+    en: English
+    vi: Tiếng Việt
+  nav:
+    add_place: Add place
+    album: Album
+    collections: Collections
+    group_area: Areas
+    group_vibe: Vibes
+    manage_tags: Manage tags
+    me: Me
+    nearby: Nearby
+    sign_out: Sign out
+    switch_language: Change language
+  nearby:
+    index:
+      as_the_crow_flies: Distances are straight-line, computed with Postgres earth_distance.
+      center: Centre point
+      center_default: Hoan Kiem lake (default)
+      center_placeholder: Search for a place on Google Maps
+      current_location: Current location
+      custom_center: Point selected on the map
+      missing_coords:
+        one: "%{count} place has no coordinates, so its distance can't be computed."
+        other: "%{count} places have no coordinates, so their distances can't be computed."
+      out_of_radius: Outside radius
+      radius: Radius
+      title: Nearby
+      use_my_location: "⌖ Use my location"
+      within: Within %{radius}
+  photos:
+    create:
+      created: Photos added.
+    destroy:
+      destroyed: Photo deleted.
+  place_type:
+    cafe: Cafe
+    food: Food
+    other: Other
+    sight: Sight
+  places:
+    autocomplete:
+      error: Google Maps suggestions could not be loaded. You can still type the fields
+        manually.
+    checkin_sheet:
+      cancel: Cancel
+      close: Close
+      companions: With
+      companions_placeholder: Linh, Minh
+      note: Note (optional)
+      note_placeholder: Who you went with, where you sat, what you ate…
+      pick_photos: "＋ Choose photos"
+      pick_photos_hint: Photos go into your own library.
+      submit: Save visit
+      title: Check in
+      visited_at: Date & time
+    create:
+      created: Saved to your book.
+    destroy:
+      destroyed: Removed from your book.
+    edit:
+      destroy: Remove from my book
+      destroy_confirm: Remove this place from your book? Its photos and visits go
+        with it.
+      title: Edit place
+    form:
+      address: Address
+      address_placeholder: 614 Lac Long Quan, Tay Ho, Hanoi
+      autocomplete_hint: Type at least 3 characters and choose a Google Maps suggestion;
+        the address and coordinates will be filled automatically.
+      cancel: Cancel
+      city: City
+      city_placeholder: Hanoi
+      coords_hint: Without coordinates this place can never show up on the Nearby
+        screen.
+      create: Save to my book
+      display_name: Place name
+      display_name_placeholder: Sen Tay Ho Deli
+      district: District
+      district_placeholder: Tay Ho
+      lat: Latitude
+      lng: Longitude
+      nickname: My own name for it (optional)
+      nickname_placeholder: Lotus cake place in alley 614
+      note: Note
+      note_placeholder: Heard the lotus cake is good, go late afternoon.
+      place_type: Type
+      priority: Mark as priority
+      save: Save changes
+      source_url: TikTok / Facebook link
+      source_url_placeholder: Paste a link to find it again later
+      status: Status
+      tags: Tags
+      tags_hint_html: No tag fits? %{link}.
+      tags_manage: Create a new tag
+    gallery:
+      add_photos: "＋ Add photos"
+      destroy: Delete photo
+      destroy_confirm: Delete this photo?
+      make_cover: Use as cover
+      photos_count:
+        one: "%{count} photo"
+        other: "%{count} photos"
+    index:
+      add_place: "＋ Add place"
+      title: All places
+    new:
+      title: Add place
+    show:
+      add_visit: "＋ Add visit"
+      crumb: Collections
+      edit: "✎ Edit"
+      no_visits_description: Tap “I've been here” to record the first one.
+      no_visits_title: No visits yet
+    update:
+      updated: Updated.
+  public_collections:
+    layout:
+      footer_html: A collection shared from <span>%{app}</span>
+      title: Shared collection · Travelog
+    show:
+      counts_html: "<b>%{visited}</b> been there · <b>%{wishlist}</b> want to go"
+      empty: This collection has no places yet.
+      kicker: Shared collection
+  review:
+    not_reviewed: Not reviewed
+    reviewed: Reviewed
+  review_kits:
+    mark_reviewed:
+      marked: 'Noted: you posted the review.'
+    photos_zip:
+      nothing_selected: No photos selected to download.
+  shared:
+    collection_card:
+      counts_html: "<b>%{wishlist}</b> not yet"
+      visited_html: "<b>%{visited}</b> been there"
+    place_detail:
+      area: Area
+      check_in: I've been here — check in
+      check_in_again: "＋ Check in again"
+      distance: Distance
+      edit: Edit
+      my_rating: My rating
+      no_address: No address yet
+      note: Note
+      saved_at: Saved
+      source: Source
+    place_grid:
+      empty_description: Add a place, or change the filters above.
+      empty_title: Nothing here yet
+    place_row_list:
+      empty_description: Widen the slider, or move the centre point.
+      empty_title: No places within this radius
+    review_kit:
+      autosave_hint: Saved automatically once you stop typing.
+      copy: Copy text
+      directions: Directions
+      download_photos:
+        one: Download %{count} photo
+        other: Download %{count} photos
+      draft: What you'll post
+      draft_placeholder: Third-floor balcony looks straight over the lake, late afternoon
+        light is lovely…
+      fallback_link: Try this link
+      fallback_prefix: Didn't open?
+      mark_hint: Once you've posted, tap “Posted” so the app knows.
+      mark_reviewed: 'Mark as: review posted'
+      not_visited: Not visited yet, so no review
+      open_maps: Open in Google Maps ↗
+      pick_photos:
+        one: Photos to attach — %{count} selected
+        other: Photos to attach — %{count} selected
+      section: Google review kit
+      title: Google review
+      toggle_photo: Select / deselect this photo
+    search_field:
+      placeholder: Search or paste a link…
+    visit_timeline:
+      companions: 'With: %{names}'
+      title: Visits
+  status:
+    priority: Priority
+    visited: Been there
+    wishlist: Want to go
+  tag_kind:
+    area: Area
+    free: Free
+    vibe: Vibe
+  tags:
+    create:
+      created: Tag created.
+    destroy:
+      destroyed: Tag deleted.
+    edit:
+      title: Edit tag
+    form:
+      cancel: Cancel
+      color: Dot colour
+      kind: Tag kind
+      kind_hint: Areas sit in the upper sidebar group; vibes sit below and double
+        as filter chips.
+      name: Tag name
+      name_placeholder: West Lake
+      submit: Save
+    index:
+      empty_description: Create a tag to group places into a collection.
+      empty_title: No tags in this group yet
+      new_tag: "＋ New tag"
+      title: Manage tags
+    new:
+      title: New tag
+    places:
+      add_place: "＋ Add to this group"
+      crumb: Collections
+      distance_sort_hint: Sorted by distance from the centre you last picked on the
+        Nearby screen.
+      filter_radius: "⌖ Filter by radius"
+    row:
+      copy_link: Copy link
+      destroy: Delete
+      destroy_confirm: Delete this tag? The places stay, they just lose the label.
+      edit: Edit
+      shared: Shared
+      start_sharing: Share
+      start_sharing_confirm: Create a public link for this tag? Anyone with the link
+        can view it.
+      stop_sharing: Stop sharing
+    update:
+      updated: Tag updated.
+  time:
+    formats:
+      album: "%a · %H:%M"
+      default: "%d.%m.%Y %H:%M"
+      long: "%d.%m.%Y · %H:%M"
+      short: "%d.%m"
+  visits:
+    create:
+      created: Visit recorded.
+    destroy:
+      destroyed: Visit deleted.

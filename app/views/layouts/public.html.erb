@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <title><%= content_for(:title) || t("public_collections.layout.title") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <%# Link unlisted: không index, không follow (plan §23.6). %>
+    <meta name="robots" content="noindex,nofollow">
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+  </head>
+
+  <%# Layout public: không sidebar, không tabbar, KHÔNG nút hành động nào. %>
+  <body class="min-h-dvh bg-ground">
+    <div class="mx-auto max-w-5xl px-4 py-8">
+      <%= yield %>
+
+      <footer class="mt-12 flex flex-wrap items-center gap-3 border-t border-line-soft pt-4 text-xs text-muted [&_span]:font-semibold [&_span]:text-ink-soft">
+        <%= t("public_collections.layout.footer_html", app: t("app.name")) %>
+        <%= render "shared/locale_switch", css_class: "ml-auto" %>
+      </footer>
+    </div>
+  </body>
+</html>

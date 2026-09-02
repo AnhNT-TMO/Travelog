@@ -1,0 +1,20 @@
+<h1 class="mb-4 text-lg font-bold tracking-tight"><%= t(".title") %></h1>
+
+<%= form_with model: resource, scope: resource_name, url: password_path(resource_name), html: { method: :put }, class: "flex flex-col gap-3" do |form| %>
+  <%= form.hidden_field :reset_password_token %>
+
+  <div class="field">
+    <%= form.label :password, t(".password"), class: "label" %>
+    <%= form.password_field :password, autofocus: true, autocomplete: "new-password", class: "input" %>
+    <% if @minimum_password_length %>
+      <span class="hint"><%= t(".hint", count: @minimum_password_length) %></span>
+    <% end %>
+  </div>
+
+  <div class="field">
+    <%= form.label :password_confirmation, t(".password_confirmation"), class: "label" %>
+    <%= form.password_field :password_confirmation, autocomplete: "new-password", class: "input" %>
+  </div>
+
+  <%= form.submit t(".submit"), class: "btn btn--primary btn--block" %>
+<% end %>

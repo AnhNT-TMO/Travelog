@@ -1,0 +1,17 @@
+<%# Đổi ngôn ngữ bằng ?locale= trên chính URL hiện tại — không có prefix locale
+    trong path, nên link chia sẻ /s/:token giữ nguyên hình dạng.
+    locals: css_class: "" %>
+<% css_class = local_assigns.fetch(:css_class, "") %>
+
+<div class="flex items-center gap-1 <%= css_class %>" role="group" aria-label="<%= t("nav.switch_language") %>">
+  <% available_locales.each do |locale| %>
+    <% active = locale == current_locale %>
+    <%= link_to locale_switch_path(locale),
+          lang: locale,
+          "aria-current": (active ? "true" : nil),
+          class: "rounded-sm px-1.5 py-0.5 font-mono text-2xs uppercase no-underline " +
+                 (active ? "bg-primary-tint font-semibold text-primary" : "text-muted hover:text-ink") do %>
+      <%= locale %>
+    <% end %>
+  <% end %>
+</div>
