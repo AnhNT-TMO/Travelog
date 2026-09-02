@@ -8,8 +8,8 @@ S3 + CloudFront + Lambda như cũ (`infra/terraform/`) — box này không xử 
 
 ```
                  ┌─ EC2 t4g.small (2 vCPU Graviton, 2 GB) ──────────┐
-Internet :443 ──▶│ kamal-proxy ──▶ travelog-web  (Thruster + Puma)  │
-                 │   TLS/ACME       1 process, 3 threads            │
+Internet :80  ──▶│ kamal-proxy ──▶ travelog-web  (Thruster + Puma)  │
+                 │   không TLS      1 process, 3 threads            │
                  │                  + Solid Queue trong Puma        │
                  │                        │ network `kamal`         │
                  │                        ▼                          │
@@ -49,28 +49,17 @@ Cái gì nằm ở account nào:
 
 | Thứ | Account | Credential dùng |
 | --- | --- | --- |
-| EC2, Elastic IP, EBS, security group | compute | Console / CLI, profile compute |
-| ECR repo `travelog` | compute | `ECR_PROFILE` mà `bin/kamal` dùng |
+| EC2, Elastic IP, EBS, security group | compute (`757876532307`) | Console / CLI, profile `ladakh` |
+| ECR repo `travelog` | compute | `ECR_PROFILE=ladakh`, mặc định trong `bin/kamal` |
 | S3 originals + derivatives, Lambda, CloudFront | media | `terraform`, profile media |
 | Access key Rails dùng để ký direct upload | media | `.env.production` |
 
-Cấu hình hai profile ở `~/.aws/config` (không nằm trong repo):
-
-```ini
-[profile travelog-compute]
-region = ap-southeast-1
-# EC2 + ECR
-
-[profile travelog-media]
-region = ap-southeast-1
-# S3 + Lambda + CloudFront, dùng cho terraform
-```
-
-Rồi:
+Profile ở `~/.aws/config` (không nằm trong repo). Account compute dùng profile
+`ladakh` — `bin/kamal` đã lấy đó làm mặc định nên không cần export gì:
 
 ```bash
-export ECR_PROFILE=travelog-compute            # bin/kamal đọc biến này
-export AWS_PROFILE=travelog-media              # terraform đọc biến này
+ECR_PROFILE=khac bin/kamal deploy               # chỉ khi cần đổi
+export AWS_PROFILE=<profile media>              # terraform đọc biến này
 ```
 
 `ECR_REGION` (dùng cho ECR, account compute) và `AWS_REGION` trong
@@ -86,8 +75,9 @@ Ba chỗ dễ nhầm khi tách account:
   nọ nửa kia.
 - **Google Places API key khoá theo IP** = Elastic IP ở account compute. Key
   thì quản ở Google Cloud, không liên quan AWS account nào.
-- **`cors_allowed_origins`** trong terraform (account media) vẫn phải có
-  `https://travelog.com`. Nó khớp theo Origin của browser, không theo account.
+- **`cors_allowed_origins`** trong terraform (account media) phải khớp origin
+  thật của app — hiện là `http://18.139.214.198`. Nó khớp theo Origin của
+  browser, không theo account, và **cổng là một phần của origin**.
 
 Muốn bỏ hẳn access key tĩnh thì hướng đúng là: tạo IAM role ở account media cho
 phép instance profile của EC2 (account compute) `sts:AssumeRole`, rồi bỏ hai
@@ -101,13 +91,11 @@ cho tới khi có lý do cụ thể.
 Theo `CLAUDE.md`, tạo tài nguyên AWS và chạy deploy là việc của người, không
 phải của agent.
 
-### Bước 0 — repo phải có ít nhất một commit
+### Bước 0 — repo phải có ít nhất một commit ✔
 
-Kamal lấy tag image từ `git rev-parse HEAD`. Repo này hiện **chưa có commit
-nào**, nên `bin/kamal deploy` sẽ chết ngay với `fatal: ambiguous argument
-'HEAD'`. Commit trước đã (kiểm tra `git status` xem có `.env*`,
-`config/master.key`, `infra/terraform/terraform.tfstate*` lọt vào không —
-`.gitignore` đã chặn nhưng vẫn nên nhìn).
+Kamal lấy tag image từ `git rev-parse HEAD`; repo không có commit thì
+`bin/kamal deploy` chết ngay với `fatal: ambiguous argument 'HEAD'`.
+**Đã xong** — commit `84109c8`.
 
 Cần deploy từ cây làm việc chưa commit thì truyền tag tay:
 `bin/kamal deploy --version="$(date -u +%Y%m%d%H%M%S)"`.
@@ -117,47 +105,73 @@ Cần deploy từ cây làm việc chưa commit thì truyền tag tay:
 ```bash
 # ECR repo chứa image — phải ở account compute, cùng account với EC2
 aws ecr create-repository --repository-name travelog \
-  --region ap-southeast-1 --profile travelog-compute
-# Ghi lại registryId (= COMPUTE_ACCOUNT_ID) để điền vào config/deploy.yml
+  --region ap-southeast-1 --profile ladakh
 ```
 
-EC2, tạo bằng console hoặc CLI (vẫn ở account compute):
+Instance đang dùng: `18.139.214.198`, **Amazon Linux 2023 aarch64** (kiểm tra
+bằng `uname -m` → `aarch64`, khớp `builder.arch: arm64`).
 
 | Thiết lập | Giá trị |
 | --- | --- |
-| AMI | Ubuntu Server 24.04 LTS, **arm64** |
+| AMI | Amazon Linux 2023, **arm64** (user `ec2-user`) |
 | Instance type | `t4g.small` |
 | EBS | 30 GB gp3 (image Docker cũ + WAL + backup ăn đĩa nhanh) |
-| Elastic IP | Có — Google Places API key khoá theo IP, IP đổi là app chết |
-| Security group | 22 (chỉ IP nhà/office), 80 + 443 (0.0.0.0/0) |
+| IP | Nên là Elastic IP — Google Places key khoá theo IP, và CORS của bucket ghi cứng origin. IP đổi là phải sửa cả hai. |
+| Security group | 22 (chỉ IP nhà/office) + **80** (0.0.0.0/0) |
 | Credit specification | `standard` nếu muốn chặn hoá đơn CPU vượt mức; `unlimited` (mặc định) an toàn hơn cho lúc migrate |
 
-Cổng 80 **bắt buộc** mở: Let's Encrypt xác thực qua HTTP-01.
-
-Rồi: bản ghi DNS `A` của `travelog.com` → Elastic IP. Làm **trước** khi deploy,
-nếu không ACME fail và app không lên.
+Đang chạy HTTP bằng IP nên **không cần mở 443 và không cần DNS**. Khi nào có
+domain thì mở 443, trỏ bản ghi `A`, rồi bật `ssl: true` + `APP_PROTOCOL: https`.
 
 ### Bước 2 — chuẩn bị box
 
+Hai biến dùng cho mọi lệnh ssh/scp trong file này — đặt một lần mỗi phiên
+terminal:
+
 ```bash
-scp -i ~/.ssh/travelog-ec2.pem infra/ec2/bootstrap.sh ubuntu@<EIP>:/tmp/
-ssh -i ~/.ssh/travelog-ec2.pem ubuntu@<EIP> 'sudo bash /tmp/bootstrap.sh'
+export KEY=/Users/tienanh/Desktop/anhnt_sing_key.pem
+export BOX=ec2-user@18.139.214.198
+chmod 600 "$KEY"   # ssh từ chối key rộng hơn 0600
 ```
 
-Script tạo swap, cài Docker, giới hạn log Docker, tạo thư mục dữ liệu, cài cron
-dọn image. Idempotent.
+```bash
+scp -i "$KEY" infra/ec2/bootstrap.sh "$BOX":/tmp/
+ssh -i "$KEY" "$BOX" 'sudo bash /tmp/bootstrap.sh'
+```
+
+Script tự nhận distro (Amazon Linux 2023 hoặc Ubuntu), tạo swap, cài Docker,
+giới hạn log Docker, tạo thư mục dữ liệu, cài cron dọn image. Idempotent.
+
+Kamal thì **không** đọc `-i`: `bin/kamal` chạy trong Docker và chỉ mount
+ssh-agent, không mount `~/.ssh`. Nên key phải nằm trong agent:
+
+```bash
+ssh-add --apple-use-keychain "$KEY"
+ssh-add -l                          # phải thấy key trong danh sách
+```
 
 ### Bước 3 — điền cấu hình ở máy Mac
 
-**a. Sửa các chỗ `# SỬA` trong [config/deploy.yml](../../config/deploy.yml):**
-`servers.web`, `accessories.db.host`, `proxy.host` (account compute),
-`registry.server` (account id của compute), và `env.clear`
-(`APP_HOST`, `CDN_HOST`, hai tên bucket, `MAILER_SENDER` — account media).
-Lấy giá trị account media từ terraform:
+**a. `config/deploy.yml` đã điền xong** ✔ — IP, ECR registry, CDN, hai bucket,
+`APP_HOST`, `APP_PROTOCOL: http`. Đối chiếu lại với terraform khi cần:
 
 ```bash
-cd infra/terraform && AWS_PROFILE=travelog-media terraform output
+cd infra/terraform && AWS_PROFILE=<profile media> terraform output
 ```
+
+**a2. CORS của bucket phải khớp origin.** Đây là bước dễ quên nhất và nó chỉ
+hỏng lúc upload ảnh, không hỏng lúc deploy:
+
+```bash
+cd infra/terraform
+terraform workspace select production
+terraform workspace show    # PHẢI in: production
+AWS_PROFILE=<profile media> terraform apply -var-file=vars/production.tfvars
+```
+
+⚠️ **Luôn kèm `-var-file`.** `terraform.tfvars` vẫn ghi
+`environment = "development"`; apply nó trong workspace `production` sẽ đổi tên
+bucket, tức **destroy hai bucket production đang có thật**.
 
 **b. Tạo `.env.production`** (bị `.gitignore` chặn, chỉ nằm trên máy Mac):
 
@@ -183,11 +197,12 @@ EOF
 **d. Kiểm tra trước khi bắn:**
 
 ```bash
-export ECR_PROFILE=travelog-compute   # profile của account chứa ECR + EC2
-ssh-add ~/.ssh/travelog-ec2.pem       # Kamal trong Docker đi qua ssh-agent
+ssh-add --apple-use-keychain "$KEY"   # Kamal trong Docker đi qua ssh-agent
 bin/kamal config                      # config đã resolve — sai key là báo ở đây
 bin/kamal secrets print               # in secret thật, đừng dán đi đâu
 ```
+
+`ECR_PROFILE` mặc định là `ladakh` trong `bin/kamal`, không cần export.
 
 `bin/kamal` sẽ dừng ngay với thông báo rõ ràng nếu `ECR_PROFILE` trỏ sai
 account, thay vì để hỏng ở bước `docker login` trên server.
@@ -208,7 +223,7 @@ trước rồi deploy:
 
 ```bash
 bin/kamal accessory boot db
-ssh ubuntu@<EIP> 'docker exec travelog-db pg_isready -U location_project'
+ssh -i "$KEY" "$BOX" 'docker exec travelog-db pg_isready -U location_project'
 bin/kamal deploy
 ```
 
@@ -222,10 +237,10 @@ bin/kamal console
 ### Bước 5 — backup
 
 ```bash
-scp infra/ec2/pg_backup.sh ubuntu@<EIP>:/tmp/
-ssh ubuntu@<EIP> 'sudo install -m 0755 /tmp/pg_backup.sh /usr/local/bin/travelog-pg-backup'
-ssh ubuntu@<EIP> "echo '0 19 * * * root /usr/local/bin/travelog-pg-backup' | sudo tee /etc/cron.d/travelog-backup"
-ssh ubuntu@<EIP> 'sudo /usr/local/bin/travelog-pg-backup'   # chạy thử ngay
+scp -i "$KEY" infra/ec2/pg_backup.sh "$BOX":/tmp/
+ssh -i "$KEY" "$BOX" 'sudo install -m 0755 /tmp/pg_backup.sh /usr/local/bin/travelog-pg-backup'
+ssh -i "$KEY" "$BOX" "echo '0 19 * * * root /usr/local/bin/travelog-pg-backup' | sudo tee /etc/cron.d/travelog-backup"
+ssh -i "$KEY" "$BOX" 'sudo /usr/local/bin/travelog-pg-backup'   # chạy thử ngay
 ```
 
 `0 19 UTC` = 2h sáng giờ VN. Đẩy lên S3 thì tạo `/etc/travelog-backup.env`
@@ -247,7 +262,7 @@ bin/kamal details                # container nào đang chạy
 Xem RAM/swap thật:
 
 ```bash
-ssh ubuntu@<EIP> 'free -h; docker stats --no-stream'
+ssh -i "$KEY" "$BOX" 'free -h; docker stats --no-stream'
 ```
 
 `swap used` bò lên đều đặn (không chỉ nhảy lúc deploy) là dấu hiệu box đã
@@ -269,3 +284,13 @@ chật: hạ `RAILS_MAX_THREADS` hoặc `shared_buffers`, hoặc lên `t4g.mediu
   không healthcheck của kamal-proxy bị chặn và deploy fail.
 - **Đừng build image trên EC2.** `bundle install` + `assets:precompile` trên
   2 GB sẽ thrash. Build ở Mac (arm64 native), đó là mặc định của `bin/kamal`.
+- **Hai cái bẫy của việc chạy Kamal trong Docker trên macOS**, cả hai đã xử lý
+  trong `bin/kamal` và `bin/kamal-secret` — đừng vô tình đảo lại:
+  - `$SSH_AUTH_SOCK` của macOS nằm dưới `/private/tmp/com.apple.launchd.*` và
+    Docker Desktop **không bind-mount được** đường dẫn đó (`operation not
+    supported`). Phải mount `/run/host-services/ssh-auth.sock`.
+  - Image `ghcr.io/basecamp/kamal` là **Alpine không có bash**. Script nào được
+    `.kamal/secrets` gọi phải là POSIX `sh`; shebang `#!/bin/bash` trả 127 và
+    secret thành chuỗi rỗng **mà không báo lỗi** — deploy vẫn chạy, app boot
+    với `POSTGRES_PASSWORD` trống. Luôn chạy `bin/kamal secrets print` trước
+    khi deploy và nhìn xem có giá trị nào rỗng không.

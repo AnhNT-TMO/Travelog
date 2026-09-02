@@ -52,7 +52,24 @@ COPY . .
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+#
+# assets:precompile boot cả app với RAILS_ENV=production, nên nó nạp
+# config/settings/production.yml — nơi ba biến này dùng ENV.fetch KHÔNG có
+# default. Đó là chủ ý: thiếu ở runtime thì app phải chết ngay chứ không được
+# chạy với bucket rỗng. Nhưng lúc build thì chưa có giá trị thật, nên phải đưa
+# giá trị giả vào, đúng khuôn SECRET_KEY_BASE_DUMMY mà Rails dùng cho cùng
+# loại vấn đề.
+#
+# Giá trị giả KHÔNG lọt vào asset: asset không có ERB, và config.asset_host
+# không trỏ vào CDN (xem config/environments/production.rb). Photos::ThumbnailUrl
+# dựng URL ở runtime từ cdn_host thật.
+#
+# Thêm biến ENV.fetch không default vào production.yml thì phải thêm cả vào đây.
+RUN SECRET_KEY_BASE_DUMMY=1 \
+    S3_BUCKET_ORIGINALS=dummy-build \
+    S3_BUCKET_DERIVATIVES=dummy-build \
+    CDN_HOST=https://dummy-build.invalid \
+    ./bin/rails assets:precompile
 
 
 

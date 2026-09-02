@@ -1,9 +1,10 @@
 #!/bin/bash
-# Chuẩn bị một EC2 t4g.small trắng (Ubuntu 24.04 arm64) để Kamal deploy vào.
+# Chuẩn bị một EC2 t4g.small trắng (arm64) để Kamal deploy vào.
+# Nhận cả Amazon Linux 2023 (dnf, ec2-user) và Ubuntu 24.04 (apt, ubuntu).
 # Chạy MỘT LẦN, bằng sudo, ngay sau khi tạo instance:
 #
-#   scp infra/ec2/bootstrap.sh ubuntu@<EIP>:/tmp/
-#   ssh ubuntu@<EIP> 'sudo bash /tmp/bootstrap.sh'
+#   scp infra/ec2/bootstrap.sh ec2-user@<IP>:/tmp/
+#   ssh ec2-user@<IP> 'sudo bash /tmp/bootstrap.sh'
 #
 # Idempotent — chạy lại không phá gì, dùng được sau khi thay instance.
 #
@@ -26,7 +27,20 @@ SWAP_FILE=/swapfile
 SWAP_SIZE_MB=2048
 DATA_DIR=/var/lib/travelog/postgres
 BACKUP_DIR=/var/lib/travelog/backups
-DEPLOY_USER=ubuntu
+
+# Nhận distro qua package manager thay vì đọc /etc/os-release: chỉ hai nhánh
+# này khác nhau (cách cài Docker và tên user mặc định), không cần chi tiết hơn.
+if command -v dnf >/dev/null 2>&1; then
+  PKG=dnf
+  DEPLOY_USER="${DEPLOY_USER:-ec2-user}"   # Amazon Linux 2023
+elif command -v apt-get >/dev/null 2>&1; then
+  PKG=apt
+  DEPLOY_USER="${DEPLOY_USER:-ubuntu}"     # Ubuntu
+else
+  echo "Không nhận ra distro (không có dnf lẫn apt-get)." >&2
+  exit 1
+fi
+echo "Distro: $PKG, deploy user: $DEPLOY_USER"
 
 echo "==> 1/6 swap ${SWAP_SIZE_MB}MB"
 if ! swapon --show=NAME --noheadings | grep -qx "$SWAP_FILE"; then
@@ -56,17 +70,25 @@ sysctl --quiet --system
 
 echo "==> 3/6 Docker"
 if ! command -v docker >/dev/null 2>&1; then
-  apt-get update -qq
-  apt-get install -y -qq ca-certificates curl gnupg
-  install -m 0755 -d /etc/apt/keyrings
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
-    | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-  chmod a+r /etc/apt/keyrings/docker.gpg
-  echo "deb [arch=arm64 signed-by=/etc/apt/keyrings/docker.gpg] \
+  if [[ $PKG == dnf ]]; then
+    # AL2023 có docker trong repo chính thức của Amazon, khỏi thêm repo ngoài.
+    dnf install -y -q docker
+    # cronie không có sẵn trong AMI tối giản, mà bước 6 cần cron.
+    dnf install -y -q cronie || true
+    systemctl enable --now crond 2>/dev/null || true
+  else
+    apt-get update -qq
+    apt-get install -y -qq ca-certificates curl gnupg
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+      | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+    echo "deb [arch=arm64 signed-by=/etc/apt/keyrings/docker.gpg] \
 https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
-    >/etc/apt/sources.list.d/docker.list
-  apt-get update -qq
-  apt-get install -y -qq docker-ce docker-ce-cli containerd.io
+      >/etc/apt/sources.list.d/docker.list
+    apt-get update -qq
+    apt-get install -y -qq docker-ce docker-ce-cli containerd.io
+  fi
 fi
 usermod -aG docker "$DEPLOY_USER"
 
@@ -75,6 +97,7 @@ echo "==> 4/6 daemon.json"
 # accessory postgres. Container app có khai riêng trong config/deploy.yml và
 # giá trị ở đó thắng file này.
 # live-restore: container sống qua lần restart dockerd (ví dụ khi apt nâng cấp).
+install -d -m 0755 /etc/docker
 cat >/etc/docker/daemon.json <<'DAEMON'
 {
   "log-driver": "json-file",
@@ -94,14 +117,20 @@ install -d -m 0750 "$BACKUP_DIR"
 echo "==> 6/6 dọn image cũ hằng tuần"
 # Kamal giữ lại image của các bản deploy trước (retain_containers: 2).
 # Không dọn thì đĩa 30 GB đầy sau vài chục lần deploy.
-cat >/etc/cron.weekly/travelog-docker-prune <<'CRON'
+#
+# Dùng /etc/cron.d với lịch tường minh thay vì /etc/cron.weekly: thư mục đó
+# không có sẵn trên AMI Amazon Linux tối giản.
+install -d -m 0755 /usr/local/bin
+cat >/usr/local/bin/travelog-docker-prune <<'PRUNE'
 #!/bin/sh
 # Chỉ xoá image không container nào dùng. --volumes KHÔNG được bật:
 # nó sẽ xoá dữ liệu Postgres nếu sau này chuyển sang named volume.
 /usr/bin/docker image prune --all --force --filter "until=168h" >/dev/null 2>&1
 /usr/bin/docker builder prune --force >/dev/null 2>&1
-CRON
-chmod +x /etc/cron.weekly/travelog-docker-prune
+PRUNE
+chmod +x /usr/local/bin/travelog-docker-prune
+echo '30 20 * * 0 root /usr/local/bin/travelog-docker-prune' >/etc/cron.d/travelog-docker-prune
+chmod 0644 /etc/cron.d/travelog-docker-prune
 
 echo
 echo "Xong. Kiểm tra:"

@@ -26,15 +26,30 @@ KAMAL_VERSION="${KAMAL_VERSION:-v2.12.0}"
 #                       .env.production (config/storage.yml), không qua
 #                       instance profile — nên account của EC2 không ảnh hưởng.
 #
-# Đặt cố định vào ~/.zshrc nếu không muốn export mỗi lần:
-#   export ECR_PROFILE=travelog-compute
+# Ghi đè bằng env khi cần: ECR_PROFILE=khac bin/kamal deploy
 ECR_REGION="${ECR_REGION:-ap-southeast-1}"
-ECR_PROFILE="${ECR_PROFILE:-}"
+ECR_PROFILE="${ECR_PROFILE:-ladakh}"
 
-if [[ -z "${SSH_AUTH_SOCK:-}" ]]; then
-  echo "bin/kamal: chưa có ssh-agent. Chạy: ssh-add ~/.ssh/<key>.pem" >&2
+if ! ssh-add -l >/dev/null 2>&1; then
+  echo "bin/kamal: ssh-agent chưa có key nào." >&2
+  echo "  ssh-add --apple-use-keychain /Users/tienanh/Desktop/anhnt_sing_key.pem" >&2
   echo "Kamal trong container không đọc được ~/.ssh của host, nó đi qua agent." >&2
   exit 1
+fi
+
+# Socket nào được mount vào container:
+#
+# Trên macOS KHÔNG dùng được $SSH_AUTH_SOCK. launchd tạo socket đó dưới
+# /private/tmp/com.apple.launchd.*/Listeners, và Docker Desktop không
+# bind-mount được đường dẫn ấy — lỗi thật gặp phải:
+#   error while creating mount source path '/host_mnt/private/tmp/
+#   com.apple.launchd.XXXX/Listeners': operation not supported
+# Docker Desktop bù lại bằng cách expose agent của host ở một đường dẫn cố
+# định bên trong VM của nó, và đó là thứ phải mount.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  AGENT_SOCK="/run/host-services/ssh-auth.sock"
+else
+  AGENT_SOCK="${SSH_AUTH_SOCK:?cần ssh-agent đang chạy}"
 fi
 
 # Token ECR phải lấy Ở ĐÂY: image ghcr.io/basecamp/kamal không có AWS CLI,
@@ -61,9 +76,14 @@ if [[ -z "${KAMAL_REGISTRY_PASSWORD:-}" ]]; then
   fi
 fi
 
-exec docker run --rm -it \
+# -t chỉ khi thật sự có TTY: `kamal console` cần nó, còn chạy trong script
+# hoặc CI thì docker báo "the input device is not a TTY" và chết.
+tty_args=(--interactive)
+[[ -t 0 && -t 1 ]] && tty_args+=(--tty)
+
+exec docker run --rm "${tty_args[@]}" \
   --volume "${PWD}:/workdir" \
-  --volume "${SSH_AUTH_SOCK}:/ssh-agent" \
+  --volume "${AGENT_SOCK}:/ssh-agent" \
   --volume /var/run/docker.sock:/var/run/docker.sock \
   --env SSH_AUTH_SOCK=/ssh-agent \
   --env "KAMAL_REGISTRY_PASSWORD=${KAMAL_REGISTRY_PASSWORD:-}" \

@@ -24,10 +24,15 @@ Rails.application.configure do
   # Ảnh gốc lên S3, direct upload từ trình duyệt (config/storage.yml).
   config.active_storage.service = :originals
 
-  # TLS được terminate ở kamal-proxy (config/deploy.yml → proxy.ssl), Puma chỉ
-  # thấy HTTP. Ba dòng này đi liền một khối:
-  config.assume_ssl = true
-  config.force_ssl  = true
+  # Một nguồn sự thật duy nhất: app_protocol (APP_PROTOCOL trong
+  # config/deploy.yml). https → kamal-proxy terminate TLS và Puma chỉ thấy
+  # HTTP, nên cần assume_ssl để Rails không tự chuyển hướng vòng vo. http →
+  # đang truy cập bằng IP, bật force_ssl là redirect vào một cổng 443 không
+  # có gì phục vụ, tức app chết hẳn.
+  serve_over_ssl = config.settings.app_protocol == "https"
+
+  config.assume_ssl = serve_over_ssl
+  config.force_ssl  = serve_over_ssl
 
   # /up phải trả 200 qua HTTP: kamal-proxy healthcheck gọi thẳng vào container,
   # không qua TLS. Thiếu dòng này thì force_ssl trả 301 và deploy nào cũng fail.

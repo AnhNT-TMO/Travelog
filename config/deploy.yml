@@ -29,20 +29,35 @@
 
 service: travelog
 
-# <ACCOUNT_ID> phải khớp registry.server bên dưới.
 image: travelog
 
 servers:
   web:
-    - <EC2_ELASTIC_IP> # SỬA: Elastic IP của instance
+    - 18.139.214.198
 
 proxy:
-  # kamal-proxy terminate TLS bằng Let's Encrypt. Cần cổng 80 + 443 mở và
-  # bản ghi A của host trỏ đúng Elastic IP TRƯỚC khi deploy, nếu không
-  # ACME HTTP-01 sẽ fail và app không lên.
-  ssl: true
-  host: travelog.com # SỬA: phải khớp APP_HOST dưới env.clear
-  app_port: 80 # Thruster nghe cổng 80 trong container
+  # TRUY CẬP BẰNG IP, KHÔNG CÓ TLS.
+  #
+  # ssl: false là bắt buộc khi dùng IP: Let's Encrypt không cấp chứng chỉ cho
+  # địa chỉ IP, nên bật ssl sẽ làm ACME thất bại và app không bao giờ lên.
+  #
+  # Không khai `host` → kamal-proxy nhận mọi Host header và đẩy hết vào app.
+  # Đó đúng là cái mình cần khi gõ thẳng IP vào trình duyệt.
+  #
+  # Truy cập: http://18.139.214.198  (cổng 80, KHÔNG phải 3000 — xem chú thích
+  # app_port bên dưới). Muốn cổng vào là 3000 thì thêm khối `run` vào đây:
+  #   run:
+  #     http_port: 3000
+  # rồi `bin/kamal proxy reboot`. Lúc đó phải mở cổng 3000 trong security group
+  # và origin CORS phải là "http://18.139.214.198:3000" — cổng là một phần của
+  # origin. (`kamal proxy boot_config` đã deprecated ở 2.12, đừng dùng.)
+  #
+  # Có domain rồi thì đảo lại: ssl: true + host: <domain>, và đặt
+  # APP_PROTOCOL: https ở env.clear. Không cần sửa gì khác.
+  ssl: false
+  # Cổng của app BÊN TRONG container (Thruster nghe 80 ở đó), không phải cổng
+  # người dùng gõ. 3000 chỉ là chuyện của docker compose ở máy local.
+  app_port: 80
   healthcheck:
     path: /up # config/routes.rb:59
     interval: 5
@@ -57,7 +72,7 @@ registry:
   #   server: ghcr.io
   #   username: <github-user>
   #   password: - KAMAL_REGISTRY_PASSWORD   (personal access token, scope write:packages)
-  server: <COMPUTE_ACCOUNT_ID>.dkr.ecr.ap-southeast-1.amazonaws.com # SỬA
+  server: 757876532307.dkr.ecr.ap-southeast-1.amazonaws.com
   username: AWS
   password:
     - KAMAL_REGISTRY_PASSWORD
@@ -70,7 +85,9 @@ builder:
 asset_path: /rails/public/assets
 
 ssh:
-  user: ec2-user # Ubuntu 24.04 arm64. Amazon Linux thì là ec2-user.
+  # Amazon Linux 2023 arm64. Ubuntu thì đổi thành `ubuntu`.
+  # infra/ec2/bootstrap.sh tự nhận ra distro, không cần sửa gì ở đó.
+  user: ec2-user
 
 # Đĩa 30 GB không nhiều. Giữ 2 bản để rollback được, prune phần còn lại
 # (infra/ec2/bootstrap.sh cài cron dọn image hằng tuần).
@@ -106,19 +123,24 @@ env:
     POSTGRES_DB: location_project_production
     POSTGRES_USER: location_project
 
-    # --- Giá trị lấy từ `terraform output` (infra/terraform/outputs.tf) ---
+    # --- Host của chính app ---
+    # Đang truy cập bằng IP nên APP_PROTOCOL là http. Hai biến này quyết định
+    # URL trong mail và — qua config/environments/production.rb — có bật
+    # force_ssl hay không. Đổi sang https là đổi cả hai cùng lúc.
+    APP_HOST: 18.139.214.198
+    APP_PROTOCOL: http
+
+    # --- Giá trị của stack ảnh, account "media" (infra/terraform) ---
     # Không phải secret nên nằm trong git, đúng quy ước cấu hình của repo.
-    # Tất cả đều thuộc account "media", không phải account chạy EC2 này.
-    APP_HOST: travelog.com # SỬA
-    CDN_HOST: https://<dxxxx>.cloudfront.net # SỬA: terraform output cdn_host
-    # Thứ tự tên là {name_prefix}-{vai trò}-{environment}, xem
-    # infra/terraform/s3.tf → locals. Lấy chính xác bằng `terraform output`.
-    S3_BUCKET_ORIGINALS: travelog-originals-production # SỬA
-    S3_BUCKET_DERIVATIVES: travelog-derivatives-production # SỬA
+    # Khớp workspace `production` của terraform, đã apply.
+    CDN_HOST: https://d18cfkqnlgph1i.cloudfront.net
+    S3_BUCKET_ORIGINALS: travelog-originals-production
+    S3_BUCKET_DERIVATIVES: travelog-derivatives-production
     # Region của BUCKET (account media). Region của ECR là biến ECR_REGION
     # riêng trong bin/kamal — hai thứ khác nhau, có thể khác region.
     AWS_REGION: ap-southeast-1
-    MAILER_SENDER: no-reply@travelog.com # SỬA
+    # Chỉ là địa chỉ From. SMTP chưa cấu hình nên chưa gửi được mail thật.
+    MAILER_SENDER: no-reply@travelog.com
 
     GOOGLE_MAPS_MAP_ID: "" # SỬA nếu dùng Advanced Markers
     RAILS_LOG_LEVEL: info
@@ -134,7 +156,7 @@ env:
 accessories:
   db:
     image: postgres:17-alpine
-    host: <EC2_ELASTIC_IP> # SỬA: cùng IP với servers.web
+    host: 18.139.214.198 # cùng IP với servers.web
     # KHÔNG publish cổng ra host. App nói chuyện với nó qua network `kamal`
     # bằng tên container; psql/pg_dump thì `docker exec` vào (xem README).
     env:
