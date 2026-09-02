@@ -1,6 +1,3 @@
-# Môi trường test. Giá trị cố định, KHÔNG đọc ENV: `docker compose` bơm .env
-# vào process nên `ENV["X"] ||= ...` là no-op và test sẽ phụ thuộc máy chạy —
-# lỗi này đã xảy ra một lần với CDN_HOST (xem HANDOFF).
 test:
   app_host: www.example.com
   app_protocol: http

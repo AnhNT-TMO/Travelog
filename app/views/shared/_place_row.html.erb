@@ -1,10 +1,3 @@
-<%# Dòng compact cho panel hẹp / trang Quanh đây — mockup D4, M1.
-    locals: user_place, active: false, index: nil
-
-    index là số hiệu khớp với số in trên pin bản đồ (Quanh đây). Không truyền
-    thì dòng không có số — các trang khác không có bản đồ để đối chiếu.
-    data-place-row-id là mối nối để nearby_map_controller sáng đúng dòng khi
-    bấm vào pin; đổi tên nó thì việc đó im lặng ngừng hoạt động. %>
 <% active = local_assigns.fetch(:active, false) %>
 <% index = local_assigns.fetch(:index, nil) %>
 
@@ -18,7 +11,6 @@
                  <%= user_place.visited? ? "bg-primary" : "bg-ochre" %>"><%= index %></span>
   <% end %>
   <div class="h-[46px] w-[46px] flex-none overflow-hidden rounded-md">
-    <%# Pill trạng thái không đọc được ở 46px — trạng thái đã nằm ở dòng phụ. %>
     <%= render "shared/place_media", user_place: user_place, ratio: "aspect-square", sizes: "46px", show_status: false %>
   </div>
 

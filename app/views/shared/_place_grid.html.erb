@@ -1,4 +1,6 @@
-<%# locals: user_places %>
+<%# locals: user_places, pagination (optional) %>
+<% pagination = local_assigns.fetch(:pagination, nil) %>
+
 <%= turbo_frame_tag "place_list" do %>
   <% if user_places.any? %>
     <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4">
@@ -11,5 +13,23 @@
                icon: "◎",
                title: t(".empty_title"),
                description: t(".empty_description") %>
+  <% end %>
+
+  <% if pagination && pagination[:total_pages] > 1 %>
+    <nav class="mt-4 flex items-center justify-center gap-3" aria-label="<%= t(".pagination_label") %>">
+      <% if pagination[:page] > 1 %>
+        <%= link_to t(".previous_page"),
+              places_path(pagination[:path_params].merge(page: pagination[:page] - 1)),
+              class: "btn btn--outline btn--sm",
+              data: { turbo_frame: "place_list", turbo_action: "advance" } %>
+      <% end %>
+      <span class="num text-xs text-muted"><%= t(".page_summary", page: pagination[:page], total: pagination[:total_pages]) %></span>
+      <% if pagination[:page] < pagination[:total_pages] %>
+        <%= link_to t(".next_page"),
+              places_path(pagination[:path_params].merge(page: pagination[:page] + 1)),
+              class: "btn btn--outline btn--sm",
+              data: { turbo_frame: "place_list", turbo_action: "advance" } %>
+      <% end %>
+    </nav>
   <% end %>
 <% end %>

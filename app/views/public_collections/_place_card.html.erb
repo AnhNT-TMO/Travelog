@@ -1,13 +1,3 @@
-<%# Card cho TRANG PUBLIC. Cố ý KHÔNG dùng lại shared/_place_card và
-    shared/_place_media — cả hai đều render dữ liệu riêng tư (source_url,
-    priority, trạng thái review, my_rating). Plan §23.4.
-
-    ĐƯỢC hiện: label, ảnh, district/city, tag, status, số lần đến.
-    KHÔNG hiện: source_url · google_review_state · reviewed_at ·
-                review_body_draft · my_rating · priority · lat/lng · distance ·
-                visits.companions · visits.note · note (trừ khi share_notes).
-
-    locals: user_place, share_notes %>
 <% place = user_place.place %>
 <% photo = user_place.cover_photo %>
 

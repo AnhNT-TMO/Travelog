@@ -1,7 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Slider bán kính. Debounce 300ms rồi submit form vào Turbo Frame — không
-// reload trang (plan §9.3).
 export default class extends Controller {
   static targets = ["input", "output"]
 
@@ -13,7 +11,6 @@ export default class extends Controller {
     clearTimeout(this.timer)
   }
 
-  // Cập nhật nhãn ngay, không đợi debounce.
   preview() {
     this.#renderLabel()
     clearTimeout(this.timer)

@@ -1,7 +1,5 @@
 <% content_for :title, "#{@user_place.label} · #{t("app.name")}" %>
 <% content_for :topbar_actions do %>
-  <%# Pill lặp lại ngay trong panel bên dưới — trên mobile giấu đi để topbar
-      không xuống dòng. %>
   <span class="hidden sm:inline-flex <%= status_pill_class(@user_place) %>"><%= status_label(@user_place) %></span>
   <% if @user_place.visited? %>
     <span class="hidden sm:inline-flex <%= review_pill_class(@user_place) %>"><%= review_label(@user_place) %></span>
@@ -13,9 +11,6 @@
 <% end %>
 
 <div data-controller="sheet">
-  <%# Bố cục D3: gallery + các lần đến ở cột trái, chi tiết + kit review ở panel
-      phải. Trên mobile grid sập thành một cột và thứ tự nguồn (gallery → chi
-      tiết → các lần đến) chính là thứ tự của M3 — một view, hai breakpoint. %>
   <div class="mx-auto flex max-w-[1180px] flex-col gap-3.5
               lg:grid lg:grid-cols-[minmax(0,1fr)_372px] lg:grid-rows-[auto_auto] lg:items-start">
 

@@ -1,6 +1,3 @@
-# Cac gia tri nay di thang vao bien moi truong cua Rails —
-# xem config/settings/<env>.yml.
-
 output "cdn_host" {
   description = "CDN_HOST. Khong co dau / o cuoi."
   value       = "https://${aws_cloudfront_distribution.derivatives.domain_name}"

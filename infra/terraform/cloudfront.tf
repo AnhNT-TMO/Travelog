@@ -1,6 +1,3 @@
-# CloudFront dung truoc bucket derivatives. Day chinh la CDN_HOST cua Rails.
-#
-# Bucket khong public: OAC ky request bang SigV4, chi CloudFront doc duoc.
 resource "aws_cloudfront_origin_access_control" "derivatives" {
   name                              = "${var.name_prefix}-derivatives-${var.environment}"
   origin_access_control_origin_type = "s3"
@@ -8,8 +5,6 @@ resource "aws_cloudfront_origin_access_control" "derivatives" {
   signing_protocol                  = "sigv4"
 }
 
-# CachingOptimized — derivative la bat bien, key da mang size trong duong dan
-# nen khong bao gio can invalidate.
 data "aws_cloudfront_cache_policy" "optimized" {
   name = "Managed-CachingOptimized"
 }
@@ -34,8 +29,6 @@ resource "aws_cloudfront_distribution" "derivatives" {
     compress               = true
   }
 
-  # 404 khi Lambda chua sinh xong derivative la trang thai BINH THUONG trong
-  # 1-3 giay dau. Cache ngan de anh hien ra ngay khi co, thay vi ket 404 lai.
   custom_error_response {
     error_code            = 403
     error_caching_min_ttl = 5
@@ -57,7 +50,6 @@ resource "aws_cloudfront_distribution" "derivatives" {
   }
 }
 
-# Chi CloudFront distribution nay duoc doc bucket derivatives.
 data "aws_iam_policy_document" "derivatives_cloudfront" {
   statement {
     sid       = "AllowCloudFrontRead"

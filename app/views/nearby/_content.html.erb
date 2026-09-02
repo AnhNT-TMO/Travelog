@@ -1,5 +1,3 @@
-<%# Toàn bộ state thay đổi theo bán kính/tâm. Form target frame này để Turbo
-    thay đồng thời controls, circle, markers và danh sách. %>
 <%= turbo_frame_tag "nearby_content" do %>
   <% base_params = { controller: "nearby", action: "index", lat: @lat, lng: @lng,
                      center_name: @center_name, radius: @radius_m, state: @state } %>

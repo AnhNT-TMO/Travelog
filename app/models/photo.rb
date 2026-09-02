@@ -3,8 +3,6 @@ class Photo < ApplicationRecord
   belongs_to :user_place
   belongs_to :user
 
-  # Active Storage CHỈ dùng cho upload plumbing. Không gọi .variant() ở bất kỳ
-  # đâu — Lambda sinh thumbnail, Rails không resize (plan §11.2).
   has_one_attached :file
 
   before_validation :copy_key_from_blob, on: :create
@@ -16,7 +14,6 @@ class Photo < ApplicationRecord
   scope :ordered,  -> { order(:position, :id) }
   scope :selected, -> { where(selected_for_google: true) }
 
-  # URL derivative gom theo user_place_id — cũng là id trên route /places/:id.
   def thumb_url(size = Photos::ThumbnailUrl::THUMB)
     Photos::ThumbnailUrl.call(s3_key, size, place_id: user_place_id)
   end
@@ -34,7 +31,13 @@ class Photo < ApplicationRecord
   end
 
   def touch_counters
-    user_place.update_columns(photos_count: user_place.photos.count)
-    visit&.update_columns(photos_count: visit.photos.count)
+    sync_photos_count(user_place)
+    sync_photos_count(visit)
+  end
+
+  def sync_photos_count(record)
+    return if record.nil? || record.destroyed?
+
+    record.update_columns(photos_count: record.photos.count)
   end
 end

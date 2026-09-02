@@ -12,9 +12,6 @@ terraform {
     }
   }
 
-  # State ở local là đủ cho một người dùng. Nhiều người chạy chung thì đổi sang
-  # backend "s3" có DynamoDB lock trước khi apply lần thứ hai.
-  # backend "s3" {}
 }
 
 provider "aws" {

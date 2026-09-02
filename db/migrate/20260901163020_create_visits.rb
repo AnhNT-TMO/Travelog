@@ -1,4 +1,3 @@
-# Mỗi lần đến là một bản ghi riêng. Không có bảng trips (plan D17).
 class CreateVisits < ActiveRecord::Migration[8.1]
   def change
     create_table :visits do |t|
@@ -7,7 +6,7 @@ class CreateVisits < ActiveRecord::Migration[8.1]
       t.text     :note
       t.string   :companions
       t.integer  :photos_count, null: false, default: 0
-      t.integer  :source, null: false, default: 0   # 0 manual 1 exif_import
+      t.integer  :source, null: false, default: 0
 
       t.timestamps
     end

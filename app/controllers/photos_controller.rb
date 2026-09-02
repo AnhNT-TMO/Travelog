@@ -1,11 +1,7 @@
-# Ảnh của một địa điểm — thêm ngoài luồng check-in, chọn cover, chọn ảnh gửi
-# kèm review Google.
 class PhotosController < ApplicationController
   before_action :set_user_place
   before_action :set_photo, only: [ :destroy, :make_cover, :toggle_google_selection ]
 
-  # params[:photos] là mảng signed id của blob — ảnh đã lên S3 bằng direct
-  # upload trước khi form được submit.
   def create
     @user_place.attach_photos!(params[:photos], user: current_user)
 

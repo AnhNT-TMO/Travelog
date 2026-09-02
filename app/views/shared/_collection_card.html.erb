@@ -1,7 +1,4 @@
-<%# Card bộ sưu tập ở trang chủ — mockup D1. Cover lấy tự động từ ảnh mới nhất
-    trong nhóm, không cần người dùng chọn.
-    locals: tag, counts %>
-<% cover = tag.user_places.with_card_data.order(created_at: :desc).detect { |up| up.cover_photo.present? } %>
+<%# locals: tag, counts, cover %>
 
 <%= link_to places_tag_path(tag),
       class: "relative flex aspect-[3/2] cursor-pointer flex-col justify-end overflow-hidden rounded-lg border border-line no-underline" do %>

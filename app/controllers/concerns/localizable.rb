@@ -1,12 +1,3 @@
-# Thứ tự ưu tiên khi chọn ngôn ngữ:
-#   1. ?locale=  — người dùng vừa bấm nút đổi ngôn ngữ (và được ghi nhớ lại)
-#   2. users.locale — lựa chọn đã lưu của người đang đăng nhập
-#   3. session — dùng cho trang public, nơi không có current_user
-#   4. Accept-Language của browser
-#   5. I18n.default_locale (:vi)
-#
-# Locale KHÔNG nằm trong URL: link chia sẻ /s/:token phải giữ nguyên hình dạng,
-# và app nội bộ không cần URL riêng cho từng ngôn ngữ.
 module Localizable
   extend ActiveSupport::Concern
 
@@ -38,12 +29,9 @@ module Localizable
 
   def remember_locale(locale)
     session[:locale] = locale.to_s
-    # Ghi vào user để giữ lựa chọn qua nhiều thiết bị; bỏ qua nếu chưa đăng nhập.
     current_user&.update_column(:locale, locale.to_s) if current_user&.locale != locale.to_s
   end
 
-  # Đủ dùng cho 2 ngôn ngữ: lấy tag đầu tiên trong Accept-Language mà app hỗ trợ.
-  # Bỏ qua q-value vì browser đã xếp sẵn theo thứ tự ưu tiên.
   def locale_from_header
     header = request.env["HTTP_ACCEPT_LANGUAGE"].presence
     return nil if header.nil?

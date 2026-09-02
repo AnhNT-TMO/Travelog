@@ -1,18 +1,15 @@
-# Tag nhiều nhãn (plan D5): một quán vừa "hồ tây" vừa "chill".
-# kind phân biệt khu vực / vibe để trang chủ group được (mockup D1).
 class CreateTags < ActiveRecord::Migration[8.1]
   def change
     create_table :tags do |t|
       t.references :user, null: false, foreign_key: true
       t.string  :name, null: false
       t.string  :slug, null: false
-      t.integer :kind, null: false, default: 0   # 0 area 1 vibe 2 free
+      t.integer :kind, null: false, default: 0
       t.string  :color
       t.integer :position, null: false, default: 0
       t.integer :user_places_count, null: false, default: 0
 
-      # D18 — chia sẻ read-only. Xem plan §23.
-      t.integer  :visibility, null: false, default: 0   # 0 private_only 1 unlisted
+      t.integer  :visibility, null: false, default: 0
       t.string   :public_token
       t.boolean  :share_notes, null: false, default: false
       t.datetime :shared_at

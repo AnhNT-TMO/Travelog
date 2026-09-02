@@ -1,7 +1,5 @@
 require "test_helper"
 
-# Quy tắc phân quyền duy nhất của app: MỌI truy vấn bắt đầu từ current_user
-# (plan §14.3). Test này là cái chốt cho quy tắc đó.
 class AuthorizationTest < ActionDispatch::IntegrationTest
   setup do
     @alice = create(:user)

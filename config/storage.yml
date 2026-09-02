@@ -1,17 +1,6 @@
 <%
   s3 = Rails.application.config.settings.s3
 %>
-# Hai bucket, hai vai trò khác nhau:
-#   originals    — trình duyệt PUT thẳng vào đây bằng presigned URL.
-#   derivatives  — Lambda ghi bản 400/1200 webp vào đây, CloudFront đọc ra.
-#
-# Rails chỉ ghi vào `originals` theo `{place-id}/{image-name}.{ext}`. Nó KHÔNG
-# đọc `derivatives` qua Active Storage — Photos::ThumbnailUrl dựng URL thumb và
-# preview tất định. Thiếu derivative thì UI hiện icon lỗi, không đọc original.
-#
-# Mọi môi trường đều dùng S3 thật, kể cả development. Không còn MinIO: bucket
-# giả lập không tái hiện được CORS preflight, chính sách IAM hay hành vi
-# CloudFront — ba thứ hay hỏng nhất, và hỏng theo cách chỉ thấy khi lên thật.
 test:
   service: Disk
   root: <%= Rails.root.join("tmp/storage") %>

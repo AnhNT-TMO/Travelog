@@ -1,7 +1,4 @@
 module Google
-  # Chuẩn hoá payload Place Details (New) thành contract nhỏ dùng chung cho
-  # JSON trả về trình duyệt và bản ghi Place. Payload gốc vẫn được giữ trong
-  # cached_payload theo TTL hiện có để có thể đối chiếu khi Google đổi shape.
   class PlaceSnapshot
     CAFE_TYPES = %w[cafe coffee_shop].freeze
     FOOD_TYPES = %w[restaurant food bakery bar meal_delivery meal_takeaway].freeze

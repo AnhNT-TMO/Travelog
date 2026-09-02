@@ -1,7 +1,3 @@
-<%# Bộ kit review Google — mockup D3.
-    KHÔNG có API nào đăng review lên Google Maps và automation vi phạm ToS
-    (D12). App chỉ soạn nội dung, gói ảnh, mở deep link; người dùng tự tick.
-    locals: user_place %>
 <% place  = user_place.place %>
 <% photos = user_place.photos.ordered %>
 
@@ -79,7 +75,6 @@
     </div>
   <% end %>
 
-  <%# Deep link writereview hoạt động không nhất quán theo vùng. %>
   <span class="text-2xs text-muted">
     <%= t(".fallback_prefix") %>
     <%= link_to t(".fallback_link"), Google::ReviewLink.fallback_for(place),

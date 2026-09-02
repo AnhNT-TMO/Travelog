@@ -1,15 +1,21 @@
-# Chi tiết + CRUD địa điểm — mockup D3 / M3 / M5.
-# Panel bên phải (desktop) và trang riêng (mobile) dùng CHUNG một partial.
 class PlacesController < ApplicationController
+  PER_PAGE = 20
+
   before_action :set_user_place, only: [ :show, :edit, :update, :destroy, :toggle_priority ]
 
   def index
     @query = params[:q].to_s.strip
-    @user_places = scoped_places.with_card_data.order(created_at: :desc)
-    @user_places = @user_places.where(place: Place.name_matching(@query)) if @query.present?
+    user_places = scoped_places.with_card_data.order(created_at: :desc, id: :desc)
+    user_places = user_places.where(place: Place.name_matching(@query)) if @query.present?
+
+    @total_places = user_places.count
+    @total_pages = [ (@total_places.to_f / PER_PAGE).ceil, 1 ].max
+    @page = params[:page].to_i.clamp(1, @total_pages)
+    @user_places = user_places.offset((@page - 1) * PER_PAGE).limit(PER_PAGE).to_a
+    @pagination = pagination
 
     render partial: "shared/place_grid",
-           locals: { user_places: @user_places } if turbo_frame_request?
+           locals: { user_places: @user_places, pagination: @pagination } if turbo_frame_request?
   end
 
   def show
@@ -53,8 +59,6 @@ class PlacesController < ApplicationController
     end
   end
 
-  # Chỉ xoá quan hệ của tôi với địa điểm. Place là dữ liệu khách quan, dùng
-  # chung giữa nhiều user — xoá nó sẽ cắt dữ liệu của người khác.
   def destroy
     @user_place.destroy!
     redirect_to root_path, notice: t(".destroyed"), status: :see_other
@@ -78,7 +82,7 @@ class PlacesController < ApplicationController
 
   def user_place_params
     params.require(:user_place).permit(
-      :nickname, :note, :status, :source_url, :my_rating, :priority,
+      :nickname, :note, :source_url, :my_rating, :priority,
       place_attributes: [ :id, :google_place_id, :display_name, :cached_address, :district, :city, :lat, :lng, :place_type ]
     )
   end
@@ -109,10 +113,16 @@ class PlacesController < ApplicationController
     @user_place.errors.add(:place, t("api.places.unavailable"))
   end
 
-  # Tag phải lọc lại qua scoped_tags: id trong form là dữ liệu người dùng gửi
-  # lên, gán thẳng sẽ cho gắn tag của người khác.
   def submitted_tag_ids
     ids = Array(params.dig(:user_place, :tag_ids)).reject(&:blank?)
     scoped_tags.where(id: ids).ids
+  end
+
+  def pagination
+    {
+      page: @page,
+      total_pages: @total_pages,
+      path_params: { q: @query.presence }.compact
+    }
   end
 end

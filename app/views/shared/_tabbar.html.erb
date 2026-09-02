@@ -1,5 +1,3 @@
-<%# Bottom nav mobile (< lg). FAB ở giữa vì "thêm địa điểm" là hành động làm
-    nhiều nhất và phải nằm trong tầm ngón cái. %>
 <nav class="flex flex-none items-center justify-around border-t border-line bg-surface px-1 pb-2 pt-1.5 lg:hidden">
   <%= render "shared/tab_item", label: t("nav.collections"), icon: "◎", path: root_path, current: current_page?(root_path) %>
   <%= render "shared/tab_item", label: t("nav.nearby"), icon: "⌖", path: nearby_path, current: current_page?(nearby_path) %>

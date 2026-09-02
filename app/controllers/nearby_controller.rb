@@ -1,6 +1,3 @@
-# Quanh đây — mockup D4. Server là nguồn sự thật: kéo pin trung tâm hay đổi
-# slider đều submit về đây, cả danh sách lẫn pin render lại từ kết quả Postgres.
-# Không lọc bằng JS phía client, nếu không số đếm sẽ lệch với pin (plan §9.5).
 class NearbyController < ApplicationController
   def index
     center = resolve_center
@@ -21,9 +18,9 @@ class NearbyController < ApplicationController
     @counts      = @query.counts
     @map_points  = @query.map_points(@user_places)
 
-    # Nơi thiếu toạ độ không bao giờ lọt vào kết quả radius — phải nói ra
-    # thay vì im lặng bỏ qua (plan §9.4).
     @missing_coords_count = @query.places_without_coords.distinct.count
+
+    remember_nearby_center(@lat, @lng) if explicit_center?
 
     render partial: "nearby/content" if turbo_frame_request?
   end
@@ -31,14 +28,18 @@ class NearbyController < ApplicationController
   private
 
   def resolve_center
-    return { lat: params[:lat], lng: params[:lng] } if params[:lat].present? && params[:lng].present?
+    return { lat: params[:lat], lng: params[:lng] } if explicit_center?
 
     { lat: nil, lng: nil }
   end
 
+  def explicit_center?
+    params[:lat].present? && params[:lng].present?
+  end
+
   def center_name
     return params[:center_name] if params[:center_name].present?
-    return t("nearby.index.custom_center") if params[:lat].present? && params[:lng].present?
+    return t("nearby.index.custom_center") if explicit_center?
 
     t("nearby.index.center_default")
   end

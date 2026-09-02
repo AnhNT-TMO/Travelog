@@ -1,12 +1,9 @@
 module Geo
-  # Nguồn sự thật duy nhất cho radius filter (plan §9.2).
-  # Đừng dùng geocoder's `near` — nó sinh SQL haversine không dùng index.
   class RadiusQuery
     MIN_RADIUS_M = 100
     MAX_RADIUS_M = 50_000
     DEFAULT_RADIUS_M = 1_800
 
-    # Hồ Gươm — tâm mặc định khi chưa chọn điểm nào
     DEFAULT_LAT = 21.0287
     DEFAULT_LNG = 105.8524
 
@@ -38,15 +35,12 @@ module Geo
       }
     end
 
-    # Nơi nhập tay có thể thiếu lat/lng → không bao giờ xuất hiện trong kết quả
-    # radius. Trang nearby phải cảnh báo, không im lặng bỏ qua (plan §9.4).
     def places_without_coords
       @user.user_places.joins(:place).where(places: { lat: nil }).or(
         @user.user_places.joins(:place).where(places: { lng: nil })
       )
     end
 
-    # Payload cho map: CHỈ id/lat/lng/name/status. Đừng đẩy cả object (plan §9.5).
     def map_points(user_places)
       user_places.map do |user_place|
         {

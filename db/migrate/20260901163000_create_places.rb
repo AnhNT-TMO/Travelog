@@ -1,19 +1,14 @@
-# places = dữ liệu KHÁCH QUAN về một địa điểm, dùng chung mọi user, dedupe theo
-# google_place_id. Không bao giờ nhét trạng thái của người dùng vào đây — chỗ đó
-# là user_places (plan §5.1).
 class CreatePlaces < ActiveRecord::Migration[8.1]
   def change
     create_table :places do |t|
       t.string  :google_place_id
       t.string  :display_name, null: false
-      t.integer :place_type, null: false, default: 0    # 0 cafe 1 food 2 sight 3 other
+      t.integer :place_type, null: false, default: 0
 
-      # toạ độ — float8 vì earthdistance nhận float8
       t.float   :lat
       t.float   :lng
-      t.integer :coords_source, null: false, default: 0 # 0 google 1 exif 2 manual
+      t.integer :coords_source, null: false, default: 0
 
-      # snapshot từ Google, refresh khi cần (điều khoản cache: plan §10.4)
       t.string   :cached_name
       t.string   :cached_address
       t.string   :city

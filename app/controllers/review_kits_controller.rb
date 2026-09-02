@@ -1,10 +1,6 @@
-# Bộ kit review Google — plan §12.3.
-# KHÔNG có API đăng review và automation vi phạm ToS: app chỉ soạn nội dung,
-# gói ảnh, mở deep link, rồi để người dùng tự tick "đã đăng".
 class ReviewKitsController < ApplicationController
   before_action :set_user_place
 
-  # Autosave draft từ textarea (debounce ở phía Stimulus).
   def update
     @user_place.update!(review_body_draft: params.require(:user_place).permit(:review_body_draft)[:review_body_draft])
 
@@ -19,8 +15,6 @@ class ReviewKitsController < ApplicationController
     redirect_to place_path(@user_place), notice: t(".marked")
   end
 
-  # Ảnh gốc chứ không phải bản 1600px: Lambda thumbnailer chưa tồn tại nên
-  # derivative chưa được ghi ở đâu cả (HANDOFF mục 5).
   def photos_zip
     photos = @user_place.photos.selected.ordered.select { |photo| photo.file.attached? }
 

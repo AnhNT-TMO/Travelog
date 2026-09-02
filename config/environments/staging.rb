@@ -1,19 +1,14 @@
 require "active_support/core_ext/integer/time"
 
-# Staging = production với log rộng hơn và error page đầy đủ.
-# Mọi khác biệt còn lại nằm ở config/settings/staging.yml, không nằm ở đây —
-# nếu file này bắt đầu phân nhánh theo nghiệp vụ thì đó là dấu hiệu sai chỗ.
 Rails.application.configure do
   config.enable_reloading = false
   config.eager_load = true
 
-  # Khác production: staging là nơi để đọc lỗi, không phải nơi để giấu lỗi.
   config.consider_all_requests_local = true
 
   config.action_controller.perform_caching = true
   config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
 
-  # Ảnh gốc lên S3 (bucket staging, khác production — xem settings/staging.yml).
   config.active_storage.service = :originals
 
   config.assume_ssl = true

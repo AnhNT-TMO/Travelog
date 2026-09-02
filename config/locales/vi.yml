@@ -197,7 +197,6 @@ vi:
       save: Lưu thay đổi
       source_url: Link TikTok / Facebook
       source_url_placeholder: Dán link để sau xem lại
-      status: Trạng thái
       tags: Tag
       tags_hint_html: Chưa có tag phù hợp? %{link}.
       tags_manage: Tạo tag mới
@@ -256,6 +255,10 @@ vi:
     place_grid:
       empty_description: Thêm địa điểm hoặc đổi bộ lọc phía trên.
       empty_title: Chưa có chỗ nào ở đây
+      next_page: Trang sau
+      page_summary: Trang %{page} / %{total}
+      pagination_label: Phân trang địa điểm
+      previous_page: Trang trước
     place_row_list:
       empty_description: Kéo slider rộng ra hoặc đổi điểm trung tâm.
       empty_title: Không có chỗ nào trong bán kính này
@@ -320,8 +323,15 @@ vi:
     places:
       add_place: "＋ Thêm vào nhóm này"
       crumb: Bộ sưu tập
+      distance_sort_excluded:
+        one: "%{count} nơi không có toạ độ (hoặc ở quá xa) nên không nằm trong danh
+          sách này."
+        other: "%{count} nơi không có toạ độ (hoặc ở quá xa) nên không nằm trong danh
+          sách này."
       distance_sort_hint: Sắp theo khoảng cách tính từ điểm trung tâm bạn chọn lần
         cuối ở trang Quanh đây.
+      distance_sort_needs_center: Chưa có điểm trung tâm nào để tính khoảng cách —
+        vào trang Quanh đây chọn một điểm rồi quay lại. Tạm sắp theo mới thêm trước.
       filter_radius: "⌖ Lọc theo bán kính"
     row:
       copy_link: Copy link

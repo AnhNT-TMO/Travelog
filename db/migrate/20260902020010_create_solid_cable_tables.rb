@@ -1,4 +1,3 @@
-# Solid Cable, lấy nguyên từ db/cable_schema.rb. Xem CreateSolidCacheTables.
 class CreateSolidCableTables < ActiveRecord::Migration[8.1]
   def change
     create_table :solid_cable_messages do |t|

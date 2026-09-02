@@ -3,10 +3,6 @@ locals {
   derivatives_bucket = "${var.name_prefix}-derivatives-${var.environment}"
 }
 
-# ---------------------------------------------------------------------------
-# Bucket originals — trinh duyet PUT thang vao day bang presigned URL.
-# Khong bao gio public: CloudFront chi doc bucket derivatives.
-# ---------------------------------------------------------------------------
 resource "aws_s3_bucket" "originals" {
   bucket = local.originals_bucket
 }
@@ -33,16 +29,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "originals" {
 resource "aws_s3_bucket_versioning" "originals" {
   bucket = aws_s3_bucket.originals.id
 
-  # Anh goc la thu duy nhat khong tai tao lai duoc: derivative sinh lai duoc,
-  # anh goc thi khong. Versioning la luoi cuoi cho mot lenh xoa nham.
   versioning_configuration {
     status = "Enabled"
   }
 }
 
-# CORS: khong co block nay thi direct upload chet o preflight, va loi hien ra
-# trong console trinh duyet chu khong o log Rails.
-# ETag phai duoc expose, Active Storage doc no de xac nhan upload thanh cong.
 resource "aws_s3_bucket_cors_configuration" "originals" {
   bucket = aws_s3_bucket.originals.id
 
@@ -70,16 +61,12 @@ resource "aws_s3_bucket_lifecycle_configuration" "originals" {
       storage_class = "STANDARD_IA"
     }
 
-    # Upload dut giua chung de lai phan da tai len va van bi tinh tien.
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
     }
   }
 }
 
-# ---------------------------------------------------------------------------
-# Bucket derivatives — Lambda ghi, CloudFront doc. Khong ai khac cham vao.
-# ---------------------------------------------------------------------------
 resource "aws_s3_bucket" "derivatives" {
   bucket = local.derivatives_bucket
 }
@@ -88,7 +75,7 @@ resource "aws_s3_bucket_public_access_block" "derivatives" {
   bucket = aws_s3_bucket.derivatives.id
 
   block_public_acls       = true
-  block_public_policy     = false # policy cho CloudFront OAC can ghi duoc
+  block_public_policy     = false
   ignore_public_acls      = true
   restrict_public_buckets = false
 }
@@ -103,11 +90,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "derivatives" {
   }
 }
 
-# Khong versioning: derivative sinh lai duoc tu anh goc bat cu luc nao.
-
-# ---------------------------------------------------------------------------
-# S3 -> Lambda trigger
-# ---------------------------------------------------------------------------
 resource "aws_s3_bucket_notification" "originals" {
   bucket = aws_s3_bucket.originals.id
 
@@ -116,7 +98,5 @@ resource "aws_s3_bucket_notification" "originals" {
     events              = ["s3:ObjectCreated:*"]
   }
 
-  # Khong co depends_on thi Terraform tao notification truoc permission va S3
-  # tu choi voi "Unable to validate the following destination configurations".
   depends_on = [aws_lambda_permission.allow_s3]
 }

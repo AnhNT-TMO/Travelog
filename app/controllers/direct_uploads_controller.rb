@@ -1,5 +1,3 @@
-# Direct upload ảnh theo địa điểm. Browser vẫn PUT thẳng lên S3; controller này
-# chỉ tạo Blob trước upload với key có cấu trúc và trả presigned URL.
 class DirectUploadsController < ApplicationController
   include ActiveStorage::SetCurrent
 

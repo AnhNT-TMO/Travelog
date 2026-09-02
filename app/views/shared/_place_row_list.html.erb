@@ -1,7 +1,3 @@
-<%# locals: user_places, numbered: false
-
-    numbered chỉ bật ở trang Quanh đây: số hiệu của dòng là số in trên pin bản
-    đồ, nên hai bên phải cùng thứ tự khoảng cách mà server trả về. %>
 <% numbered = local_assigns.fetch(:numbered, false) %>
 <%= turbo_frame_tag "place_list" do %>
   <% if user_places.any? %>

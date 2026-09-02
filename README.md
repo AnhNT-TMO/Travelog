@@ -103,7 +103,7 @@ Tailwind, importmap và kết nối DB. Phase 1 sẽ thay bằng trang "Bộ sư
 Kamal. Build thử ở local:
 
 ```bash
-docker build -t location_project .
+docker build -t travelog .
 ```
 
 ## Deploy

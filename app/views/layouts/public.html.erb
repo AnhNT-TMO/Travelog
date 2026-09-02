@@ -3,7 +3,6 @@
   <head>
     <title><%= content_for(:title) || t("public_collections.layout.title") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <%# Link unlisted: không index, không follow (plan §23.6). %>
     <meta name="robots" content="noindex,nofollow">
     <%= csp_meta_tag %>
 
@@ -17,7 +16,6 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
   </head>
 
-  <%# Layout public: không sidebar, không tabbar, KHÔNG nút hành động nào. %>
   <body class="min-h-dvh bg-ground">
     <div class="mx-auto max-w-5xl px-4 py-8">
       <%= yield %>

@@ -1,8 +1,6 @@
 require "test_helper"
 require "i18n/tasks"
 
-# Giữ vi.yml và en.yml đồng bộ. Thiếu một key ở en là lỗi build, không phải
-# việc "để sau" — vì fallback sẽ âm thầm hiện tiếng Việt trên giao diện tiếng Anh.
 class I18nTest < ActiveSupport::TestCase
   def setup
     @i18n = I18n::Tasks::BaseTask.new

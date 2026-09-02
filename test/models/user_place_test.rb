@@ -53,7 +53,7 @@ class UserPlaceTest < ActiveSupport::TestCase
   end
 
   test "for_state lọc đúng theo trạng thái" do
-    @both.update!(status: :visited)
+    create(:visit, user_place: @both)
 
     assert_equal [ @both.id ], @user.user_places.for_state("visited").map(&:id)
     assert_equal [ @only_chill.id ], @user.user_places.for_state("wishlist").map(&:id)
@@ -76,6 +76,23 @@ class UserPlaceTest < ActiveSupport::TestCase
         @both.attach_photos!([ blob.signed_id ], user: @user)
       end
     end
+  end
+
+  test "attach_photos rollback toàn bộ khi một ảnh trong nhóm không lưu được" do
+    blob = direct_upload_blob(key: "#{@both.id}/duplicate-a1b2c3.jpg")
+
+    assert_no_difference("@both.photos.count") do
+      assert_raises(ActiveRecord::RecordInvalid) do
+        @both.attach_photos!([ blob.signed_id, blob.signed_id ], user: @user)
+      end
+    end
+  end
+
+  test "không cho đặt trạng thái visited nếu chưa có visit" do
+    @both.status = :visited
+
+    assert_not @both.valid?
+    assert @both.errors.of_kind?(:status, :invalid)
   end
 
   private

@@ -26,7 +26,6 @@ class Tag < ApplicationRecord
     )
   end
 
-  # Tắt share = xoá token. Bật lại sinh token MỚI → link cũ chết vĩnh viễn.
   def disable_sharing!
     update!(visibility: :private_only, public_token: nil, shared_at: nil)
   end

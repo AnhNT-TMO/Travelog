@@ -20,8 +20,6 @@ variable "name_prefix" {
   default     = "travelog"
 }
 
-# HOP DONG: phai khop Photos::ThumbnailUrl::SIZES va photo_sizes trong
-# config/settings/<env>.yml. Lech mot con so la 404 am tham.
 variable "image_sizes" {
   description = "Cac canh dai Lambda sinh ra, px. 400 = thumb, 1200 = preview."
   type        = list(number)

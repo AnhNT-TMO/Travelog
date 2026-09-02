@@ -1,12 +1,5 @@
 module Photos
-  # URL tất định: Rails không chờ callback của Lambda để render được ảnh.
-  # Thiếu derivative thì view hiện biểu tượng ảnh lỗi để app nội bộ phát hiện.
-  #
-  # SIZES đến từ config/settings/<env>.yml và PHẢI khớp `image_sizes` trong
-  # infra/terraform/variables.tf. Lệch một con số là 404 âm thầm, chỉ thấy
-  # trong DevTools — xem "Cross-App Contracts" trong CLAUDE.md.
   class ThumbnailUrl
-    # 400 cho card / row / thumbstrip, 1200 cho hero và ảnh xem lớn.
     SIZES = Rails.application.config.settings.photo_sizes.map(&:to_i).freeze
 
     THUMB   = SIZES.first

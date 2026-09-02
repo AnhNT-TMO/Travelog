@@ -9,14 +9,13 @@ class RadiusQueryTest < ActiveSupport::TestCase
 
     @near = create(:user_place, user: @user, status: :wishlist,
                    place: create(:place, lat: 21.0600, lng: 105.8205))
-    @near_visited = create(:user_place, user: @user, status: :visited,
+    @near_visited = create(:user_place, :visited, user: @user,
                            place: create(:place, lat: 21.0680, lng: 105.8230))
     @far = create(:user_place, user: @user,
                   place: create(:place, lat: 21.0345, lng: 105.8470))
     @no_coords = create(:user_place, user: @user,
                         place: create(:place, lat: nil, lng: nil))
 
-    # Của người khác — không bao giờ được lọt vào kết quả.
     @foreign = create(:user_place, user: @other,
                       place: create(:place, lat: 21.0601, lng: 105.8206))
   end

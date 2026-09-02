@@ -1,9 +1,5 @@
 require "test_helper"
 
-# app/javascript là asset path, nên mọi file nằm trong đó đều bị Propshaft
-# đăng ký thành asset — kể cả CLAUDE.md. Test này chốt rằng tài liệu hướng dẫn
-# nội bộ không bao giờ được phục vụ công khai.
-# Xem config/initializers/propshaft_ignore_docs.rb.
 class AssetsTest < ActiveSupport::TestCase
   def load_path = Rails.application.assets.load_path
 

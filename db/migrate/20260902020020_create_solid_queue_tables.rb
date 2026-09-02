@@ -1,6 +1,3 @@
-# Solid Queue, lấy nguyên từ db/queue_schema.rb. Xem CreateSolidCacheTables.
-# Thứ tự bảng có ý nghĩa: solid_queue_jobs và solid_queue_batches phải tồn tại
-# trước khi add_foreign_key trỏ tới chúng.
 class CreateSolidQueueTables < ActiveRecord::Migration[8.1]
   def change
     create_table :solid_queue_jobs do |t|

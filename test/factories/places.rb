@@ -7,7 +7,6 @@ FactoryBot.define do
   factory :place do
     sequence(:display_name) { |n| "Quán số #{n}" }
     place_type { :cafe }
-    # Hồ Gươm
     lat { 21.0287 }
     lng { 105.8524 }
     coords_source { :manual }
@@ -19,6 +18,10 @@ FactoryBot.define do
     user
     place
     status { :wishlist }
+
+    trait :visited do
+      after(:create) { |user_place| create(:visit, user_place: user_place) }
+    end
   end
 
   factory :tag do
@@ -33,8 +36,6 @@ FactoryBot.define do
     source { :manual }
   end
 
-  # Không attach file thật: s3_key là thứ duy nhất pipeline ảnh quan tâm, và
-  # Photo#copy_key_from_blob chỉ điền khi s3_key còn trống.
   factory :photo do
     user_place
     user { user_place.user }

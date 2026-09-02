@@ -1,6 +1,3 @@
-<%# Hero + dải thumbnail — mockup D3 / M3.
-    Ảnh cover có viền men ngọc trong dải; bấm một ảnh khác rồi "đặt làm cover".
-    locals: user_place, photos %>
 <div class="relative">
   <%= render "shared/place_media", user_place: user_place,
              ratio: "aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:h-[280px]",
@@ -22,7 +19,6 @@
         <%= photo_image_tag photo, sizes: "52px", derivative_size: Photos::ThumbnailUrl::THUMB %>
       </div>
 
-      <%# Chỉ hiện khi hover/focus: dải thumbnail phải đọc được như ảnh trước đã. %>
       <div class="absolute inset-0 hidden place-items-center gap-1 rounded-sm bg-black/55 group-hover:grid group-focus-within:grid">
         <div class="flex gap-1">
           <% unless user_place.cover_photo_id == photo.id %>
@@ -37,9 +33,6 @@
     </div>
   <% end %>
 
-  <%# Direct upload. Active Storage chặn sự kiện submit, PUT ảnh thẳng lên S3,
-      thay input file bằng hidden field chứa signed id, RỒI mới submit thật —
-      nên chỉ cần submit một lần lúc chọn ảnh, không chờ direct-upload:idle. %>
   <%= form_with url: place_photos_path(user_place), class: "flex-none",
                 data: {
                   controller: "autosubmit direct-upload",

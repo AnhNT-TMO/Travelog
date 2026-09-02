@@ -1,8 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Bottom sheet check-in — mockup M4. Sheet nằm sẵn trong DOM và chỉ bị ẩn,
-// nên form vẫn submit được bình thường khi JavaScript không chạy: khi đó
-// người dùng thấy nó ngay dưới trang thay vì thấy một nút chết.
 export default class extends Controller {
   static targets = ["panel"]
 

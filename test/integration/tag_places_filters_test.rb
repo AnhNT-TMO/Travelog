@@ -7,7 +7,7 @@ class TagPlacesFiltersTest < ActionDispatch::IntegrationTest
     @chill = create(:tag, user: @user, name: "chill", kind: :vibe)
 
     @wishlist = create(:user_place, user: @user, status: :wishlist)
-    @visited = create(:user_place, user: @user, status: :visited)
+    @visited = create(:user_place, :visited, user: @user)
     @without_vibe = create(:user_place, user: @user, status: :wishlist)
 
     [ @wishlist, @visited, @without_vibe ].each do |user_place|
@@ -42,5 +42,44 @@ class TagPlacesFiltersTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "##{ActionView::RecordIdentifier.dom_id(@wishlist)}[data-turbo-frame='_top']"
+  end
+
+  test "sort=distance without a centre says so instead of silently reordering" do
+    get places_tag_path(@area), params: { state: "wishlist", sort: "distance" }
+
+    assert_response :success
+    assert_select ".hint", text: /Chưa có điểm trung tâm/
+    assert_select ".hint", text: /Sắp theo khoảng cách/, count: 0
+  end
+
+  test "sort=distance orders by the centre remembered from the nearby screen" do
+    near = create(:user_place, user: @user, place: create(:place, lat: 21.0287, lng: 105.8524))
+    far  = create(:user_place, user: @user, place: create(:place, lat: 21.0680, lng: 105.8180))
+    [ near, far ].each { |user_place| Tagging.create!(tag: @area, user_place: user_place) }
+
+    get nearby_path, params: { lat: 21.0287, lng: 105.8524 }
+    assert_response :success
+
+    get places_tag_path(@area), params: { state: "wishlist", sort: "distance" }
+
+    assert_response :success
+    assert_select ".hint", text: /Sắp theo khoảng cách/
+    body = response.body
+    assert_operator body.index(ActionView::RecordIdentifier.dom_id(near)),
+                    :<,
+                    body.index(ActionView::RecordIdentifier.dom_id(far)),
+                    "địa điểm gần tâm phải đứng trước địa điểm xa hơn"
+  end
+
+  test "sort=distance nói ra số nơi bị loại vì thiếu toạ độ" do
+    no_coords = create(:user_place, user: @user, place: create(:place, lat: nil, lng: nil))
+    Tagging.create!(tag: @area, user_place: no_coords)
+
+    get nearby_path, params: { lat: 21.0287, lng: 105.8524 }
+    get places_tag_path(@area), params: { state: "wishlist", sort: "distance" }
+
+    assert_response :success
+    assert_select "##{ActionView::RecordIdentifier.dom_id(no_coords)}", count: 0
+    assert_select ".text-ochre", text: /không có toạ độ/
   end
 end

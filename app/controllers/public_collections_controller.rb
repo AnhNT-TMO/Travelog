@@ -1,12 +1,8 @@
-# Chia sẻ read-only (D18, plan §23).
-# CẢNH BÁO: đây là route công khai duy nhất của một app nội bộ. Không render
-# shared/_place_card ở đây — partial đó có source_url, trạng thái review,
-# my_rating (plan §23.4). Chỉ dùng public_collections/_place_card.
 class PublicCollectionsController < ApplicationController
   skip_before_action :authenticate_user!
   skip_before_action :set_current_user
   skip_before_action :load_sidebar_tags
-  skip_forgery_protection   # chỉ GET, không có form
+  skip_forgery_protection
 
   layout "public"
 

@@ -11,15 +11,12 @@ class UserPlace < ApplicationRecord
   has_many :taggings, dependent: :destroy
   has_many :tags, through: :taggings
 
-  # Form thêm/sửa địa điểm nhập tay tạo cả Place lẫn UserPlace trong một lượt
-  # submit. Khi Google autocomplete lên, place_id có sẵn sẽ được gán thay vì
-  # tạo mới.
   accepts_nested_attributes_for :place
 
   validates :place_id, uniqueness: { scope: :user_id }
   validates :my_rating, inclusion: { in: 1..5 }, allow_nil: true
+  validate :status_matches_visits, if: :will_save_change_to_status?
 
-  # tên hiển thị: tên tôi đặt > tên canonical
   def label = nickname.presence || place.display_name
 
   scope :for_state, ->(state) {
@@ -30,7 +27,6 @@ class UserPlace < ApplicationRecord
     end
   }
 
-  # AND chứ không phải OR: chọn "chill" + "rooftop" = chỗ có CẢ HAI tag.
   scope :tagged_with_all, ->(tag_ids) {
     ids = Array(tag_ids).reject(&:blank?)
     next all if ids.empty?
@@ -47,38 +43,50 @@ class UserPlace < ApplicationRecord
     includes(:place, :tags, cover_photo: { file_attachment: :blob })
   }
 
-  # Tạo Photo từ signed id mà direct upload trả về. Ảnh đã nằm trên S3 rồi;
-  # việc còn lại chỉ là gắn blob và chép metadata xuống cột của mình.
-  #
-  # find_signed! chứ không find_signed: signed id sai hoặc bị sửa phải nổ ra
-  # RecordNotFound, đừng âm thầm bỏ qua rồi báo "đã thêm ảnh" cho một ảnh
-  # không tồn tại.
   def attach_photos!(signed_ids, user:, visit: nil)
-    Array(signed_ids).reject(&:blank?).each_with_index.map do |signed_id, index|
-      blob = ActiveStorage::Blob.find_signed!(signed_id)
-      raise ActiveRecord::RecordNotFound unless blob.key.start_with?("#{id}/")
+    blobs = Array(signed_ids).reject(&:blank?).map do |signed_id|
+      ActiveStorage::Blob.find_signed!(signed_id)
+    end
 
-      photo = photos.create!(
-        user:         user,
-        visit:        visit,
-        position:     photos_count + index,
-        s3_key:       blob.key,
-        content_type: blob.content_type,
-        byte_size:    blob.byte_size
-      )
-      photo.file.attach(blob)
-      photo
+    blobs.each do |blob|
+      raise ActiveRecord::RecordNotFound unless blob.key.start_with?("#{id}/")
+    end
+
+    transaction do
+      blobs.each_with_index.map do |blob, index|
+        photo = photos.create!(
+          user:         user,
+          visit:        visit,
+          position:     photos_count + index,
+          s3_key:       blob.key,
+          content_type: blob.content_type,
+          byte_size:    blob.byte_size
+        )
+        photo.file.attach(blob)
+        photo
+      end
     end
   end
 
-  # gọi từ callback của Visit — giữ denormalized counters đúng.
-  # Luôn destroy chứ đừng delete_all, nếu không counters lệch (plan §19.15).
   def recalc_visit_stats!
-    update!(
-      visits_count:     visits.count,
-      first_visited_at: visits.minimum(:visited_at),
-      last_visited_at:  visits.maximum(:visited_at),
-      status:           visits.any? ? :visited : status
+    count, first_visited_at, last_visited_at = visits.unscope(:order).pick(
+      Arel.sql("COUNT(*)::integer"),
+      Arel.sql("MIN(visited_at)"),
+      Arel.sql("MAX(visited_at)")
     )
+
+    update!(
+      visits_count:     count,
+      first_visited_at: first_visited_at,
+      last_visited_at:  last_visited_at,
+      status:           count.positive? ? :visited : :wishlist
+    )
+  end
+
+  private
+
+  def status_matches_visits
+    expected_status = visits.exists? ? "visited" : "wishlist"
+    errors.add(:status, :invalid) unless status == expected_status
   end
 end

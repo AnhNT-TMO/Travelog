@@ -1,7 +1,5 @@
 <% content_for :title, "#{t(".title")} · #{t("app.name")}" %>
 <% content_for :topbar do %>
-  <%# Newsreader italic chỉ xuất hiện ở album — phần duy nhất của app mang
-      tính kỷ niệm chứ không phải công cụ. %>
   <%= render "shared/topbar", title: t(".title"),
              title_class: "font-serif text-xl font-normal italic" %>
 <% end %>
@@ -18,11 +16,9 @@
     </div>
     <%= form.submit t(".submit"), class: "btn btn--outline" %>
     <span class="flex-1"></span>
-    <%# Để nút này HIỆN và disabled, đừng ẩn — chủ dự án cần thấy nó ở đó. %>
     <button type="button" class="btn" disabled title="<%= t(".export_pdf_title") %>"><%= t(".export_pdf") %></button>
   <% end %>
 
-  <%# Album đọc như một cuốn sổ: cột hẹp, không trải hết bề ngang màn hình. %>
   <div class="max-w-[760px]">
   <% if @by_month.any? %>
     <% @by_month.each do |month, visits| %>

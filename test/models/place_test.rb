@@ -1,20 +1,13 @@
 require "test_helper"
 
-# Radius filter là chỗ dễ sai nhất của app này (plan §18.1) — toạ độ dưới đây
-# là toạ độ thật, khoảng cách trong assert là khoảng cách thật.
 class PlaceTest < ActiveSupport::TestCase
   PHU_TAY_HO = { lat: 21.0587, lng: 105.8194 }.freeze
 
   setup do
-    # ~180m từ Phủ Tây Hồ
     @very_near = create(:place, display_name: "Sen Tây Hồ", lat: 21.0600, lng: 105.8205)
-    # ~1.2km
     @near      = create(:place, display_name: "Nhà Sàn", lat: 21.0680, lng: 105.8230)
-    # ~1.7km
     @edge      = create(:place, display_name: "Bờ Kè", lat: 21.0730, lng: 105.8180)
-    # ~6km — ngoài bán kính
     @far       = create(:place, display_name: "Phở Bát Đàn", lat: 21.0345, lng: 105.8470)
-    # không có toạ độ — phải bị loại, không được raise
     @no_coords = create(:place, display_name: "Quán nhập tay", lat: nil, lng: nil)
   end
 

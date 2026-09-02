@@ -1,32 +1,3 @@
-# Kamal 2 — deploy Travelog lên MỘT EC2 t4g.small (2 vCPU Graviton, 2 GB RAM).
-#
-# Ngân sách RAM của cả box (~1.0-1.3 GB dùng thật, còn lại là page cache):
-#   OS + dockerd  ~250 MB   kamal-proxy   ~40 MB
-#   Puma + jobs   ~500 MB   Postgres      ~400 MB
-#
-# Ba quyết định bám theo ngân sách đó, đừng đảo lại mà không tính lại bảng trên:
-#
-#   1. Puma chạy MỘT process. config/puma.rb không hề có dòng `workers` nên
-#      WEB_CONCURRENCY không có tác dụng — đặt nó vào đây cũng vô ích.
-#   2. Solid Queue chạy TRONG Puma (SOLID_QUEUE_IN_PUMA=1, xem config/puma.rb).
-#      Một container `worker` riêng là thêm một lần boot Rails, tốn ~250 MB cho
-#      đúng cái hàng đợi mà app này gần như không dùng đến.
-#   3. Postgres là accessory trên cùng host, KHÔNG phải RDS. Đổi lại: backup là
-#      việc của mình — xem infra/ec2/pg_backup.sh.
-#
-# Image build ở máy Mac (Apple Silicon = arm64 = cùng kiến trúc Graviton, không
-# cần QEMU) rồi push lên ECR. TUYỆT ĐỐI không build trên EC2: bundle install +
-# assets:precompile sẽ thrash 2 GB RAM.
-#
-# HAI AWS ACCOUNT (xem infra/ec2/README.md → "Hai AWS account"):
-#   compute — EC2 + ECR. registry.server và bin/kamal (ECR_PROFILE) trỏ vào đây.
-#   media   — S3 + Lambda + CloudFront (infra/terraform). Rails vào đó bằng
-#             access key tĩnh của IAM user account media, KHÔNG qua instance
-#             profile — nên EC2 nằm ở account nào cũng không ảnh hưởng.
-#
-# Trước lần deploy đầu tiên: đọc infra/ec2/README.md. Có việc phải làm tay
-# (tạo instance, ECR repo, DNS) mà file này không làm thay được.
-
 service: travelog
 
 image: travelog
@@ -36,69 +7,33 @@ servers:
     - 18.139.214.198
 
 proxy:
-  # HTTPS qua domain. kamal-proxy tự xin chứng chỉ Let's Encrypt lúc boot.
-  #
-  # ĐIỀU KIỆN BẮT BUỘC trước khi deploy — thiếu một cái là ACME thất bại và
-  # app không lên:
-  #   1. `dig +short travelog.anhnt.vn A` phải trả về 18.139.214.198. Không
-  #      phải "đã tạo bản ghi ở Route53" là xong: domain anhnt.vn được delegate
-  #      cho Netlify DNS (NS1), nên bản ghi phải nằm ở đó, hoặc `travelog`
-  #      phải được delegate sang Route53 bằng bản ghi NS. Xem infra/ec2/README.md.
-  #   2. Security group mở CẢ 80 và 443. Cổng 80 không phải để phục vụ app mà
-  #      để Let's Encrypt xác thực HTTP-01; đóng nó là không gia hạn được cert.
-  #
-  # Khai `host` nghĩa là kamal-proxy CHỈ nhận request có Host header đúng
-  # domain này. Gõ thẳng http://18.139.214.198 sẽ không vào app nữa — đó là
-  # chủ ý, vì cert không cấp cho IP.
-  #
-  # app_port là cổng BÊN TRONG container (Thruster nghe 80 ở đó), không phải
-  # cổng người dùng gõ. 3000 chỉ là chuyện của docker compose ở máy local.
   ssl: true
-  host: travelog.anhnt.vn
+  host: travelog-ac.duckdns.org
   app_port: 80
   healthcheck:
-    path: /up # config/routes.rb:59
+    path: /up
     interval: 5
-    timeout: 60 # boot trên t4g.small chậm hơn máy local
+    timeout: 60
 
 registry:
-  # ECR nằm ở account "compute" — CÙNG account với EC2, khác account chứa
-  # S3/Lambda/CloudFront (xem đầu file). Token do bin/kamal lấy bằng
-  # ECR_PROFILE rồi truyền vào qua env.
-  #
-  # Đổi sang GHCR thì thay ba dòng này bằng:
-  #   server: ghcr.io
-  #   username: <github-user>
-  #   password: - KAMAL_REGISTRY_PASSWORD   (personal access token, scope write:packages)
   server: 757876532307.dkr.ecr.ap-southeast-1.amazonaws.com
   username: AWS
   password:
     - KAMAL_REGISTRY_PASSWORD
 
 builder:
-  arch: arm64 # Graviton. Build native trên Apple Silicon.
+  arch: arm64
 
-# Kamal giữ asset của bản cũ song song trong lúc deploy, nên tab đang mở không
-# ăn 404 CSS khi digest đổi. Propshaft ghi ra đúng thư mục này.
 asset_path: /rails/public/assets
 
 ssh:
-  # Amazon Linux 2023 arm64. Ubuntu thì đổi thành `ubuntu`.
-  # infra/ec2/bootstrap.sh tự nhận ra distro, không cần sửa gì ở đó.
   user: ec2-user
 
-# Đĩa 30 GB không nhiều. Giữ 2 bản để rollback được, prune phần còn lại
-# (infra/ec2/bootstrap.sh cài cron dọn image hằng tuần).
 retain_containers: 2
 
-# Mặc định 30s là quá ngắn cho box này: container mới còn chạy db:prepare
-# (bin/docker-entrypoint) trước khi Puma nghe cổng.
 deploy_timeout: 120
 drain_timeout: 30
 
-# Kamal tự đặt --log-opt max-size=10m cho container app; 10 MB (một file) là
-# quá ít để lần lại một sự cố hôm qua, mà đĩa thì có 30 GB. Accessory không có
-# khai báo riêng nên chịu giới hạn ở /etc/docker/daemon.json (bootstrap.sh).
 logging:
   driver: json-file
   options:
@@ -107,41 +42,26 @@ logging:
 
 env:
   clear:
-    # --- Puma / Solid Queue: xem quyết định 1 và 2 ở đầu file ---
     RAILS_MAX_THREADS: 3
     SOLID_QUEUE_IN_PUMA: 1
     JOB_CONCURRENCY: 1
-    # Ghi thẳng thay vì để config/database.yml tự tính, vì con số này phải
-    # nằm dưới max_connections=30 của accessory db bên dưới.
     DB_POOL: 8
 
-    # --- Postgres: tên container do Kamal đặt là <service>-<accessory> ---
     POSTGRES_HOST: travelog-db
     POSTGRES_PORT: 5432
-    POSTGRES_DB: location_project_production
-    POSTGRES_USER: location_project
+    POSTGRES_DB: travelog_production
+    POSTGRES_USER: travelog
 
-    # --- Host của chính app ---
-    # Hai biến này quyết định URL trong mail và — qua
-    # config/environments/production.rb — có bật force_ssl + assume_ssl hay
-    # không. Phải khớp proxy.host và proxy.ssl ở trên: https ở đây mà
-    # proxy.ssl: false là mọi request bị 301 vào một cổng 443 không ai nghe.
-    APP_HOST: travelog.anhnt.vn
+    APP_HOST: travelog-ac.duckdns.org
     APP_PROTOCOL: https
 
-    # --- Giá trị của stack ảnh, account "media" (infra/terraform) ---
-    # Không phải secret nên nằm trong git, đúng quy ước cấu hình của repo.
-    # Khớp workspace `production` của terraform, đã apply.
     CDN_HOST: https://d18cfkqnlgph1i.cloudfront.net
     S3_BUCKET_ORIGINALS: travelog-originals-production
     S3_BUCKET_DERIVATIVES: travelog-derivatives-production
-    # Region của BUCKET (account media). Region của ECR là biến ECR_REGION
-    # riêng trong bin/kamal — hai thứ khác nhau, có thể khác region.
     AWS_REGION: ap-southeast-1
-    # Chỉ là địa chỉ From. SMTP chưa cấu hình nên chưa gửi được mail thật.
-    MAILER_SENDER: no-reply@anhnt.vn
+    MAILER_SENDER: no-reply@travelog-ac.duckdns.org
 
-    GOOGLE_MAPS_MAP_ID: "" # SỬA nếu dùng Advanced Markers
+    GOOGLE_MAPS_MAP_ID: ""
     RAILS_LOG_LEVEL: info
 
   secret:
@@ -155,31 +75,18 @@ env:
 accessories:
   db:
     image: postgres:17-alpine
-    host: 18.139.214.198 # cùng IP với servers.web
-    # KHÔNG publish cổng ra host. App nói chuyện với nó qua network `kamal`
-    # bằng tên container; psql/pg_dump thì `docker exec` vào (xem README).
+    host: 18.139.214.198
     env:
       clear:
-        # POSTGRES_USER ở đây là superuser khởi tạo của image, và đó là cố ý:
-        # db/migrate/20260901155400_enable_postgres_extensions.rb gọi
-        # CREATE EXTENSION (cube, earthdistance, pg_trgm, unaccent, pgcrypto)
-        # và tạo function immutable_unaccent — cần superuser. Cho app dùng
-        # luôn role này thì db:prepare chạy được ngay, khỏi màn bootstrap role.
-        POSTGRES_USER: location_project
-        POSTGRES_DB: location_project_production
-        # Ổn định phần lớn kế hoạch truy vấn cho tiếng Việt + index trgm.
+        POSTGRES_USER: travelog
+        POSTGRES_DB: travelog_production
         LANG: C.UTF-8
       secret:
         - POSTGRES_PASSWORD
     volumes:
-      # Bind mount để EBS snapshot và pg_dump nhìn thấy rõ ràng.
-      # bootstrap.sh tạo thư mục; entrypoint của image tự chown.
       - /var/lib/travelog/postgres:/var/lib/postgresql/data
     options:
-      # PG dùng /dev/shm cho dynamic shared memory; mặc định của Docker là 64 MB.
       shm-size: 256m
-    # Tune cho 2 GB RAM / 2 vCPU burstable. Mặc định của Postgres giả định một
-    # máy lớn hơn nhiều — riêng max_connections=100 đã là tiền RAM đổ đi.
     cmd: >-
       postgres
       -c max_connections=30
@@ -202,17 +109,9 @@ accessories:
       -c log_min_duration_statement=500
       -c log_checkpoints=on
 
-# jit=off và max_parallel_workers=0 là chủ ý: query của app này nhỏ và nhiều,
-# JIT với parallel worker chỉ đốt CPU credit của T-class chứ không nhanh hơn.
-# autovacuum bị siết chặt hơn mặc định vì solid_cable poll 0.1s và solid_queue
-# xoay vòng job liên tục — hai bảng đó bloat rất nhanh nếu để mặc định.
-
 aliases:
   console: app exec --interactive --reuse "bin/rails console"
   shell: app exec --interactive --reuse "bash"
   logs: app logs --follow
-  # psql vào accessory. Auth qua unix socket nên không cần mật khẩu.
-  dbc: accessory exec db --interactive --reuse "psql -U location_project -d location_project_production"
-  # Migration bình thường tự chạy khi container mới boot (bin/docker-entrypoint).
-  # Alias này để chạy tay khi cần, ví dụ sau khi rollback.
+  dbc: accessory exec db --interactive --reuse "psql -U travelog -d travelog_production"
   migrate: app exec "bin/rails db:migrate"

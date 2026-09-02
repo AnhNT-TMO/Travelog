@@ -14,8 +14,6 @@ resource "aws_iam_role" "thumbnailer" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
 }
 
-# Quyen toi thieu: doc originals, ghi derivatives. Khong ListBucket, khong
-# DeleteObject — Lambda khong bao gio can xoa gi.
 data "aws_iam_policy_document" "thumbnailer" {
   statement {
     sid       = "ReadOriginals"
@@ -42,11 +40,6 @@ resource "aws_iam_role_policy" "thumbnailer" {
   policy = data.aws_iam_policy_document.thumbnailer.json
 }
 
-# ---------------------------------------------------------------------------
-# User cho Rails: chi duoc ky presigned PUT vao originals.
-# Rails KHONG BAO GIO doc bucket derivatives — URL derivative la tat dinh,
-# dung bang Photos::ThumbnailUrl, khong qua Active Storage.
-# ---------------------------------------------------------------------------
 resource "aws_iam_user" "rails" {
   name = "${var.name_prefix}-rails-${var.environment}"
 }
@@ -75,8 +68,6 @@ resource "aws_iam_user_policy" "rails" {
   policy = data.aws_iam_policy_document.rails.json
 }
 
-# Key hien ra trong outputs va nam trong state file. State phai duoc coi la bi
-# mat — dung commit terraform.tfstate.
 resource "aws_iam_access_key" "rails" {
   user = aws_iam_user.rails.name
 }

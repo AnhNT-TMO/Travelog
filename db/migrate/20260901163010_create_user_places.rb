@@ -1,25 +1,23 @@
-# user_places = quan hệ CHỦ QUAN của một người với một place: trạng thái, tag,
-# note, ảnh. Mọi query phải bắt đầu từ current_user (plan §14.3).
 class CreateUserPlaces < ActiveRecord::Migration[8.1]
   def change
     create_table :user_places do |t|
       t.references :user,  null: false, foreign_key: true
       t.references :place, null: false, foreign_key: true
 
-      t.integer  :status, null: false, default: 0       # 0 wishlist 1 visited
-      t.string   :nickname                              # tên người dùng tự đặt
+      t.integer  :status, null: false, default: 0
+      t.string   :nickname
       t.text     :note
-      t.integer  :my_rating                             # 1..5, nội bộ
+      t.integer  :my_rating
       t.boolean  :priority, null: false, default: false
-      t.string   :source_url                            # link TikTok/Facebook
+      t.string   :source_url
 
       t.datetime :first_visited_at
       t.datetime :last_visited_at
       t.integer  :visits_count, null: false, default: 0
       t.integer  :photos_count, null: false, default: 0
-      t.bigint   :cover_photo_id                        # FK thêm ở migration photos
+      t.bigint   :cover_photo_id
 
-      t.integer  :google_review_state, null: false, default: 0 # 0 unknown 1 not_reviewed 2 reviewed
+      t.integer  :google_review_state, null: false, default: 0
       t.datetime :reviewed_at
       t.text     :review_body_draft
 

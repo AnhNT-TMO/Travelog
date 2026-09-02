@@ -1,15 +1,12 @@
 require "test_helper"
 
-# Trang public là route công khai DUY NHẤT của một app nội bộ. Test này chốt
-# lại danh sách field không được lộ (plan §23.4).
 class PublicCollectionTest < ActionDispatch::IntegrationTest
   setup do
     @user = create(:user)
     @tag  = create(:tag, user: @user, name: "Cafe hồ Tây", kind: :area)
 
-    @user_place = create(:user_place,
+    @user_place = create(:user_place, :visited,
                          user: @user,
-                         status: :visited,
                          note: "GHI CHU RIENG TU",
                          my_rating: 5,
                          priority: true,

@@ -2,22 +2,6 @@ import { Controller } from "@hotwired/stimulus"
 
 let mapsSdkPromise
 
-// Bản đồ trang Quanh đây (D20, plan §9.5).
-//
-// Ba chỗ dễ sai nhất:
-//   1. apiKey ở đây là GOOGLE_MAPS_BROWSER_KEY (restrict theo HTTP referrer),
-//      KHÔNG phải GOOGLE_MAPS_API_KEY của server (restrict theo IP của EC2).
-//   2. Thiếu mapId → AdvancedMarkerElement không render marker nào và KHÔNG
-//      throw. Map ID phải là kiểu Vector.
-//   3. Server là nguồn sự thật: kéo pin trung tâm thì submit lại form, không
-//      lọc bằng JS — nếu không số đếm trên segmented control lệch với pin.
-//
-// Nhận dạng pin (đâu là quán nào) đi theo ba lớp, từ luôn-thấy đến theo-yêu-cầu:
-//   • Số trên chấm khớp đúng số của dòng trong danh sách bên cạnh.
-//   • Nhãn tên hiện ở những chấm CÒN CHỖ — #layoutLabels tự đo và ẩn nhãn nào
-//     chồng lên chấm/nhãn khác, nên map dày mấy cũng không rối.
-//   • Hover hoặc bấm vào chấm thì tên hiện lên bằng mọi giá (bấm ra thẻ tên +
-//     trạng thái, đồng thời sáng dòng tương ứng trong danh sách).
 export default class extends Controller {
   static targets = ["canvas"]
   static values = {
@@ -31,8 +15,6 @@ export default class extends Controller {
   }
 
   async connect() {
-    // Fallback bắt buộc: thiếu key/map id thì giữ nền grid, danh sách bên dưới
-    // vẫn dùng được đầy đủ. Không để trang trắng vì map lỗi.
     if (!this.apiKeyValue || !this.mapIdValue) return
 
     let Map, AdvancedMarkerElement, PinElement
@@ -71,23 +53,17 @@ export default class extends Controller {
       map: this.map,
       position: this.centerValue,
       gmpDraggable: true,
-      // Trên mọi pin quán: đây là pin kéo được, mất tay cầm là mất chức năng.
       zIndex: this.placesValue.length + 3,
       content: new PinElement({ background: "#0E6E63", borderColor: "#ffffff" })
     })
     this.centerMarker.addListener("dragend", (event) => this.#recentre(event.latLng))
 
-    // Thứ tự mảng đã là thứ tự khoảng cách do Postgres trả về, nên số hiệu
-    // trùng số của dòng trong danh sách và pin gần hơn được ưu tiên nhãn.
     this.pins = this.placesValue.map((point, index) => this.#buildPin(point, index + 1, AdvancedMarkerElement))
     this.mapListeners = [
       this.map.addListener("idle", () => this.#scheduleLayout()),
       this.map.addListener("click", () => this.#select(null))
     ]
 
-    // Nhãn chỉ đo được sau khi marker vào DOM, và Be Vietnam Pro tải xong thì
-    // chiều rộng đổi lần nữa — ResizeObserver bắt cả hai, đo một lần trong
-    // connect() thì mọi nhãn đều rộng 0 và bị ẩn hết.
     this.labelObserver = new ResizeObserver(() => this.#scheduleLayout())
     this.pins.forEach((pin) => this.labelObserver.observe(pin.name))
 
@@ -115,7 +91,6 @@ export default class extends Controller {
     this.hovered = null
   }
 
-  // hoàng thổ = muốn đến, men ngọc = đã đến (khớp legend trong mockup D4)
   #buildPin(point, order, AdvancedMarkerElement) {
     const element = document.createElement("div")
     element.className = "map-pin"
@@ -132,7 +107,6 @@ export default class extends Controller {
     name.textContent = point.name
     element.appendChild(name)
 
-    // Thẻ khi được chọn. Mọi chuỗi cho người đọc đến từ server, JS chỉ gắn vào.
     const card = document.createElement("span")
     card.className = "map-pin__card"
     const cardName = document.createElement("span")
@@ -165,7 +139,6 @@ export default class extends Controller {
     return pin
   }
 
-  // Bấm lại pin đang chọn thì bỏ chọn — không cần nút đóng nên không cần chuỗi.
   #select(pin) {
     this.selected = this.selected === pin ? null : pin
     this.#paint()
@@ -176,8 +149,6 @@ export default class extends Controller {
     }
   }
 
-  // Thẻ mặc định nằm trên chấm và canh giữa; pin sát rìa thì khung bản đồ
-  // (overflow-hidden) cắt mất thẻ, nên lật xuống dưới và đẩy ngang vừa khung.
   #placeCard(pin) {
     const canvas = this.canvasTarget.getBoundingClientRect()
     const dot = pin.element.getBoundingClientRect()
@@ -195,10 +166,6 @@ export default class extends Controller {
     else if (pastLeft > 0) pin.card.style.marginLeft = `${pastLeft}px`
   }
 
-  // Chỉ cuộn khi dòng nằm trong một panel cuộn riêng KHÔNG chứa bản đồ — tức
-  // panel danh sách ở desktop. Ở mobile danh sách nằm dưới bản đồ trong cùng
-  // vùng cuộn, cuộn tới dòng sẽ đẩy bản đồ ra khỏi màn hình đúng lúc người
-  // dùng vừa bấm vào nó; tên đã hiện trên thẻ nên không cần cuộn.
   #revealRow(row) {
     let panel = row?.parentElement
 
@@ -213,22 +180,16 @@ export default class extends Controller {
     }
   }
 
-  // Hover: tên hiện lên kể cả khi #layoutLabels đã ẩn nhãn vì hết chỗ. Hover
-  // độc lập với chọn — đang mở thẻ một quán vẫn rê được sang quán khác.
   #emphasize(pin) {
     this.hovered = pin
     this.#paint()
   }
 
-  // Một chỗ duy nhất dịch (đang chọn, đang hover) ra trạng thái của mọi pin:
-  // chọn thắng hover, hover thắng bình thường.
   #paint() {
     this.pins.forEach((pin) => {
       const selected = pin === this.selected
       const hovered = pin === this.hovered
       pin.element.dataset.state = selected ? "active" : hovered ? "hover" : "idle"
-      // Pin đang rê chuột lên trên cùng, kể cả trên thẻ của pin đang chọn —
-      // nếu không thì thẻ che mất đúng cái tên người dùng đang tìm.
       pin.marker.zIndex = hovered
         ? this.placesValue.length + 2
         : selected ? this.placesValue.length + 1 : pin.baseZIndex
@@ -238,8 +199,6 @@ export default class extends Controller {
     this.#scheduleLayout()
   }
 
-  // Gộp mọi yêu cầu xếp nhãn trong cùng một frame: ResizeObserver bắn một loạt
-  // event lúc marker vào DOM, không gộp thì xếp lại tám lần liên tiếp.
   #scheduleLayout() {
     if (this.layoutFrame) return
 
@@ -249,9 +208,6 @@ export default class extends Controller {
     })
   }
 
-  // Nhãn tên chỉ hiện ở chỗ còn trống: đo hộp thật của từng nhãn trong world
-  // pixel rồi bỏ nhãn nào chồng lên chấm hoặc nhãn đã nhận trước. Chấm luôn
-  // hiện, nên map dày vẫn đọc được — zoom vào là các tên còn lại xuất hiện.
   #layoutLabels() {
     if (!this.pins?.length) return
 
@@ -260,8 +216,6 @@ export default class extends Controller {
 
     const scale = 2 ** this.map.getZoom()
     const canvasWidth = this.canvasTarget.clientWidth
-    // Gốc toạ độ màn hình để biết pin nào sát rìa phải — nhãn ở đó phải lật
-    // sang trái, không thì bị khung bản đồ cắt mất một nửa cái tên.
     const centerWorld = projection.fromLatLngToPoint(this.map.getCenter())
     const originX = centerWorld.x * scale - canvasWidth / 2
 
@@ -294,8 +248,6 @@ export default class extends Controller {
            box.top < other.bottom && box.bottom > other.top
   }
 
-  // Danh sách bên cạnh là nơi có khoảng cách, quận và link chi tiết — pin chỉ
-  // trỏ về đúng dòng của nó chứ không lặp lại những thông tin đó.
   #bindRows() {
     this.rowListeners = Array.from(document.querySelectorAll("[data-place-row-id]")).map((row) => {
       const pin = this.pins.find((candidate) => String(candidate.point.id) === row.dataset.placeRowId)
@@ -318,8 +270,6 @@ export default class extends Controller {
     })
   }
 
-  // Dùng callback ready vì script.onload có thể chạy trước khi importLibrary
-  // được bootstrap xong khi loading=async.
   #loadSdk() {
     if (window.google?.maps?.importLibrary) return Promise.resolve()
     if (mapsSdkPromise) return mapsSdkPromise

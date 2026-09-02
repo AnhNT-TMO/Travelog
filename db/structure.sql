@@ -2210,6 +2210,7 @@ ALTER TABLE ONLY public.tags
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260902170000'),
 ('20260902060000'),
 ('20260902020020'),
 ('20260902020010'),

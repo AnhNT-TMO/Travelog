@@ -1,8 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Một luồng dùng chung cho form Place và tâm bản đồ:
-// debounce -> Rails autocomplete proxy -> Rails details proxy -> điền field.
-// Browser không bao giờ nhận server-side Google key.
 export default class extends Controller {
   static targets = [
     "input", "results", "list", "status", "placeId", "address",

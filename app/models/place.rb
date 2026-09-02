@@ -4,8 +4,6 @@ class Place < ApplicationRecord
 
   has_many :user_places, dependent: :restrict_with_error
 
-  # Nhập tay thì toạ độ là do người dùng gõ, không phải của Google — ghi đúng
-  # nguồn để sau này biết cái nào cần đối chiếu lại.
   before_validation :mark_manual_coords, on: :create
 
   validates :display_name, presence: true
@@ -14,9 +12,6 @@ class Place < ApplicationRecord
 
   scope :with_coords, -> { where.not(lat: nil).where.not(lng: nil) }
 
-  # Radius filter — plan §9. KHÔNG viết SQL radius rải rác ở chỗ khác, chỉ dùng
-  # scope này (hoặc Geo::RadiusQuery bọc ngoài nó).
-  # earth_box dùng được index gist nên lọc thô trước, earth_distance lọc chính xác sau.
   scope :within_radius, ->(lat, lng, meters) {
     with_coords.where(
       sanitize_sql_array([
@@ -27,8 +22,6 @@ class Place < ApplicationRecord
     )
   }
 
-  # Phải gọi trước khi ORDER BY distance_m, nếu không Postgres lỗi khi có .distinct
-  # (plan §19.3).
   scope :select_distance_from, ->(lat, lng) {
     select(sanitize_sql_array([
       "places.*, earth_distance(ll_to_earth(?, ?), ll_to_earth(places.lat, places.lng)) AS distance_m",
@@ -36,8 +29,6 @@ class Place < ApplicationRecord
     ]))
   }
 
-  # Tìm theo tên tiếng Việt không dấu — khớp đúng biểu thức của
-  # index_places_on_display_name_trgm, nếu lệch thì Postgres bỏ index (plan §19.13).
   scope :name_matching, ->(query) {
     term = query.to_s.strip
     next all if term.blank?
@@ -52,7 +43,6 @@ class Place < ApplicationRecord
 
   def coordinates? = lat.present? && lng.present?
 
-  # Cache Maps Content quá 30 ngày là vi phạm điều khoản (plan §10.4).
   def cache_stale? = cached_at.nil? || cached_at < 30.days.ago
 
   private

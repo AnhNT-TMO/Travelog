@@ -1,6 +1,3 @@
-<%# Ô tìm kiếm ở topbar — mockup D1. Kết quả thay thẳng vào frame place_list
-    nên trang chủ không nhấp nháy. Tìm theo tên không dấu (index trigram).
-    locals: query: nil %>
 <% query = local_assigns.fetch(:query, nil) %>
 
 <%= form_with url: places_path, method: :get, class: "relative w-[220px] xl:w-[270px]",

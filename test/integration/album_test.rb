@@ -3,7 +3,7 @@ require "test_helper"
 class AlbumTest < ActionDispatch::IntegrationTest
   setup do
     @user       = create(:user)
-    @user_place = create(:user_place, user: @user, status: :visited)
+    @user_place = create(:user_place, user: @user)
     sign_in @user
   end
 
@@ -62,5 +62,15 @@ class AlbumTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "img[src=?]", photo.thumb_url, count: 0
+  end
+
+  test "ngày lọc không hợp lệ dùng khoảng mặc định thay vì làm trang lỗi" do
+    create(:visit, user_place: @user_place, visited_at: 1.day.ago)
+
+    get album_path, params: { from: "not-a-date", to: "also-not-a-date" }
+
+    assert_response :success
+    assert_equal 6.months.ago.to_date, @controller.view_assigns["from"]
+    assert_equal Date.current, @controller.view_assigns["to"]
   end
 end

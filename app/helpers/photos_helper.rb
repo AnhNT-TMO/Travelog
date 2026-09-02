@@ -1,8 +1,4 @@
 module PhotosHelper
-  # App nội bộ cố ý KHÔNG fallback về original: derivative hỏng phải lộ ra ngay
-  # thay vì âm thầm tải file gốc nặng hơn. onerror đổi ảnh thành biểu tượng lỗi.
-  # srcset: false cho ô nhỏ (thumbstrip album) — với srcset, màn hình DPR 2x/3x
-  # chọn bản 1200 cho một ô 76px, tải thừa băng thông mà mắt không thấy khác.
   def photo_image_tag(photo, sizes:, derivative_size: Photos::ThumbnailUrl::THUMB, css_class: "", srcset: true)
     return nil if photo.blank?
 

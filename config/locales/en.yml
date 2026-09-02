@@ -197,7 +197,6 @@ en:
       save: Save changes
       source_url: TikTok / Facebook link
       source_url_placeholder: Paste a link to find it again later
-      status: Status
       tags: Tags
       tags_hint_html: No tag fits? %{link}.
       tags_manage: Create a new tag
@@ -256,6 +255,10 @@ en:
     place_grid:
       empty_description: Add a place, or change the filters above.
       empty_title: Nothing here yet
+      next_page: Next page
+      page_summary: Page %{page} of %{total}
+      pagination_label: Places pagination
+      previous_page: Previous page
     place_row_list:
       empty_description: Widen the slider, or move the centre point.
       empty_title: No places within this radius
@@ -320,8 +323,15 @@ en:
     places:
       add_place: "＋ Add to this group"
       crumb: Collections
+      distance_sort_excluded:
+        one: "%{count} place has no coordinates (or is too far away), so it is not
+          in this list."
+        other: "%{count} places have no coordinates (or are too far away), so they
+          are not in this list."
       distance_sort_hint: Sorted by distance from the centre you last picked on the
         Nearby screen.
+      distance_sort_needs_center: No centre to measure from yet — pick one on the
+        Nearby screen and come back. Showing newest first for now.
       filter_radius: "⌖ Filter by radius"
     row:
       copy_link: Copy link

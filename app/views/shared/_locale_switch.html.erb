@@ -1,6 +1,3 @@
-<%# Đổi ngôn ngữ bằng ?locale= trên chính URL hiện tại — không có prefix locale
-    trong path, nên link chia sẻ /s/:token giữ nguyên hình dạng.
-    locals: css_class: "" %>
 <% css_class = local_assigns.fetch(:css_class, "") %>
 
 <div class="flex items-center gap-1 <%= css_class %>" role="group" aria-label="<%= t("nav.switch_language") %>">

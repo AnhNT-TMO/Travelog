@@ -76,7 +76,7 @@ Ba chỗ dễ nhầm khi tách account:
 - **Google Places API key khoá theo IP** = Elastic IP ở account compute. Key
   thì quản ở Google Cloud, không liên quan AWS account nào.
 - **`cors_allowed_origins`** trong terraform (account media) phải khớp origin
-  thật của app — hiện là `https://travelog.anhnt.vn`. Origin gồm **cả scheme
+  thật của app — hiện là `https://travelog-ac.duckdns.org`. Origin gồm **cả scheme
   và cổng**, nên đổi http→https hoặc IP→domain là phải apply lại terraform;
   không thì app vào được bình thường mà upload ảnh chết ở preflight.
 
@@ -126,29 +126,45 @@ Encrypt xác thực HTTP-01, cả lần cấp đầu lẫn mỗi lần gia hạn
 
 ### DNS — chỗ dễ mất nửa ngày
 
-Domain là `travelog.anhnt.vn`. Điều kiện duy nhất được tính là:
+Domain là `travelog-ac.duckdns.org`. Điều kiện duy nhất được tính là:
 
 ```bash
-dig +short travelog.anhnt.vn A     # phải ra 18.139.214.198
+dig +short travelog-ac.duckdns.org A   # phải ra 18.139.214.198
 ```
 
 **"Đã tạo bản ghi A trong Route53" KHÔNG đồng nghĩa với việc nó phân giải.**
-`anhnt.vn` được delegate cho **Netlify DNS** (`dns1.p03.nsone.net`, SOA
-`domains+netlify.netlify.com`), nên hosted zone `anhnt.vn` trên Route53 không
-ai hỏi tới — bản ghi nằm trong đó vẫn trả về `NXDOMAIN`.
+Chỉ nameserver được delegate mới được hỏi. Kiểm tra bằng:
 
-Hai cách đúng:
+```bash
+dig +short <domain> NS                    # ai đang authoritative
+dig +short @<ns đó> <host> A             # câu trả lời thật
+```
 
-1. **Thêm bản ghi A ở Netlify DNS** — `travelog` → `18.139.214.198`. Một bản
-   ghi, không đụng gì khác.
-2. **Delegate riêng subdomain**: ở Netlify DNS thêm 4 bản ghi `NS` cho
-   `travelog` trỏ vào nameserver của hosted zone Route53
-   (`aws route53 get-hosted-zone --id <id> --query DelegationSet.NameServers`).
-   Cách này giữ được việc quản lý subdomain trong Route53.
+Hỏi thẳng nameserver Route53 (`@ns-345.awsdns-43.com`) sẽ ra IP ngay cả khi
+domain chưa delegate cho Route53 — **đó không phải bằng chứng DNS đã xong.**
 
-**ĐỪNG đổi nameserver của cả `anhnt.vn` sang Route53.** Domain này đang có MX
-của Google Workspace chạy qua Netlify DNS, mà zone Route53 chỉ có `NS`, `SOA`
-và một bản ghi A — chuyển nameserver là **email của cả domain chết ngay**.
+**Tạo hosted zone KHÔNG cho mình quyền sở hữu domain.** Hosted zone chỉ là cấu
+hình một máy chủ DNS: "nếu ai hỏi tôi về domain này thì tôi trả lời thế này".
+Quyền sở hữu đến từ việc *đăng ký* domain với nhà đăng ký, và delegation nằm ở
+registry của TLD. Đã mất nửa ngày vì lẫn hai thứ này: một hosted zone được tạo
+cho một domain không thuộc về mình, nên mọi bản ghi trong đó không bao giờ
+được hỏi tới — và vẫn bị tính $0.50/tháng.
+
+**Domain đang dùng: `travelog-ac.duckdns.org`** (DuckDNS, miễn phí). Lý do chọn
+DuckDNS thay vì `sslip.io`/`nip.io`: DuckDNS **có trong Public Suffix List**,
+nên mỗi subdomain có quota chứng chỉ Let's Encrypt riêng. Hai tên kia không có
+trong PSL, tức 50 cert/tuần dùng chung cho toàn bộ người dùng dịch vụ — cert
+có thể trượt vì người lạ đã dùng hết quota, và mình không làm gì được.
+
+Kiểm tra bằng chính PSL:
+
+```bash
+curl -s https://publicsuffix.org/list/public_suffix_list.dat | grep -ix duckdns.org
+```
+
+Đổi IP của bản ghi: đăng nhập `duckdns.org`, sửa ô **current ip**. Đổi sang
+domain riêng thì mua qua Route53 (`.click` $3/năm, AWS vừa là nhà đăng ký vừa
+là DNS nên nó tự set delegation, không phải xin ai).
 
 ### Bước 2 — chuẩn bị box
 
@@ -250,7 +266,7 @@ trước rồi deploy:
 
 ```bash
 bin/kamal accessory boot db
-ssh -i "$KEY" "$BOX" 'docker exec travelog-db pg_isready -U location_project'
+ssh -i "$KEY" "$BOX" 'docker exec travelog-db pg_isready -U travelog'
 bin/kamal deploy
 ```
 
@@ -273,6 +289,64 @@ ssh -i "$KEY" "$BOX" 'sudo /usr/local/bin/travelog-pg-backup'   # chạy thử n
 `0 19 UTC` = 2h sáng giờ VN. Đẩy lên S3 thì tạo `/etc/travelog-backup.env`
 theo hướng dẫn trong `pg_backup.sh`; không thì bật EBS snapshot bằng Data
 Lifecycle Manager. **Chỉ có bản dump local là chưa đủ** — mất EBS là mất cả hai.
+
+## Đổi tên database + role sang `travelog` (một lần, trên box đang chạy)
+
+Repo đã đổi sang `travelog_production` / `travelog` ở `config/deploy.yml`,
+`config/database.yml` và `infra/ec2/pg_backup.sh`. Database trên box thì
+**chưa** — và deploy sẽ fail nếu chạy DDL sau khi deploy.
+
+Lý do phải làm tay: image `postgres` chỉ chạy `initdb` khi `PGDATA` rỗng. Data
+dir ở `/var/lib/travelog/postgres` đã có dữ liệu, nên `POSTGRES_USER` và
+`POSTGRES_DB` mới **bị bỏ qua hoàn toàn** — không role nào được tạo. App boot
+lên, `db:prepare` gặp `FATAL: role "travelog" does not exist`, container chết,
+healthcheck 120s timeout, deploy fail.
+
+Thứ tự bắt buộc — **DDL trước, deploy sau**:
+
+```bash
+KEY=~/.ssh/travelog-ec2.pem
+BOX=ec2-user@18.139.214.198
+
+# 1. Dump trước đã. Đây là bước không được bỏ.
+ssh -i "$KEY" "$BOX" 'sudo /usr/local/bin/travelog-pg-backup && ls -la /var/lib/travelog/backups | tail -3'
+
+# 2. Ngắt app. ALTER DATABASE ... RENAME từ chối chạy nếu còn session nào
+#    đang kết nối vào database đó — Puma giữ tới 8 connection (DB_POOL).
+bin/kamal app stop
+
+# 3. Rename. Chạy từ database `postgres`, không phải từ database đang đổi tên.
+ssh -i "$KEY" "$BOX" 'docker exec -i travelog-db psql -U location_project -d postgres -v ON_ERROR_STOP=1' <<'SQL'
+ALTER DATABASE location_project_production RENAME TO travelog_production;
+ALTER ROLE location_project RENAME TO travelog;
+SQL
+
+# 4. Đặt LẠI mật khẩu. Postgres 17 mặc định scram-sha-256 nên hash sống sót
+#    qua rename, nhưng nếu server đang ở md5 thì hash bị xoá (md5 băm kèm cả
+#    username) và role không đăng nhập được nữa. Đặt lại thì đúng trong cả hai
+#    trường hợp — dùng CHÍNH giá trị POSTGRES_PASSWORD trong .kamal/secrets.
+ssh -i "$KEY" "$BOX" "docker exec -i travelog-db psql -U travelog -d postgres -c \"ALTER ROLE travelog PASSWORD '\$POSTGRES_PASSWORD';\""
+
+# 5. Kiểm tra trước khi deploy.
+ssh -i "$KEY" "$BOX" 'docker exec travelog-db psql -U travelog -d travelog_production -c "\\conninfo" -c "SELECT count(*) FROM user_places;"'
+
+# 6. Backup script mới (DB=travelog_production, DB_USER=travelog) — cron đang
+#    trỏ tên cũ, không thay là backup fail âm thầm từ đêm nay.
+scp -i "$KEY" infra/ec2/pg_backup.sh "$BOX":/tmp/
+ssh -i "$KEY" "$BOX" 'sudo install -m 0755 /tmp/pg_backup.sh /usr/local/bin/travelog-pg-backup && sudo /usr/local/bin/travelog-pg-backup'
+
+# 7. Giờ mới deploy.
+bin/kamal deploy
+```
+
+Nếu bước 3 báo `database "location_project_production" is being accessed by
+other users`: còn container nào đang kết nối. `bin/kamal app stop` rồi
+`ssh -i "$KEY" "$BOX" 'docker ps'` để chắc chắn chỉ còn `travelog-db`.
+
+Đường lùi: `ALTER DATABASE travelog_production RENAME TO
+location_project_production;` cộng `ALTER ROLE travelog RENAME TO
+location_project;`, rồi `git revert` phần đổi tên. Dump ở bước 1 chứa owner
+`location_project`, nên restore vào role mới phải kèm `--no-owner`.
 
 ## Vận hành hằng ngày
 
@@ -321,3 +395,12 @@ chật: hạ `RAILS_MAX_THREADS` hoặc `shared_buffers`, hoặc lên `t4g.mediu
     secret thành chuỗi rỗng **mà không báo lỗi** — deploy vẫn chạy, app boot
     với `POSTGRES_PASSWORD` trống. Luôn chạy `bin/kamal secrets print` trước
     khi deploy và nhìn xem có giá trị nào rỗng không.
+- **Khai `proxy.host` là mất luôn đường vào bằng IP.** kamal-proxy chỉ nhận
+  request có Host header đúng domain; gõ IP sẽ nhận 404 từ proxy với
+  `"service":"","target":""` trong log. Nên khi DNS chưa phân giải mà đã bật
+  `ssl: true` + `host:` thì app không vào được bằng bất kỳ URL nào. Xem log
+  cert bằng `bin/kamal proxy logs` — dấu hiệu là
+  `acme/autocert: ... no viable challenge type found` và `missing certificate`.
+- **Let's Encrypt chặn 5 lần xác thực thất bại / giờ** cho mỗi hostname. Sau
+  khi DNS lan xong thì thử **một lần**; nếu vẫn lỗi thì chờ ~1 tiếng chứ đừng
+  F5 liên tục, vì mỗi lần thử là một lần thất bại bị tính.

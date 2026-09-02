@@ -27,8 +27,6 @@
 
     <span class="flex-1"></span>
 
-    <%# Sort là <select> submit ngay: giữ trong URL để bookmark được, giống
-        segmented control (plan §16.5). %>
     <%= form_with url: places_tag_path(@tag), method: :get, data: { controller: "autosubmit" },
                   class: "flex items-center gap-1.5" do |form| %>
       <%= form.hidden_field :state, value: @state %>
@@ -43,7 +41,16 @@
   </div>
 
   <% if @sort == "distance" %>
-    <span class="hint"><%= t(".distance_sort_hint") %></span>
+    <% if @center.present? %>
+      <span class="hint"><%= t(".distance_sort_hint") %></span>
+      <% if @distance_excluded_count.to_i.positive? %>
+        <div class="rounded-md bg-ochre-tint px-3 py-2 text-sm text-ochre">
+          <%= t(".distance_sort_excluded", count: @distance_excluded_count) %>
+        </div>
+      <% end %>
+    <% else %>
+      <span class="hint text-ochre"><%= t(".distance_sort_needs_center") %></span>
+    <% end %>
   <% end %>
 
   <%= render "shared/place_grid", user_places: @user_places %>

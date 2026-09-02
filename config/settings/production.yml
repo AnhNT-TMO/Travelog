@@ -1,12 +1,5 @@
-# Production. Xem chú thích ở config/settings/development.yml.
-# Bí mật (AWS key, mật khẩu Postgres) đến từ
-# .kamal/secrets, không nằm trong file này.
 production:
   app_host: <%= ENV.fetch("APP_HOST", "travelog.com") %>
-  # http khi truy cập bằng IP (Let's Encrypt không cấp cert cho IP), https khi
-  # đã có domain. Giá trị này cũng bật/tắt force_ssl — xem
-  # config/environments/production.rb. Mặc định là https để chế độ không mã hoá
-  # luôn phải khai ra rõ ràng trong config/deploy.yml.
   app_protocol: <%= ENV.fetch("APP_PROTOCOL", "https") %>
 
   s3:

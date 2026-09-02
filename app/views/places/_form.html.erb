@@ -1,5 +1,3 @@
-<%# Form thêm / sửa địa điểm — mockup M5.
-    locals: user_place, area_tags, vibe_tags %>
 <%= form_with model: user_place, url: (user_place.persisted? ? place_path(user_place) : places_path),
               data: {
                 controller: "place-autocomplete",
@@ -62,8 +60,6 @@
                 data: { place_autocomplete_target: "lng" } %>
         </div>
       </div>
-      <%# Không có toạ độ thì không bao giờ lọt vào kết quả "Quanh đây" — nói ra
-          thay vì để người dùng tự phát hiện (plan §9.4). %>
       <span class="hint"><%= t(".coords_hint") %></span>
 
       <div class="field">
@@ -84,19 +80,6 @@
     <div class="field">
       <%= form.label :source_url, t(".source_url"), class: "label" %>
       <%= form.url_field :source_url, class: "input", placeholder: t(".source_url_placeholder") %>
-    </div>
-
-    <div class="field">
-      <span class="label"><%= t(".status") %></span>
-      <%# Radio ẩn + has-[:checked]: — segmented control không cần JavaScript. %>
-      <div class="seg w-full">
-        <% UserPlace.statuses.keys.each do |value| %>
-          <label class="seg-item flex-1 justify-center has-[:checked]:bg-surface has-[:checked]:text-ink has-[:checked]:shadow-e1">
-            <%= form.radio_button :status, value, class: "sr-only" %>
-            <%= t("status.#{value}") %>
-          </label>
-        <% end %>
-      </div>
     </div>
 
     <div class="field">

@@ -4,7 +4,6 @@ class TakeoutCandidate < ApplicationRecord
   belongs_to :takeout_import
   belongs_to :matched_place, class_name: "Place", optional: true
 
-  # Ngưỡng auto-match: trigram >= 0.75 VÀ cùng district (plan §12.4).
   AUTO_MATCH_CONFIDENCE = 75
 
   scope :needing_review, -> { unresolved.order(match_confidence: :desc) }

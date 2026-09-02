@@ -1,7 +1,4 @@
 module Google
-  # Gộp Place dùng chung theo google_place_id và làm mới snapshot khách quan.
-  # display_name là dữ liệu của app nên chỉ khởi tạo từ Google cho Place mới;
-  # refresh không ghi đè tên đã được người dùng chỉnh trước đó.
   class PlaceUpsert
     def initialize(details:)
       @snapshot = PlaceSnapshot.new(details)

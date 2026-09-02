@@ -1,27 +1,6 @@
-# Seed. Idempotent — chạy lại nhiều lần không nhân đôi.
-#
-# FILE NÀY CHẠY TỰ ĐỘNG TRÊN PRODUCTION. bin/docker-entrypoint gọi db:prepare,
-# và db:prepare nạp seed khi database vừa được tạo — xem
-# ActiveRecord::Tasks::DatabaseTasks#prepare_all: `seed = true if
-# database_initialized && db_config.seeds?`. Nên mọi thứ ở đây phải an toàn với
-# một môi trường thật, và không được raise (raise = container không boot nổi).
-#
-# Phân chia:
-#   - User: mọi môi trường. Nhưng ngoài development thì phải khai SEED_EMAIL +
-#     SEED_PASSWORD rõ ràng — không có mật khẩu mặc định trên máy thật.
-#   - Dữ liệu mẫu (tag, place, visit): CHỈ development. Trên production người
-#     dùng tự thêm từng cái.
-#
-# Muốn chặn hẳn mọi seed ở production thì thêm `seeds: false` vào khối
-# production của config/database.yml — Rails sẽ không gọi file này nữa.
-#
-#   docker compose exec web bin/rails db:seed
-
 email    = ENV["SEED_EMAIL"].presence
 password = ENV["SEED_PASSWORD"].presence
 
-# Mặc định chỉ tồn tại ở development. Đây là lý do: một mật khẩu mặc định nằm
-# trong git mà lại tạo được account trên production là lỗ hổng, không phải tiện.
 if Rails.env.development?
   email    ||= "anh.nguyentien@pixta.co.jp"
   password ||= "travelog123"
@@ -34,8 +13,6 @@ if email && password
   user.save!
   puts "User: #{user.email}"
 else
-  # Không raise: db:prepare chạy lúc container boot, raise ở đây là app không
-  # lên được. Thiếu biến thì bỏ qua, tạo user bằng `bin/kamal console`.
   puts "Bỏ qua seed user (#{Rails.env}): cần cả SEED_EMAIL và SEED_PASSWORD."
 end
 
@@ -43,13 +20,6 @@ unless Rails.env.development?
   puts "Môi trường #{Rails.env}: không seed dữ liệu mẫu."
   return
 end
-
-# ---------------------------------------------------------------------------
-# Từ đây trở xuống CHỈ chạy ở development.
-#
-# Toạ độ là toạ độ THẬT của Hà Nội: test radius filter chỉ có nghĩa khi khoảng
-# cách giữa các điểm là khoảng cách thật (plan §18).
-# ---------------------------------------------------------------------------
 
 AREA_TAGS = [
   [ "Hồ Tây",    "#0E6E63" ],
@@ -77,7 +47,6 @@ end
 area_by_name = area_tags.index_by(&:name)
 vibe_by_name = vibe_tags.index_by(&:name)
 
-# [tên, type, lat, lng, district, area tag, [vibe tags], đã đến?]
 PLACES = [
   [ "Sen Tây Hồ Deli",          :cafe,  21.0680, 105.8180, "Tây Hồ",     "Hồ Tây",    %w[chill], false ],
   [ "Ban Công Cafe",            :cafe,  21.0450, 105.8390, "Ba Đình",    "Hồ Tây",    [ "chill", "view hồ" ], true ],
@@ -114,7 +83,6 @@ user_places = PLACES.map do |name, type, lat, lng, district, area, vibes, been|
   )
 
   user_place = user.user_places.find_or_initialize_by(place: place)
-  user_place.status ||= been ? :visited : :wishlist
   user_place.priority = [ true, false, false ].sample if user_place.new_record?
   user_place.source_url = "https://www.tiktok.com/@hanoifood/video/#{rand(10**18)}" if vibes.include?("tiktok")
   user_place.save!
@@ -126,8 +94,7 @@ user_places = PLACES.map do |name, type, lat, lng, district, area, vibes, been|
   [ user_place, been ]
 end
 
-# ~8 lần đến rải trong 6 tháng để album có ít nhất 4 tháng khác nhau.
-user_places.select { |_, been| been }.first(8).each_with_index do |(user_place, _), index|
+user_places.select { |_, been| been }.each_with_index do |(user_place, _), index|
   visited_at = (index * 22).days.ago.change(hour: 10 + (index % 8))
   next if user_place.visits.where(visited_at: visited_at).exists?
 
