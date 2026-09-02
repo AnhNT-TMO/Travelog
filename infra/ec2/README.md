@@ -8,8 +8,8 @@ S3 + CloudFront + Lambda như cũ (`infra/terraform/`) — box này không xử 
 
 ```
                  ┌─ EC2 t4g.small (2 vCPU Graviton, 2 GB) ──────────┐
-Internet :80  ──▶│ kamal-proxy ──▶ travelog-web  (Thruster + Puma)  │
-                 │   không TLS      1 process, 3 threads            │
+Internet :443 ──▶│ kamal-proxy ──▶ travelog-web  (Thruster + Puma)  │
+                 │   TLS/ACME       1 process, 3 threads            │
                  │                  + Solid Queue trong Puma        │
                  │                        │ network `kamal`         │
                  │                        ▼                          │
@@ -76,8 +76,9 @@ Ba chỗ dễ nhầm khi tách account:
 - **Google Places API key khoá theo IP** = Elastic IP ở account compute. Key
   thì quản ở Google Cloud, không liên quan AWS account nào.
 - **`cors_allowed_origins`** trong terraform (account media) phải khớp origin
-  thật của app — hiện là `http://18.139.214.198`. Nó khớp theo Origin của
-  browser, không theo account, và **cổng là một phần của origin**.
+  thật của app — hiện là `https://travelog.anhnt.vn`. Origin gồm **cả scheme
+  và cổng**, nên đổi http→https hoặc IP→domain là phải apply lại terraform;
+  không thì app vào được bình thường mà upload ảnh chết ở preflight.
 
 Muốn bỏ hẳn access key tĩnh thì hướng đúng là: tạo IAM role ở account media cho
 phép instance profile của EC2 (account compute) `sts:AssumeRole`, rồi bỏ hai
@@ -116,12 +117,38 @@ bằng `uname -m` → `aarch64`, khớp `builder.arch: arm64`).
 | AMI | Amazon Linux 2023, **arm64** (user `ec2-user`) |
 | Instance type | `t4g.small` |
 | EBS | 30 GB gp3 (image Docker cũ + WAL + backup ăn đĩa nhanh) |
-| IP | Nên là Elastic IP — Google Places key khoá theo IP, và CORS của bucket ghi cứng origin. IP đổi là phải sửa cả hai. |
-| Security group | 22 (chỉ IP nhà/office) + **80** (0.0.0.0/0) |
+| IP | Nên là Elastic IP — bản ghi A trỏ vào nó, và Google Places key khoá theo IP. IP đổi là phải sửa cả hai. |
+| Security group | 22 (chỉ IP nhà/office) + **80** + **443** (0.0.0.0/0) |
 | Credit specification | `standard` nếu muốn chặn hoá đơn CPU vượt mức; `unlimited` (mặc định) an toàn hơn cho lúc migrate |
 
-Đang chạy HTTP bằng IP nên **không cần mở 443 và không cần DNS**. Khi nào có
-domain thì mở 443, trỏ bản ghi `A`, rồi bật `ssl: true` + `APP_PROTOCOL: https`.
+Cổng **80 phải mở dù app chạy HTTPS**: nó không phục vụ app mà để Let's
+Encrypt xác thực HTTP-01, cả lần cấp đầu lẫn mỗi lần gia hạn.
+
+### DNS — chỗ dễ mất nửa ngày
+
+Domain là `travelog.anhnt.vn`. Điều kiện duy nhất được tính là:
+
+```bash
+dig +short travelog.anhnt.vn A     # phải ra 18.139.214.198
+```
+
+**"Đã tạo bản ghi A trong Route53" KHÔNG đồng nghĩa với việc nó phân giải.**
+`anhnt.vn` được delegate cho **Netlify DNS** (`dns1.p03.nsone.net`, SOA
+`domains+netlify.netlify.com`), nên hosted zone `anhnt.vn` trên Route53 không
+ai hỏi tới — bản ghi nằm trong đó vẫn trả về `NXDOMAIN`.
+
+Hai cách đúng:
+
+1. **Thêm bản ghi A ở Netlify DNS** — `travelog` → `18.139.214.198`. Một bản
+   ghi, không đụng gì khác.
+2. **Delegate riêng subdomain**: ở Netlify DNS thêm 4 bản ghi `NS` cho
+   `travelog` trỏ vào nameserver của hosted zone Route53
+   (`aws route53 get-hosted-zone --id <id> --query DelegationSet.NameServers`).
+   Cách này giữ được việc quản lý subdomain trong Route53.
+
+**ĐỪNG đổi nameserver của cả `anhnt.vn` sang Route53.** Domain này đang có MX
+của Google Workspace chạy qua Netlify DNS, mà zone Route53 chỉ có `NS`, `SOA`
+và một bản ghi A — chuyển nameserver là **email của cả domain chết ngay**.
 
 ### Bước 2 — chuẩn bị box
 

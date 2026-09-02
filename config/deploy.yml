@@ -36,27 +36,25 @@ servers:
     - 18.139.214.198
 
 proxy:
-  # TRUY CẬP BẰNG IP, KHÔNG CÓ TLS.
+  # HTTPS qua domain. kamal-proxy tự xin chứng chỉ Let's Encrypt lúc boot.
   #
-  # ssl: false là bắt buộc khi dùng IP: Let's Encrypt không cấp chứng chỉ cho
-  # địa chỉ IP, nên bật ssl sẽ làm ACME thất bại và app không bao giờ lên.
+  # ĐIỀU KIỆN BẮT BUỘC trước khi deploy — thiếu một cái là ACME thất bại và
+  # app không lên:
+  #   1. `dig +short travelog.anhnt.vn A` phải trả về 18.139.214.198. Không
+  #      phải "đã tạo bản ghi ở Route53" là xong: domain anhnt.vn được delegate
+  #      cho Netlify DNS (NS1), nên bản ghi phải nằm ở đó, hoặc `travelog`
+  #      phải được delegate sang Route53 bằng bản ghi NS. Xem infra/ec2/README.md.
+  #   2. Security group mở CẢ 80 và 443. Cổng 80 không phải để phục vụ app mà
+  #      để Let's Encrypt xác thực HTTP-01; đóng nó là không gia hạn được cert.
   #
-  # Không khai `host` → kamal-proxy nhận mọi Host header và đẩy hết vào app.
-  # Đó đúng là cái mình cần khi gõ thẳng IP vào trình duyệt.
+  # Khai `host` nghĩa là kamal-proxy CHỈ nhận request có Host header đúng
+  # domain này. Gõ thẳng http://18.139.214.198 sẽ không vào app nữa — đó là
+  # chủ ý, vì cert không cấp cho IP.
   #
-  # Truy cập: http://18.139.214.198  (cổng 80, KHÔNG phải 3000 — xem chú thích
-  # app_port bên dưới). Muốn cổng vào là 3000 thì thêm khối `run` vào đây:
-  #   run:
-  #     http_port: 3000
-  # rồi `bin/kamal proxy reboot`. Lúc đó phải mở cổng 3000 trong security group
-  # và origin CORS phải là "http://18.139.214.198:3000" — cổng là một phần của
-  # origin. (`kamal proxy boot_config` đã deprecated ở 2.12, đừng dùng.)
-  #
-  # Có domain rồi thì đảo lại: ssl: true + host: <domain>, và đặt
-  # APP_PROTOCOL: https ở env.clear. Không cần sửa gì khác.
-  ssl: false
-  # Cổng của app BÊN TRONG container (Thruster nghe 80 ở đó), không phải cổng
-  # người dùng gõ. 3000 chỉ là chuyện của docker compose ở máy local.
+  # app_port là cổng BÊN TRONG container (Thruster nghe 80 ở đó), không phải
+  # cổng người dùng gõ. 3000 chỉ là chuyện của docker compose ở máy local.
+  ssl: true
+  host: travelog.anhnt.vn
   app_port: 80
   healthcheck:
     path: /up # config/routes.rb:59
@@ -124,11 +122,12 @@ env:
     POSTGRES_USER: location_project
 
     # --- Host của chính app ---
-    # Đang truy cập bằng IP nên APP_PROTOCOL là http. Hai biến này quyết định
-    # URL trong mail và — qua config/environments/production.rb — có bật
-    # force_ssl hay không. Đổi sang https là đổi cả hai cùng lúc.
-    APP_HOST: 18.139.214.198
-    APP_PROTOCOL: http
+    # Hai biến này quyết định URL trong mail và — qua
+    # config/environments/production.rb — có bật force_ssl + assume_ssl hay
+    # không. Phải khớp proxy.host và proxy.ssl ở trên: https ở đây mà
+    # proxy.ssl: false là mọi request bị 301 vào một cổng 443 không ai nghe.
+    APP_HOST: travelog.anhnt.vn
+    APP_PROTOCOL: https
 
     # --- Giá trị của stack ảnh, account "media" (infra/terraform) ---
     # Không phải secret nên nằm trong git, đúng quy ước cấu hình của repo.
@@ -140,7 +139,7 @@ env:
     # riêng trong bin/kamal — hai thứ khác nhau, có thể khác region.
     AWS_REGION: ap-southeast-1
     # Chỉ là địa chỉ From. SMTP chưa cấu hình nên chưa gửi được mail thật.
-    MAILER_SENDER: no-reply@travelog.com
+    MAILER_SENDER: no-reply@anhnt.vn
 
     GOOGLE_MAPS_MAP_ID: "" # SỬA nếu dùng Advanced Markers
     RAILS_LOG_LEVEL: info

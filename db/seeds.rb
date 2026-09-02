@@ -1,14 +1,55 @@
-# Seed cho development. Idempotent — chạy lại nhiều lần không nhân đôi.
+# Seed. Idempotent — chạy lại nhiều lần không nhân đôi.
 #
-# Toạ độ là toạ độ THẬT của Hà Nội: test radius filter chỉ có nghĩa khi khoảng
-# cách giữa các điểm là khoảng cách thật (plan §18).
+# FILE NÀY CHẠY TỰ ĐỘNG TRÊN PRODUCTION. bin/docker-entrypoint gọi db:prepare,
+# và db:prepare nạp seed khi database vừa được tạo — xem
+# ActiveRecord::Tasks::DatabaseTasks#prepare_all: `seed = true if
+# database_initialized && db_config.seeds?`. Nên mọi thứ ở đây phải an toàn với
+# một môi trường thật, và không được raise (raise = container không boot nổi).
+#
+# Phân chia:
+#   - User: mọi môi trường. Nhưng ngoài development thì phải khai SEED_EMAIL +
+#     SEED_PASSWORD rõ ràng — không có mật khẩu mặc định trên máy thật.
+#   - Dữ liệu mẫu (tag, place, visit): CHỈ development. Trên production người
+#     dùng tự thêm từng cái.
+#
+# Muốn chặn hẳn mọi seed ở production thì thêm `seeds: false` vào khối
+# production của config/database.yml — Rails sẽ không gọi file này nữa.
 #
 #   docker compose exec web bin/rails db:seed
 
-user = User.find_or_initialize_by(email: ENV.fetch("SEED_EMAIL", "anh.nguyentien@pixta.co.jp"))
-user.display_name = "anh.nguyentien"
-user.password = ENV.fetch("SEED_PASSWORD", "travelog123")
-user.save!
+email    = ENV["SEED_EMAIL"].presence
+password = ENV["SEED_PASSWORD"].presence
+
+# Mặc định chỉ tồn tại ở development. Đây là lý do: một mật khẩu mặc định nằm
+# trong git mà lại tạo được account trên production là lỗ hổng, không phải tiện.
+if Rails.env.development?
+  email    ||= "anh.nguyentien@pixta.co.jp"
+  password ||= "travelog123"
+end
+
+if email && password
+  user = User.find_or_initialize_by(email: email)
+  user.display_name = ENV.fetch("SEED_DISPLAY_NAME") { email.split("@").first }
+  user.password = password
+  user.save!
+  puts "User: #{user.email}"
+else
+  # Không raise: db:prepare chạy lúc container boot, raise ở đây là app không
+  # lên được. Thiếu biến thì bỏ qua, tạo user bằng `bin/kamal console`.
+  puts "Bỏ qua seed user (#{Rails.env}): cần cả SEED_EMAIL và SEED_PASSWORD."
+end
+
+unless Rails.env.development?
+  puts "Môi trường #{Rails.env}: không seed dữ liệu mẫu."
+  return
+end
+
+# ---------------------------------------------------------------------------
+# Từ đây trở xuống CHỈ chạy ở development.
+#
+# Toạ độ là toạ độ THẬT của Hà Nội: test radius filter chỉ có nghĩa khi khoảng
+# cách giữa các điểm là khoảng cách thật (plan §18).
+# ---------------------------------------------------------------------------
 
 AREA_TAGS = [
   [ "Hồ Tây",    "#0E6E63" ],
@@ -100,4 +141,4 @@ end
 
 puts "Seed xong: #{User.count} user · #{Place.count} place · #{UserPlace.count} user_place · " \
      "#{Tag.count} tag · #{Visit.count} visit"
-puts "Đăng nhập: #{user.email} / #{ENV.fetch('SEED_PASSWORD', 'travelog123')}"
+puts "Đăng nhập: #{user.email} / #{password}"
