@@ -1,6 +1,8 @@
-<% query = local_assigns.fetch(:query, nil) %>
+<%# locals: query (optional), width_class (optional) %>
+<% query       = local_assigns.fetch(:query, nil) %>
+<% width_class = local_assigns.fetch(:width_class, "w-[220px] xl:w-[270px]") %>
 
-<%= form_with url: places_path, method: :get, class: "relative w-[220px] xl:w-[270px]",
+<%= form_with url: places_path, method: :get, class: "relative #{width_class}",
               data: { turbo_action: "advance" } do |form| %>
   <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted">⌕</span>
   <%= form.search_field :q, value: query, class: "input pl-8", placeholder: t(".placeholder") %>

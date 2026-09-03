@@ -27,10 +27,13 @@ AREA_TAGS = [
   [ "Hồ Gươm",   "#7E9BB8" ],
   [ "Ecopark",   "#A85F52" ],
   [ "Long Biên", "#6E8452" ],
-  [ "Cầu Giấy",  "#8A5F3C" ]
+  [ "Cầu Giấy",  "#8A5F3C" ],
+  [ "Đống Đa",   "#5F7E8A" ],
+  [ "Hai Bà Trưng", "#8A527E" ],
+  [ "Mỹ Đình",   "#A0873C" ]
 ].freeze
 
-VIBE_TAGS = [ "chill", "rooftop", "làm việc", "view hồ", "tiktok" ].freeze
+VIBE_TAGS = [ "chill", "rooftop", "làm việc", "view hồ", "tiktok", "hẹn hò", "ăn khuya", "brunch" ].freeze
 
 area_tags = AREA_TAGS.each_with_index.map do |(name, color), index|
   tag = user.tags.find_or_initialize_by(slug: Vietnamese.slugify(name))
@@ -67,7 +70,14 @@ PLACES = [
   [ "Xưởng Gạch Coffee",        :cafe,  21.0470, 105.8760, "Long Biên",  "Long Biên", [ "làm việc" ], false ],
   [ "Cầu Long Biên",            :sight, 21.0435, 105.8620, "Long Biên",  "Long Biên", [], true ],
   [ "The Coffee House Duy Tân", :cafe,  21.0300, 105.7860, "Cầu Giấy",   "Cầu Giấy",  [ "làm việc" ], false ],
-  [ "Bánh mì Trần Thái Tông",   :food,  21.0325, 105.7900, "Cầu Giấy",   "Cầu Giấy",  [], false ]
+  [ "Bánh mì Trần Thái Tông",   :food,  21.0325, 105.7900, "Cầu Giấy",   "Cầu Giấy",  [], false ],
+  [ "Tiệm Bánh Sáng Trung Hoà", :cafe,  21.0180, 105.7955, "Cầu Giấy",   "Cầu Giấy",  %w[brunch], false ],
+  [ "Cộng Cà Phê Láng Hạ",      :cafe,  21.0155, 105.8130, "Đống Đa",    "Đống Đa",   [ "làm việc" ], false ],
+  [ "Nướng Ngói Hoàng Cầu",     :food,  21.0225, 105.8175, "Đống Đa",    "Đống Đa",   [ "ăn khuya" ], true ],
+  [ "Bún đậu Ngõ Thịnh Quang",  :food,  21.0075, 105.8215, "Đống Đa",    "Đống Đa",   [ "ăn khuya" ], false ],
+  [ "Cà phê Vườn Trần Khát Chân", :cafe, 21.0105, 105.8570, "Hai Bà Trưng", "Hai Bà Trưng", [ "hẹn hò", "chill" ], true ],
+  [ "Lẩu Nấm Bạch Mai",         :food,  21.0020, 105.8510, "Hai Bà Trưng", "Hai Bà Trưng", [ "hẹn hò" ], false ],
+  [ "Brunch House Mỹ Đình",     :cafe,  21.0290, 105.7640, "Nam Từ Liêm", "Mỹ Đình",   [ "brunch", "làm việc" ], false ]
 ].freeze
 
 user_places = PLACES.map do |name, type, lat, lng, district, area, vibes, been|
@@ -101,11 +111,52 @@ user_places.select { |_, been| been }.each_with_index do |(user_place, _), index
   user_place.visits.create!(
     visited_at: visited_at,
     note: [ "Bánh sen ngon", "Đi buổi chiều muộn", nil, "Đông quá, lần sau đi sớm" ].sample,
-    companions: [ "một mình", "cùng Linh", nil ].sample,
     source: :manual
   )
 end
 
+UNTAGGED_PLACES = [
+  { name: "Bánh Cuốn Bà Hoành",             type: :food,  lat: 21.0340, lng: 105.8455, district: "Hoàn Kiếm",
+    source: "https://www.tiktok.com/@hanoifood/video/7412903845100000011" },
+  { name: "Cà phê Muối 3 Anh Em",           type: :cafe,  lat: 21.0165, lng: 105.8225, district: "Đống Đa",
+    source: "https://www.tiktok.com/@hanoicafe/video/7412903845100000012" },
+  { name: "Quán Ốc Cô Oanh Nghĩa Tân",      type: :food,  lat: 21.0405, lng: 105.7925, district: "Cầu Giấy",
+    source: "https://www.facebook.com/reel/1122334455667788" },
+  { name: "Chè Bốn Mùa Hàng Cân",           type: :food,  lat: 21.0350, lng: 105.8500, district: "Hoàn Kiếm",
+    source: "https://www.tiktok.com/@hanoifood/video/7412903845100000013", note: "Linh rec, đi buổi tối" },
+  { name: "Ramen Ryukishin Trần Duy Hưng",  type: :food,  lat: 21.0080, lng: 105.7990, district: "Cầu Giấy" },
+  { name: "Bún ngan Nhàn",                  type: :food,  lat: 21.0320, lng: 105.8480, district: "Hoàn Kiếm" },
+  { name: "Tiệm cà phê view cầu Nhật Tân",  type: :cafe,
+    source: "https://www.tiktok.com/@hanoicafe/video/7412903845100000014" },
+  { name: "Nhà hàng Nhật ngõ 21 Kim Mã",    type: :food,
+    source: "https://www.tiktok.com/@hanoifood/video/7412903845100000015" },
+  { name: "Rooftop Hàng Buồm",              type: :other, nickname: "quán rooftop trong video",
+    source: "https://www.tiktok.com/@hanoicafe/video/7412903845100000016" }
+].freeze
+
+UNTAGGED_PLACES.each do |attrs|
+  place = Place.find_or_initialize_by(display_name: attrs[:name])
+  place.update!(
+    place_type:     attrs[:type],
+    lat:            attrs[:lat],
+    lng:            attrs[:lng],
+    coords_source:  :manual,
+    city:           attrs[:district] ? "Hà Nội" : nil,
+    district:       attrs[:district],
+    cached_address: attrs[:district] ? "#{attrs[:district]}, Hà Nội" : nil
+  )
+
+  user_place = user.user_places.find_or_initialize_by(place: place)
+
+  if user_place.new_record?
+    user_place.nickname   = attrs[:nickname]
+    user_place.note       = attrs[:note]
+    user_place.source_url = attrs[:source]
+  end
+
+  user_place.save!
+end
+
 puts "Seed xong: #{User.count} user · #{Place.count} place · #{UserPlace.count} user_place · " \
-     "#{Tag.count} tag · #{Visit.count} visit"
+     "#{Tag.count} tag · #{Visit.count} visit · #{UserPlace.where.missing(:taggings).count} chưa đánh tag"
 puts "Đăng nhập: #{user.email} / #{password}"

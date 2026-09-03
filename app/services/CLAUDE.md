@@ -82,7 +82,7 @@ Plus, specific to services:
 
 This folder is where "one more flag" is most tempting, because a service already has a parameter list.
 
-**✅ PREFER:** a second service, or a second method with a name that says what it returns. `RadiusQuery#call` returns the list; `#counts` returns the breakdown; `#places_without_coords` returns the problem cases. Three names, three obvious return types.
+**✅ PREFER:** a second service, or a second method with a name that says what it returns. `RadiusQuery#call` returns the list; `#counts` returns the breakdown; `#map_points` returns the marker payload. Three names, three obvious return types.
 
 **❌ AVOID:** `RadiusQuery#call(mode: :counts)`. `ThumbnailUrl.call(key, size, public_link: true)`. A flag that changes the return *type* is two methods sharing a name.
 

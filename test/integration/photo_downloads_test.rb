@@ -13,15 +13,58 @@ class PhotoDownloadsTest < ActionDispatch::IntegrationTest
     get place_path(@user_place)
 
     assert_response :success
-    assert_select "[data-controller='carousel']", count: 1
-    assert_select "[data-carousel-target='viewport'].snap-x", count: 1
-    assert_select "[data-carousel-target='slide']", count: 2
+    assert_select "[data-controller~='carousel'][data-controller~='lightbox']", count: 1
+    assert_select "[data-carousel-target='viewport'].snap-x", count: 2
+    assert_select "[data-carousel-target='slide'].media-skeleton", count: 2
     assert_select "button[data-carousel-target='thumbnail']", count: 2
+    assert_select "[data-carousel-target='thumbnailViewport']", count: 1 do
+      assert_select "[data-controller='bulk-download']", count: 0
+      assert_select "form", count: 0
+    end
     assert_select "a[href='#{download_place_photo_path(@user_place, @first_photo)}']", count: 1
     assert_select "[data-controller='bulk-download']" \
                   "[data-bulk-download-url-value='#{download_all_place_photos_path(@user_place, format: :json)}']",
                   count: 1
     assert_select "button[data-bulk-download-target='button']", count: 1
+  end
+
+  test "deleting a photo selects the following photo" do
+    third_photo = attached_photo("third-original.jpg", "third original")
+
+    delete place_photo_path(@user_place, @second_photo)
+
+    assert_redirected_to place_path(@user_place, photo: third_photo)
+    follow_redirect!
+    assert_select "[data-carousel-initial-index-value='1']"
+    assert_select "button[data-carousel-index='1'][aria-pressed='true']"
+  end
+
+  test "gallery opens every photo full size in a lightbox" do
+    get place_path(@user_place)
+
+    assert_response :success
+    assert_select "[data-controller~='lightbox']", count: 1
+    assert_select "button[data-action='lightbox#open'][data-lightbox-index='0']", count: 1
+    assert_select "button[data-action='lightbox#open'][data-lightbox-index='1']", count: 1
+    assert_select "[data-lightbox-target='panel'][hidden]", count: 1 do
+      assert_select "[data-controller~='carousel']", count: 1
+      assert_select "[data-lightbox-target='viewport'].snap-x", count: 1
+      assert_select "[data-lightbox-target='slide']", count: 2
+      assert_select "[data-lightbox-target='slide'] img.object-contain\\!", count: 2
+    end
+  end
+
+  test "review photo selection updates inside its own Turbo Frame" do
+    create(:visit, user_place: @user_place)
+
+    get place_path(@user_place)
+
+    assert_response :success
+    assert_select "turbo-frame#review_attachments_user_place_#{@user_place.id}" do
+      assert_select "form[action='#{toggle_google_selection_place_photo_path(@user_place, @first_photo)}']", count: 1
+      assert_select "form[action='#{mark_reviewed_place_review_kit_path(@user_place)}']", count: 0
+    end
+    assert_select "form[action='#{mark_reviewed_place_review_kit_path(@user_place)}']", count: 1
   end
 
   test "individual download redirects to the original attachment" do

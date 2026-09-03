@@ -3,7 +3,15 @@ Rails.application.routes.draw do
 
   root "collections#index"
 
+  get "collections/untagged", to: "collections#untagged", as: :untagged_collections
+  get "collections/:kind",    to: "collections#tag_group", as: :tag_collections,
+      constraints: { kind: /area|vibe/ }
+
   resources :tags, except: [ :show ] do
+    collection do
+      post :quick_create
+    end
+
     member do
       get :places
       patch :share
@@ -19,7 +27,7 @@ Rails.application.routes.draw do
       patch :toggle_priority
     end
 
-    resources :visits, only: [ :create, :destroy ]
+    resources :visits, only: [ :create, :update, :destroy ]
 
     resources :photos, only: [ :create, :destroy ] do
       collection do

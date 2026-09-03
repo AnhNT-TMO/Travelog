@@ -1,0 +1,7 @@
+<%# locals: tags, counts_by_tag, covers_by_tag %>
+<div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4">
+  <% tags.each do |tag| %>
+    <%= render "shared/collection_card", tag: tag, counts: counts_by_tag[tag.id],
+               cover: covers_by_tag[tag.id] %>
+  <% end %>
+</div>

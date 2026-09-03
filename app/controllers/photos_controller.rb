@@ -9,9 +9,10 @@ class PhotosController < ApplicationController
   end
 
   def destroy
+    next_photo = next_photo_after_destroy
     @user_place.update!(cover_photo_id: nil) if @user_place.cover_photo_id == @photo.id
     @photo.destroy!
-    redirect_to place_path(@user_place), notice: t(".destroyed"), status: :see_other
+    redirect_to place_path(@user_place, photo: next_photo), notice: t(".destroyed"), status: :see_other
   end
 
   def download
@@ -50,5 +51,12 @@ class PhotosController < ApplicationController
 
       { url: rails_blob_path(photo.file, disposition: "attachment"), name: photo.file.filename.to_s }
     end
+  end
+
+  def next_photo_after_destroy
+    slides = [ @user_place.cover_photo, *@user_place.photos.ordered ].compact.uniq
+    current_index = slides.index(@photo)
+
+    slides[current_index + 1] || (slides[current_index - 1] if current_index.positive?)
   end
 end

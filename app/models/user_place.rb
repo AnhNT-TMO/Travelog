@@ -1,4 +1,6 @@
 class UserPlace < ApplicationRecord
+  LINK_PATTERN = %r{\A(https?://|[\w-]+(\.[\w-]+)*\.[a-z]{2,}(/|\z))}i
+
   enum :status,              { wishlist: 0, visited: 1 }
   enum :google_review_state, { unknown: 0, not_reviewed: 1, reviewed: 2 }, prefix: :review
 
@@ -42,6 +44,29 @@ class UserPlace < ApplicationRecord
   scope :with_card_data, -> {
     includes(:place, :tags, cover_photo: { file_attachment: :blob })
   }
+
+  scope :matching, ->(query) {
+    term = query.to_s.strip
+    next all if term.blank?
+
+    found = where(place: Place.name_matching(term))
+              .or(where("lower(immutable_unaccent(user_places.nickname)) LIKE lower(immutable_unaccent(?))", "%#{term}%"))
+
+    link = normalized_link(term)
+    link ? found.or(where("lower(user_places.source_url) LIKE ?", "%#{link}%")) : found
+  }
+
+  def self.normalized_link(value)
+    text = value.to_s.strip
+    return nil unless text.match?(LINK_PATTERN)
+
+    text.sub(%r{\Ahttps?://}i, "")
+        .sub(/\Awww\./i, "")
+        .split(/[?#]/).first.to_s
+        .chomp("/")
+        .downcase
+        .presence
+  end
 
   def attach_photos!(signed_ids, user:, visit: nil)
     blobs = Array(signed_ids).reject(&:blank?).map do |signed_id|

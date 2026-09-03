@@ -1,5 +1,5 @@
 class Tag < ApplicationRecord
-  enum :kind,       { area: 0, vibe: 1, free: 2 }
+  enum :kind,       { area: 0, vibe: 1 }
   enum :visibility, { private_only: 0, unlisted: 1 }, prefix: :share
 
   belongs_to :user

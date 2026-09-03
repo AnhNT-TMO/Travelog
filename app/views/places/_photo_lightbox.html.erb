@@ -1,0 +1,43 @@
+<%# Expects slides. %>
+<div data-lightbox-target="panel" hidden
+     data-action="click->lightbox#closeOnBackdrop keydown->lightbox#closeOnEscape"
+     class="fixed inset-0 z-40 flex flex-col bg-black/90">
+
+  <div class="flex flex-none justify-end p-2.5">
+    <button type="button"
+            class="btn h-11 w-11 border-white/50 bg-black/50 p-0 text-lg text-white backdrop-blur-[6px] hover:bg-black/70"
+            aria-label="<%= t(".close") %>"
+            data-action="lightbox#close">✕</button>
+  </div>
+
+  <div data-controller="carousel" data-lightbox-target="carousel" class="relative min-h-0 flex-1">
+    <div data-carousel-target="viewport" data-lightbox-target="viewport" tabindex="-1"
+         data-action="scroll->carousel#scroll:passive scrollend->carousel#scrollEnd keydown->carousel#navigate"
+         class="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain motion-safe:scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <% slides.each do |photo| %>
+        <div data-carousel-target="slide" data-lightbox-target="slide"
+             class="flex h-full w-full flex-none snap-center snap-always items-center justify-center px-2.5 pb-2.5">
+          <%= photo_image_tag photo, sizes: "100vw", srcset: false,
+                derivative_size: Photos::ThumbnailUrl::PREVIEW,
+                css_class: "object-contain!" %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if slides.many? %>
+      <button type="button"
+              class="btn absolute left-2.5 top-1/2 hidden h-11 w-11 -translate-y-1/2 border-white/50 bg-black/50 p-0 text-xl text-white backdrop-blur-[6px] hover:bg-black/70 sm:inline-flex"
+              aria-label="<%= t(".previous_photo") %>"
+              data-carousel-target="previous"
+              data-action="carousel#previous">‹</button>
+      <button type="button"
+              class="btn absolute right-2.5 top-1/2 hidden h-11 w-11 -translate-y-1/2 border-white/50 bg-black/50 p-0 text-xl text-white backdrop-blur-[6px] hover:bg-black/70 sm:inline-flex"
+              aria-label="<%= t(".next_photo") %>"
+              data-carousel-target="next"
+              data-action="carousel#next">›</button>
+    <% end %>
+
+    <span data-carousel-target="position"
+          class="num absolute bottom-4 right-2.5 rounded-pill bg-black/50 px-2 py-0.5 text-2xs text-white backdrop-blur-[6px]">1 / <%= slides.size %></span>
+  </div>
+</div>

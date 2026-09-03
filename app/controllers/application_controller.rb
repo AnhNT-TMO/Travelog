@@ -25,8 +25,13 @@ class ApplicationController < ActionController::Base
     session[NEARBY_CENTER_KEY]
   end
 
-  def remember_nearby_center(lat, lng)
-    session[NEARBY_CENTER_KEY] = { "lat" => lat.to_f, "lng" => lng.to_f }
+  def remember_nearby_center(lat, lng, name = nil)
+    session[NEARBY_CENTER_KEY] = {
+      "lat"  => lat.to_f,
+      "lng"  => lng.to_f,
+      "name" => name.presence,
+      "at"   => Time.current.to_i
+    }
   end
 
   def set_current_user

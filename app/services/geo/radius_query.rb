@@ -2,7 +2,8 @@ module Geo
   class RadiusQuery
     MIN_RADIUS_M = 100
     MAX_RADIUS_M = 50_000
-    DEFAULT_RADIUS_M = 1_800
+    DEFAULT_RADIUS_M = 3_000
+    BAND_M = 1_000
 
     DEFAULT_LAT = 21.0287
     DEFAULT_LNG = 105.8524
@@ -35,28 +36,37 @@ module Geo
       }
     end
 
-    def places_without_coords
-      @user.user_places.joins(:place).where(places: { lat: nil }).or(
-        @user.user_places.joins(:place).where(places: { lng: nil })
-      )
+    def band_points
+      band.for_state(@state)
+          .tagged_with_all(@tag_ids)
+          .distinct
+          .map { |user_place| point_for(user_place, "out_of_radius") }
     end
 
     def map_points(user_places)
-      user_places.map do |user_place|
-        {
-          id:     user_place.id,
-          lat:    user_place.place.lat,
-          lng:    user_place.place.lng,
-          name:   user_place.label,
-          status: user_place.status
-        }
-      end
+      user_places.map { |user_place| point_for(user_place, user_place.status) }
     end
 
     private
 
     def base
       @user.user_places.joins(:place).merge(Place.within_radius(@lat, @lng, @radius_m))
+    end
+
+    def band
+      @user.user_places.joins(:place)
+           .merge(Place.in_radius_band(@lat, @lng, @radius_m, @radius_m + BAND_M))
+           .preload(:place)
+    end
+
+    def point_for(user_place, status)
+      {
+        id:     user_place.id,
+        lat:    user_place.place.lat,
+        lng:    user_place.place.lng,
+        name:   user_place.label,
+        status: status
+      }
     end
 
     def distance_select

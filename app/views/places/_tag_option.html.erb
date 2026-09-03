@@ -1,0 +1,9 @@
+<%# locals: tag, checked %>
+<label class="chip has-[:checked]:border-primary has-[:checked]:bg-primary-tint has-[:checked]:font-semibold has-[:checked]:text-primary">
+  <%= check_box_tag "user_place[tag_ids][]", tag.id, checked,
+        id: "user_place_tag_#{tag.id}", class: "sr-only" %>
+  <% if tag.color.present? %>
+    <span class="h-[7px] w-[7px] flex-none rounded-full" style="background: <%= tag.color %>"></span>
+  <% end %>
+  <%= tag.name %>
+</label>

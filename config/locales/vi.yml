@@ -10,9 +10,18 @@ vi:
       visits: Lần đến
   activerecord:
     attributes:
+      place:
+        cached_address: Địa chỉ
+        city: Tỉnh / thành
+        display_name: Tên địa điểm
+        district: Quận / huyện
+        lat: Vĩ độ
+        lng: Kinh độ
+        place_type: Loại
       tag:
         kind: Loại
         name: Tên tag
+        slug: Tên tag
       user_place:
         my_rating: Tôi chấm
         nickname: Tên tôi đặt
@@ -20,7 +29,6 @@ vi:
         source_url: Nguồn
         status: Trạng thái
       visit:
-        companions: Đi cùng
         visited_at: Thời điểm đến
     models:
       photo: Ảnh
@@ -32,8 +40,9 @@ vi:
     index:
       empty_description: Check-in một địa điểm hoặc mở rộng khoảng thời gian.
       empty_title: Chưa có lần đến nào trong khoảng này
-      export_pdf: Xuất PDF (phase 2)
-      export_pdf_title: Phase 2
+      export_pdf: Xuất PDF
+      export_pdf_badge: Sắp có
+      export_pdf_title: Tính năng đang được phát triển
       from: Từ ngày
       month_summary: "%{month} — %{places} nơi · %{photos} ảnh"
       submit: Xem
@@ -46,13 +55,25 @@ vi:
     name: Travelog
   collections:
     index:
-      add_place: "＋ Thêm địa điểm"
       by_area: Theo khu vực
       by_vibe: Theo vibe
       manage_tags: Quản lý tag
-      recent: Mới lưu
-      see_all: Xem tất cả
+      see_all_groups:
+        one: Xem tất cả %{count} nhóm
+        other: Xem tất cả %{count} nhóm
+      see_all_places:
+        one: Xem tất cả %{count} chỗ
+        other: Xem tất cả %{count} chỗ
       title: Bộ sưu tập
+      untagged_hint: Những chỗ bạn lưu nhanh, chưa gắn nhóm nào.
+    tag_group:
+      empty_description: Tạo tag để gom các địa điểm lại thành bộ sưu tập.
+      empty_title: Chưa có nhóm nào ở đây
+      manage_tags: Quản lý tag
+    untagged:
+      empty_description: Mọi địa điểm đều đã nằm trong ít nhất một nhóm.
+      empty_title: Đánh tag hết rồi
+      hint: Bấm vào từng chỗ rồi chọn Sửa để gắn nhóm, đổi tên hoặc thêm ảnh.
   common:
     distance_km: "%{value} km"
     groups_count:
@@ -62,9 +83,9 @@ vi:
     photos_count:
       one: "%{count} ảnh"
       other: "%{count} ảnh"
-    places_pending:
-      one: "%{count} chỗ chờ đi"
-      other: "%{count} chỗ chờ đi"
+    places_count:
+      one: "%{count} chỗ"
+      other: "%{count} chỗ"
     powered_by_google: Powered by Google
     unknown_area: Chưa rõ khu vực
     visits_count:
@@ -114,6 +135,7 @@ vi:
     album: Album
     collections: Bộ sưu tập
     group_area: Khu vực
+    group_untagged: Chưa đánh tag
     group_vibe: Vibe
     manage_tags: Quản lý tag
     me: Tôi
@@ -125,14 +147,16 @@ vi:
       as_the_crow_flies: Khoảng cách là đường chim bay, tính bằng earth_distance của
         Postgres.
       center: Điểm trung tâm
-      center_default: Hồ Gươm (mặc định)
+      center_default: Hồ Gươm (dự phòng)
       center_placeholder: Tìm địa điểm trên Google Maps
       current_location: Vị trí hiện tại
       custom_center: Điểm đã chọn trên bản đồ
-      missing_coords:
-        one: "%{count} nơi không có toạ độ nên không tính được khoảng cách."
-        other: "%{count} nơi không có toạ độ nên không tính được khoảng cách."
+      filtered_by: Đang lọc theo
+      location_retry: Thử lại
+      location_unavailable: Chưa bật được vị trí, đang tạm lấy Hồ Gươm làm trung tâm.
+        Cho phép truy cập vị trí trong trình duyệt rồi bấm “Dùng vị trí hiện tại”.
       out_of_radius: Ngoài bán kính
+      out_of_radius_legend: Ngoài bán kính (trong %{distance} kế tiếp)
       radius: Bán kính
       title: Quanh đây
       use_my_location: "⌖ Dùng vị trí hiện tại"
@@ -153,8 +177,6 @@ vi:
     checkin_sheet:
       cancel: Huỷ
       close: Đóng
-      companions: Đi cùng
-      companions_placeholder: Linh, Minh
       note: Ghi chú (không bắt buộc)
       note_placeholder: Đi với ai, ngồi đâu, ăn gì…
       pick_photos: "＋ Chọn ảnh từ máy"
@@ -172,35 +194,55 @@ vi:
       destroy_confirm: Xoá địa điểm này khỏi sổ của bạn? Ảnh và các lần đến sẽ mất
         theo.
       title: Sửa địa điểm
+    edit_visit_sheet:
+      cancel: Huỷ
+      close: Đóng
+      existing_photos: Ảnh hiện có
+      existing_photos_hint: Chọn ảnh muốn xoá khỏi kho ảnh khi lưu thay đổi.
+      note: Ghi chú (không bắt buộc)
+      note_placeholder: Đi với ai, ngồi đâu, ăn gì…
+      pick_photos: "＋ Thêm ảnh từ máy"
+      pick_photos_hint: Ảnh mới sẽ được gắn với lần đến này.
+      remove_new_photo: Bỏ ảnh mới này
+      remove_photo: Xoá ảnh này
+      submit: Lưu thay đổi
+      title: Sửa lần đến
+      visited_at: Ngày & giờ
     form:
       address: Địa chỉ
-      address_placeholder: 614 Lạc Long Quân, Tây Hồ, Hà Nội
+      address_placeholder: Tự điền khi bạn chọn gợi ý
+      advanced: Nâng cao — địa chỉ & toạ độ
+      advanced_hint: Các ô này tự điền khi bạn chọn gợi ý. Chỉ sửa khi Google trả
+        về sai.
       autocomplete_hint: Nhập ít nhất 3 ký tự rồi chọn một gợi ý từ Google Maps; địa
         chỉ và toạ độ sẽ được điền tự động.
       cancel: Huỷ
       city: Tỉnh / thành
-      city_placeholder: Hà Nội
-      coords_hint: Thiếu toạ độ thì nơi này không bao giờ xuất hiện ở trang Quanh
-        đây.
+      city_placeholder: Tự điền khi bạn chọn gợi ý
+      coords_missing: Chưa có toạ độ
+      coords_present: Đã có toạ độ
       create: Lưu vào sổ
       display_name: Tên địa điểm
-      display_name_placeholder: Sen Tây Hồ Deli
+      display_name_placeholder: Gõ tên quán để tìm trên Google Maps
       district: Quận / huyện
-      district_placeholder: Tây Hồ
+      district_placeholder: Tự điền khi bạn chọn gợi ý
+      error_title:
+        one: 'Chưa lưu được, còn %{count} chỗ cần sửa:'
+        other: 'Chưa lưu được, còn %{count} chỗ cần sửa:'
       lat: Vĩ độ
       lng: Kinh độ
       nickname: Tên tôi đặt (không bắt buộc)
-      nickname_placeholder: Quán bánh sen ngõ 614
+      nickname_placeholder: Tên bạn hay gọi nơi này
       note: Ghi chú
-      note_placeholder: Nghe nói bánh sen ngon, đi buổi chiều muộn.
+      note_placeholder: Ghi lại điều bạn muốn nhớ về nơi này
       place_type: Loại
       priority: Đánh dấu ưu tiên
       save: Lưu thay đổi
       source_url: Link TikTok / Facebook
       source_url_placeholder: Dán link để sau xem lại
       tags: Tag
-      tags_hint_html: Chưa có tag phù hợp? %{link}.
-      tags_manage: Tạo tag mới
+      tags_hint_html: Muốn sửa hoặc xoá tag? %{link}.
+      tags_manage: Quản lý tag
     gallery:
       add_photos: "＋ Thêm ảnh"
       current_cover: Ảnh bìa hiện tại
@@ -212,19 +254,34 @@ vi:
       make_cover: Đặt làm ảnh bìa
       next_photo: Ảnh tiếp theo
       nothing_to_download: Chưa có ảnh nào để tải.
+      open_photo: Xem ảnh %{number} ở cỡ đầy đủ
       previous_photo: Ảnh trước
       show_photo: Xem ảnh %{number}
     index:
-      add_place: "＋ Thêm địa điểm"
       title: Tất cả địa điểm
     new:
       title: Thêm địa điểm
+    photo_lightbox:
+      close: Đóng
+      next_photo: Ảnh tiếp theo
+      previous_photo: Ảnh trước
     show:
       add_visit: "＋ Thêm lần đến"
       crumb: Bộ sưu tập
       edit: "✎ Sửa"
       no_visits_description: Bấm “Check in” để ghi lại lần đầu tiên.
       no_visits_title: Chưa có lần đến nào
+    tag_picker:
+      add: "＋ Tag mới"
+    tag_sheet:
+      cancel: Huỷ
+      close: Đóng
+      color: Màu chấm
+      kind: Loại tag
+      name: Tên tag
+      name_placeholder: 'Ví dụ: Hồ Tây, chill, ăn khuya…'
+      submit: Tạo tag
+      title: Tag mới
     update:
       updated: Đã cập nhật.
   public_collections:
@@ -245,6 +302,8 @@ vi:
     collection_card:
       counts_html: "<b>%{wishlist}</b> chưa đến"
       visited_html: "<b>%{visited}</b> đã đến"
+    flash:
+      dismiss: Đóng thông báo
     place_detail:
       area: Khu vực
       check_in: Check in
@@ -291,7 +350,9 @@ vi:
     search_field:
       placeholder: Tìm hoặc dán link…
     visit_timeline:
-      companions: 'Cùng: %{names}'
+      destroy: Xoá
+      destroy_confirm: Xoá lần đến này? Ảnh của lần đến vẫn được giữ trong kho ảnh.
+      edit: Sửa
       title: Các lần đến
   status:
     priority: Ưu tiên
@@ -299,7 +360,6 @@ vi:
     wishlist: Muốn đến
   tag_kind:
     area: Khu vực
-    free: Tự do
     vibe: Vibe
   tags:
     create:
@@ -315,7 +375,7 @@ vi:
       kind_hint: Khu vực hiện ở nhóm trên của sidebar, vibe hiện ở nhóm dưới và dùng
         làm chip lọc.
       name: Tên tag
-      name_placeholder: Hồ Tây
+      name_placeholder: 'Ví dụ: Hồ Tây, chill, ăn khuya…'
       submit: Lưu
     index:
       empty_description: Tạo tag để gom các địa điểm lại thành bộ sưu tập.
@@ -325,7 +385,6 @@ vi:
     new:
       title: Tag mới
     places:
-      add_place: "＋ Thêm vào nhóm này"
       crumb: Bộ sưu tập
       distance_sort_excluded:
         one: "%{count} nơi không có toạ độ (hoặc ở quá xa) nên không nằm trong danh
@@ -359,3 +418,5 @@ vi:
       created: Đã ghi lần đến.
     destroy:
       destroyed: Đã xoá lần đến.
+    update:
+      updated: Đã cập nhật lần đến.

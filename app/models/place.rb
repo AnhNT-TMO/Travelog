@@ -22,6 +22,17 @@ class Place < ApplicationRecord
     )
   }
 
+  scope :in_radius_band, ->(lat, lng, inner_meters, outer_meters) {
+    with_coords.where(
+      sanitize_sql_array([
+        "earth_box(ll_to_earth(?, ?), ?) @> ll_to_earth(places.lat, places.lng) " \
+        "AND earth_distance(ll_to_earth(?, ?), ll_to_earth(places.lat, places.lng)) > ? " \
+        "AND earth_distance(ll_to_earth(?, ?), ll_to_earth(places.lat, places.lng)) <= ?",
+        lat, lng, outer_meters, lat, lng, inner_meters, lat, lng, outer_meters
+      ])
+    )
+  }
+
   scope :select_distance_from, ->(lat, lng) {
     select(sanitize_sql_array([
       "places.*, earth_distance(ll_to_earth(?, ?), ll_to_earth(places.lat, places.lng)) AS distance_m",

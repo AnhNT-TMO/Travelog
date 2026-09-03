@@ -15,14 +15,15 @@
               lg:grid lg:grid-cols-[minmax(0,1fr)_372px] lg:grid-rows-[auto_auto] lg:items-start">
 
     <section class="overflow-hidden rounded-lg border border-line bg-surface lg:col-start-1 lg:row-start-1">
-      <%= render "places/gallery", user_place: @user_place, photos: @photos %>
+      <%= render "places/gallery", user_place: @user_place, photos: @photos,
+                  selected_photo_id: @selected_photo_id %>
     </section>
 
     <aside class="overflow-hidden rounded-lg border border-line bg-surface lg:col-start-2 lg:row-span-2 lg:row-start-1">
       <%= render "shared/place_detail", user_place: @user_place %>
     </aside>
 
-    <section class="rounded-lg border border-line bg-surface p-3.5 lg:col-start-1 lg:row-start-2">
+    <section id="visits" class="rounded-lg border border-line bg-surface p-3.5 lg:col-start-1 lg:row-start-2">
       <div class="mb-2 flex items-baseline gap-2">
         <h3 class="text-md font-bold tracking-tight"><%= t("shared.visit_timeline.title") %></h3>
         <span class="num text-xs text-muted">
@@ -33,7 +34,7 @@
       </div>
 
       <% if @visits.any? %>
-        <%= render "shared/visit_timeline", visits: @visits %>
+        <%= render "shared/visit_timeline", visits: @visits, user_place: @user_place %>
       <% else %>
         <%= render "shared/empty", icon: "◷", title: t(".no_visits_title"), description: t(".no_visits_description") %>
       <% end %>

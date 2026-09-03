@@ -1,6 +1,14 @@
 import { Controller } from "@hotwired/stimulus"
 
+const PILL_BY_STATUS = {
+  visited: "pill--visited",
+  wishlist: "pill--wish",
+  out_of_radius: "pill--noreview"
+}
+
 let mapsSdkPromise
+let sharedMap
+let sharedCamera
 
 export default class extends Controller {
   static targets = ["canvas"]
@@ -10,12 +18,24 @@ export default class extends Controller {
     center: Object,
     radius: Number,
     places: Array,
+    band: Array,
     customCenterLabel: String,
     statusLabels: Object
   }
 
-  async connect() {
+  connect() {
+    this.#setup()
+  }
+
+  canvasTargetConnected() {
+    this.#setup()
+  }
+
+  async #setup() {
+    if (this.building || !this.hasCanvasTarget) return
     if (!this.apiKeyValue || !this.mapIdValue) return
+
+    this.building = true
 
     let Map, AdvancedMarkerElement, PinElement
     try {
@@ -29,14 +49,21 @@ export default class extends Controller {
       return
     }
 
-    this.map = new Map(this.canvasTarget, {
-      center: this.centerValue,
-      zoom: this.#zoomForRadius(this.radiusValue),
-      mapId: this.mapIdValue,
-      disableDefaultUI: true,
-      zoomControl: true,
-      gestureHandling: "greedy"
-    })
+    if (sharedMap && sharedMap.getDiv() === this.canvasTarget) {
+      this.map = sharedMap
+      this.#moveCamera()
+    } else {
+      this.map = new Map(this.canvasTarget, {
+        center: this.centerValue,
+        zoom: this.#zoomForRadius(this.radiusValue),
+        mapId: this.mapIdValue,
+        disableDefaultUI: true,
+        zoomControl: true,
+        gestureHandling: "greedy"
+      })
+      sharedMap = this.map
+      sharedCamera = this.#camera()
+    }
 
     this.circle = new google.maps.Circle({
       map: this.map,
@@ -58,7 +85,10 @@ export default class extends Controller {
     })
     this.centerMarker.addListener("dragend", (event) => this.#recentre(event.latLng))
 
-    this.pins = this.placesValue.map((point, index) => this.#buildPin(point, index + 1, AdvancedMarkerElement))
+    this.pins = [
+      ...this.placesValue.map((point, index) => this.#buildPin(point, index + 1, AdvancedMarkerElement)),
+      ...this.bandValue.map((point) => this.#buildPin(point, null, AdvancedMarkerElement))
+    ]
     this.mapListeners = [
       this.map.addListener("idle", () => this.#scheduleLayout()),
       this.map.addListener("click", () => this.#select(null))
@@ -92,14 +122,16 @@ export default class extends Controller {
   }
 
   #buildPin(point, order, AdvancedMarkerElement) {
+    const numbered = order !== null
+
     const element = document.createElement("div")
-    element.className = "map-pin"
+    element.className = numbered ? "map-pin" : "map-pin map-pin--faint"
     element.dataset.status = point.status
     element.dataset.state = "idle"
 
     const dot = document.createElement("span")
     dot.className = "map-pin__dot num"
-    dot.textContent = order
+    if (numbered) dot.textContent = order
     element.appendChild(dot)
 
     const name = document.createElement("span")
@@ -113,21 +145,23 @@ export default class extends Controller {
     cardName.className = "map-pin__card-name"
     cardName.textContent = point.name
     const status = document.createElement("span")
-    status.className = point.status === "visited" ? "pill pill--visited" : "pill pill--wish"
+    status.className = `pill ${PILL_BY_STATUS[point.status] || "pill--wish"}`
     status.textContent = this.statusLabelsValue[point.status] || ""
     card.append(cardName, status)
     element.appendChild(card)
+
+    const zIndex = numbered ? this.placesValue.length - order : 0
 
     const marker = new AdvancedMarkerElement({
       map: this.map,
       position: { lat: point.lat, lng: point.lng },
       title: point.name,
       gmpClickable: true,
-      zIndex: this.placesValue.length - order,
+      zIndex,
       content: element
     })
 
-    const pin = { point, order, marker, element, name, card, baseZIndex: this.placesValue.length - order }
+    const pin = { point, order, marker, element, name, card, baseZIndex: zIndex }
 
     element.addEventListener("mouseenter", () => this.#emphasize(pin))
     element.addEventListener("mouseleave", () => this.#emphasize(null))
@@ -294,6 +328,20 @@ export default class extends Controller {
     })
 
     return mapsSdkPromise
+  }
+
+  #camera() {
+    return { lat: this.centerValue.lat, lng: this.centerValue.lng, radius: this.radiusValue }
+  }
+
+  #moveCamera() {
+    const next = this.#camera()
+    const previous = sharedCamera
+    sharedCamera = next
+    if (!previous) return
+
+    if (previous.lat !== next.lat || previous.lng !== next.lng) this.map.panTo(this.centerValue)
+    if (previous.radius !== next.radius) this.map.setZoom(this.#zoomForRadius(next.radius))
   }
 
   #zoomForRadius(meters) {

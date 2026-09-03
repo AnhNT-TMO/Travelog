@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [
     "input", "results", "list", "status", "placeId", "address",
-    "district", "city", "lat", "lng", "placeType"
+    "district", "city", "lat", "lng", "placeType", "coordsStatus"
   ]
 
   static values = {
@@ -25,6 +25,7 @@ export default class extends Controller {
       if (!this.element.contains(event.target)) this.#hideResults()
     }
     document.addEventListener("pointerdown", this.closeOnOutsideClick)
+    this.refreshCoords()
   }
 
   disconnect() {
@@ -37,6 +38,7 @@ export default class extends Controller {
   search() {
     const input = this.inputTarget.value.trim()
     if (input !== this.inputTarget.dataset.selectedValue) this.#clearSelection()
+    this.refreshCoords()
 
     clearTimeout(this.timer)
     this.autocompleteRequest?.abort()
@@ -170,6 +172,7 @@ export default class extends Controller {
       this.#setTarget("lat", details.lat)
       this.#setTarget("lng", details.lng)
       this.#setTarget("placeType", details.place_type)
+      this.refreshCoords()
       this.sessionToken = null
       this.#hideStatus()
 
@@ -177,6 +180,19 @@ export default class extends Controller {
     } catch (error) {
       if (error.name !== "AbortError") this.#showError(error.message)
     }
+  }
+
+  refreshCoords() {
+    if (!this.hasCoordsStatusTarget) return
+
+    this.coordsStatusTarget.hidden = this.inputTarget.value.trim() === ""
+
+    const filled = this.hasLatTarget && this.hasLngTarget &&
+      this.latTarget.value.trim() !== "" && this.lngTarget.value.trim() !== ""
+
+    this.coordsStatusTarget.querySelectorAll("[data-coords-state]").forEach((badge) => {
+      badge.hidden = (badge.dataset.coordsState === "present") !== filled
+    })
   }
 
   #setTarget(name, value) {

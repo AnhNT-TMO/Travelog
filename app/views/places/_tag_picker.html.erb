@@ -1,21 +1,20 @@
+<%# locals: form, user_place, area_tags, vibe_tags %>
 <% selected = user_place.tag_ids.map(&:to_s) %>
 
 <div class="flex flex-col gap-2">
-  <% [ [ t("nav.group_area"), area_tags ], [ t("nav.group_vibe"), vibe_tags ] ].each do |group_label, tags| %>
-    <% next if tags.empty? %>
+  <% [ [ "area", t("nav.group_area"), area_tags ], [ "vibe", t("nav.group_vibe"), vibe_tags ] ].each do |kind, group_label, tags| %>
     <div class="flex flex-col gap-1">
       <span class="font-mono text-2xs uppercase tracking-[0.1em] text-muted"><%= group_label %></span>
-      <div class="flex flex-wrap gap-1.5">
-        <% tags.each do |tag| %>
-          <label class="chip has-[:checked]:border-primary has-[:checked]:bg-primary-tint has-[:checked]:font-semibold has-[:checked]:text-primary">
-            <%= check_box_tag "user_place[tag_ids][]", tag.id, selected.include?(tag.id.to_s),
-                  id: "user_place_tag_#{tag.id}", class: "sr-only" %>
-            <% if tag.color.present? %>
-              <span class="h-[7px] w-[7px] flex-none rounded-full" style="background: <%= tag.color %>"></span>
-            <% end %>
-            <%= tag.name %>
-          </label>
-        <% end %>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <div id="<%= kind %>_tag_options" class="contents">
+          <% tags.each do |tag| %>
+            <%= render "places/tag_option", tag: tag, checked: selected.include?(tag.id.to_s) %>
+          <% end %>
+        </div>
+        <button type="button" class="chip border-dashed text-muted"
+                data-action="tag-sheet#open" data-tag-sheet-kind-param="<%= kind %>">
+          <%= t(".add") %>
+        </button>
       </div>
     </div>
   <% end %>

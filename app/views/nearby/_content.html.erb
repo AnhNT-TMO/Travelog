@@ -1,14 +1,17 @@
-<%= turbo_frame_tag "nearby_content" do %>
+<%= turbo_frame_tag "nearby_content", class: "lg:block lg:h-full" do %>
   <% base_params = { controller: "nearby", action: "index", lat: @lat, lng: @lng,
-                     center_name: @center_name, radius: @radius_m, state: @state } %>
+                     center_name: @center_name, radius: @radius_m, state: @state,
+                     vibe: @filter_tags.map { |tag| tag.id.to_s } } %>
 
-  <div class="flex flex-col gap-3">
+  <div class="flex flex-col gap-3 lg:h-full">
     <%= form_with url: nearby_path, method: :get, id: "radius_form",
                   data: {
                     controller: "radius geolocate place-autocomplete",
                     turbo_frame: "nearby_content",
                     turbo_action: "advance",
                     geolocate_current_location_label_value: t("nearby.index.current_location"),
+                    geolocate_auto_value: @auto_locate,
+                    geolocate_unavailable_message_value: t("nearby.index.location_unavailable"),
                     place_autocomplete_autocomplete_url_value: api_places_autocomplete_path,
                     place_autocomplete_details_url_value: api_places_details_path,
                     place_autocomplete_bias_lat_value: @lat,
@@ -22,6 +25,9 @@
       <%= form.hidden_field :lng, value: @lng,
             data: { geolocate_target: "lng", place_autocomplete_target: "lng" } %>
       <%= form.hidden_field :state, value: @state %>
+      <% @filter_tags.each do |tag| %>
+        <%= hidden_field_tag "vibe[]", tag.id, id: nil %>
+      <% end %>
 
       <div class="min-w-[220px] flex-1">
         <%= render "shared/place_autocomplete",
@@ -54,39 +60,59 @@
       </div>
 
       <div class="w-full">
-        <%= render "shared/segmented", current: @state, counts: @counts, base_params: base_params, url: nil %>
+        <%= render "shared/segmented", current: @state, counts: @counts, base_params: base_params, url: nil,
+                                       states: %w[all visited wishlist] %>
+      </div>
+
+      <div data-geolocate-target="status" hidden role="status"
+           class="flex w-full flex-wrap items-center gap-2 rounded-md bg-ochre-tint px-2.5 py-2 text-xs text-ochre">
+        <span data-geolocate-target="message" class="flex-1"></span>
+        <button type="button" class="btn btn--outline btn--sm" data-action="geolocate#locate">
+          <%= t("nearby.index.location_retry") %>
+        </button>
       </div>
     <% end %>
 
-    <% if @missing_coords_count.positive? %>
-      <div class="rounded-md bg-ochre-tint px-3 py-2 text-sm text-ochre">
-        <%= t("nearby.index.missing_coords", count: @missing_coords_count) %>
+    <% if @filter_tags.any? %>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="hint"><%= t("nearby.index.filtered_by") %></span>
+        <% @filter_tags.each do |tag| %>
+          <%= link_to url_for(base_params.merge(vibe: @filter_tags.map { |other| other.id.to_s } - [ tag.id.to_s ])),
+                "aria-pressed": "true", class: "chip", data: { turbo_action: "advance" } do %>
+            <%= tag.name %><span class="text-2xs opacity-70">✕</span>
+          <% end %>
+        <% end %>
       </div>
     <% end %>
 
-    <div class="flex flex-col gap-3 lg:flex-row lg:items-stretch">
-      <div data-controller="nearby-map"
-           data-nearby-map-api-key-value="<%= Rails.application.config.settings.google.maps_browser_key %>"
-           data-nearby-map-map-id-value="<%= Rails.application.config.settings.google.maps_map_id %>"
-           data-nearby-map-center-value="<%= { lat: @lat, lng: @lng }.to_json %>"
-           data-nearby-map-radius-value="<%= @radius_m %>"
-           data-nearby-map-places-value="<%= @map_points.to_json %>"
-           data-nearby-map-custom-center-label-value="<%= t("nearby.index.custom_center") %>"
-           data-nearby-map-status-labels-value="<%= { wishlist: t("status.wishlist"), visited: t("status.visited") }.to_json %>"
-           class="h-[40vh] overflow-hidden rounded-md border border-line lg:h-auto lg:min-h-[420px] lg:flex-1">
-        <div class="relative h-full w-full">
-          <div data-nearby-map-target="canvas"
-               class="h-full w-full bg-surface-2 [background:linear-gradient(0deg,var(--color-line-soft)_1px,transparent_1px)_0_0/100%_34px,linear-gradient(90deg,var(--color-line-soft)_1px,transparent_1px)_0_0/34px_100%,var(--color-surface-2)]"></div>
-
-          <div class="absolute bottom-1.5 left-1.5 flex gap-2 rounded-sm border border-line bg-surface px-1.5 py-1 text-2xs text-ink-soft">
-            <span><span class="mr-1 inline-block h-[7px] w-[7px] rounded-full bg-ochre"></span><%= t("status.wishlist") %></span>
-            <span><span class="mr-1 inline-block h-[7px] w-[7px] rounded-full bg-primary"></span><%= t("status.visited") %></span>
-            <span><span class="mr-1 inline-block h-[7px] w-[7px] rounded-full bg-muted"></span><%= t("nearby.index.out_of_radius") %></span>
+    <div class="flex flex-col gap-3 lg:min-h-0 lg:flex-1 lg:flex-row lg:items-stretch">
+      <div class="flex flex-col gap-1.5 lg:min-h-0 lg:flex-1">
+        <div data-controller="nearby-map"
+             data-nearby-map-api-key-value="<%= Rails.application.config.settings.google.maps_browser_key %>"
+             data-nearby-map-map-id-value="<%= Rails.application.config.settings.google.maps_map_id %>"
+             data-nearby-map-center-value="<%= { lat: @lat, lng: @lng }.to_json %>"
+             data-nearby-map-radius-value="<%= @radius_m %>"
+             data-nearby-map-places-value="<%= @map_points.to_json %>"
+             data-nearby-map-band-value="<%= @band_points.to_json %>"
+             data-nearby-map-custom-center-label-value="<%= t("nearby.index.custom_center") %>"
+             data-nearby-map-status-labels-value="<%= { wishlist: t("status.wishlist"), visited: t("status.visited"), out_of_radius: t("nearby.index.out_of_radius") }.to_json %>"
+             class="h-[32vh] min-h-[180px] overflow-hidden rounded-md border border-line lg:h-full lg:min-h-[320px] lg:flex-1">
+          <div class="relative h-full w-full">
+            <div id="nearby_map_canvas"
+                 data-turbo-permanent
+                 data-nearby-map-target="canvas"
+                 class="h-full w-full bg-surface-2 [background:linear-gradient(0deg,var(--color-line-soft)_1px,transparent_1px)_0_0/100%_34px,linear-gradient(90deg,var(--color-line-soft)_1px,transparent_1px)_0_0/34px_100%,var(--color-surface-2)]"></div>
           </div>
+        </div>
+
+        <div class="flex flex-none flex-wrap gap-x-3 gap-y-1 px-0.5 text-2xs text-muted">
+          <span><span class="mr-1 inline-block h-[7px] w-[7px] rounded-full bg-ochre"></span><%= t("status.wishlist") %></span>
+          <span><span class="mr-1 inline-block h-[7px] w-[7px] rounded-full bg-primary"></span><%= t("status.visited") %></span>
+          <span><span class="mr-1 inline-block h-[7px] w-[7px] rounded-full bg-muted"></span><%= t("nearby.index.out_of_radius_legend", distance: distance_label(Geo::RadiusQuery::BAND_M)) %></span>
         </div>
       </div>
 
-      <aside class="flex flex-col gap-2 rounded-md border border-line bg-surface p-3 lg:w-[340px] lg:flex-none lg:overflow-y-auto">
+      <aside class="flex flex-col gap-2 rounded-md border border-line bg-surface p-3 lg:h-full lg:w-[340px] lg:min-h-0 lg:flex-none lg:overflow-y-auto">
         <div class="flex items-baseline gap-2">
           <h3 class="text-md font-bold tracking-tight"><%= t("nearby.index.within", radius: distance_label(@radius_m)) %></h3>
           <span class="num text-xs text-muted"><%= @user_places.size %></span>

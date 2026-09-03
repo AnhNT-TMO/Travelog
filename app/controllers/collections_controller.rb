@@ -1,19 +1,55 @@
 class CollectionsController < ApplicationController
-  RECENT_LIMIT = 8
+  HOME_LIMIT = 6
+  TAG_KINDS  = %w[area vibe].freeze
 
   def index
-    @area_tags = @sidebar_tags.select(&:area?)
-    @vibe_tags = @sidebar_tags.select(&:vibe?)
+    @area_tags = top_tags("area")
+    @vibe_tags = top_tags("vibe")
     @counts_by_tag = counts_by_tag
-    @collection_covers_by_tag = collection_covers_by_tag
+    @collection_covers_by_tag = collection_covers_by_tag(@area_tags + @vibe_tags)
+    @group_counts = group_counts
 
-    @recent_places = scoped_places.wishlist
-                                  .with_card_data
-                                  .order(created_at: :desc)
-                                  .limit(RECENT_LIMIT)
+    @untagged_places = untagged_places.with_card_data.order(:id).limit(HOME_LIMIT).to_a
+  end
+
+  def tag_group
+    @kind = params[:kind].presence_in(TAG_KINDS) || TAG_KINDS.first
+    @tags = tags_by_place_count(@kind)
+    @counts_by_tag = counts_by_tag
+    @collection_covers_by_tag = collection_covers_by_tag(@tags)
+    @group_counts = group_counts
+  end
+
+  def untagged
+    @user_places = untagged_places.with_card_data.order(:id).to_a
+    @group_counts = group_counts
   end
 
   private
+
+  def untagged_places
+    scoped_places.where.missing(:taggings)
+  end
+
+  def tags_of_kind(kind)
+    @sidebar_tags.select { |tag| tag.kind == kind }
+  end
+
+  def tags_by_place_count(kind)
+    tags_of_kind(kind).sort_by { |tag| [ -tag.user_places_count, tag.position, tag.name ] }
+  end
+
+  def top_tags(kind)
+    tags_by_place_count(kind).first(HOME_LIMIT)
+  end
+
+  def group_counts
+    {
+      area:     tags_of_kind("area").size,
+      vibe:     tags_of_kind("vibe").size,
+      untagged: untagged_places.count
+    }
+  end
 
   def counts_by_tag
     scoped_places
@@ -25,8 +61,8 @@ class CollectionsController < ApplicationController
       end
   end
 
-  def collection_covers_by_tag
-    tag_ids = (@area_tags + @vibe_tags).map(&:id)
+  def collection_covers_by_tag(tags)
+    tag_ids = tags.map(&:id)
     return {} if tag_ids.empty?
 
     scoped_places

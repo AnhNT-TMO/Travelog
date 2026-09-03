@@ -4,6 +4,10 @@
     <span class="text-md font-bold tracking-tight"><%= t("app.name") %></span>
   </div>
 
+  <div class="flex-none px-2 pt-2.5">
+    <%= link_to t("nav.add_place"), new_place_path, class: "btn btn--primary btn--sm btn--block justify-start" %>
+  </div>
+
   <nav class="flex flex-col gap-px overflow-y-auto px-2 py-2.5">
     <%= render "shared/sidebar_item", label: t("nav.collections"), icon: "◎", path: root_path, current: current_page?(root_path) %>
     <%= render "shared/sidebar_item", label: t("nav.nearby"), icon: "⌖", path: nearby_path, current: current_page?(nearby_path) %>

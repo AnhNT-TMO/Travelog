@@ -1,0 +1,94 @@
+<%# locals: (user_place:, visit:) %>
+<div data-sheet-target="panel" hidden
+     data-action="keydown->sheet#closeOnEscape"
+     class="fixed inset-0 z-30 flex items-end justify-center lg:items-center">
+
+  <button type="button" class="absolute inset-0 bg-black/40" aria-label="<%= t(".close") %>"
+          data-action="sheet#close"></button>
+
+  <div class="relative flex max-h-[86vh] w-full flex-col gap-2.5 overflow-y-auto rounded-t-[18px] border-t border-line bg-surface px-3.5 pb-4 pt-3 shadow-e3
+              lg:max-w-[440px] lg:rounded-lg lg:border">
+    <span class="mx-auto h-1 w-[34px] flex-none rounded-sm bg-surface-3 lg:hidden"></span>
+    <span class="text-md font-bold"><%= t(".title") %></span>
+
+    <%= form_with model: visit, url: place_visit_path(user_place, visit), namespace: "edit_visit_#{visit.id}",
+                  class: "flex flex-col gap-2.5",
+                  data: {
+                    controller: "direct-upload photo-preview",
+                    action: "direct-upload:start->direct-upload#start " \
+                            "direct-upload:progress->direct-upload#progress " \
+                            "direct-upload:end->direct-upload#end"
+                  } do |form| %>
+      <div class="field">
+        <%= form.label :visited_at, t(".visited_at"), class: "label" %>
+        <%= form.datetime_field :visited_at, value: visit.visited_at.in_time_zone.strftime("%Y-%m-%dT%H:%M"),
+              class: "input", required: true %>
+      </div>
+
+      <% if visit.photos.any? %>
+        <div class="field">
+          <span class="label"><%= t(".existing_photos") %></span>
+          <div class="grid grid-cols-4 gap-2">
+            <% visit.photos.each do |photo| %>
+              <label class="group relative aspect-square cursor-pointer overflow-hidden rounded-md border border-line bg-ground">
+                <%= check_box_tag "remove_photo_ids[]", photo.id, false,
+                      id: "edit_visit_#{visit.id}_remove_photo_#{photo.id}", class: "peer sr-only" %>
+                <%= photo_image_tag photo, sizes: "88px" %>
+                <span class="absolute inset-0 grid place-items-center bg-lacquer/70 text-lg font-bold text-white opacity-0 peer-checked:opacity-100">×</span>
+                <span class="sr-only"><%= t(".remove_photo") %></span>
+              </label>
+            <% end %>
+          </div>
+          <span class="hint"><%= t(".existing_photos_hint") %></span>
+        </div>
+      <% end %>
+
+      <label class="cursor-pointer rounded-md border-[1.5px] border-dashed border-line bg-ground px-3.5 py-3.5 text-center text-sm text-muted">
+        <%= t(".pick_photos") %>
+        <span class="block text-xs"><%= t(".pick_photos_hint") %></span>
+        <%= file_field_tag "photos[]", multiple: true, accept: "image/*", class: "sr-only",
+              id: "edit_visit_#{visit.id}_photos",
+              "data-direct-upload-url": place_direct_uploads_url(user_place),
+              data: {
+                photo_preview_target: "input",
+                action: "change->photo-preview#preview"
+              } %>
+      </label>
+
+      <div data-photo-preview-target="output" hidden
+           class="grid grid-cols-3 gap-2 sm:grid-cols-4"></div>
+
+      <template data-photo-preview-target="template">
+        <div class="relative min-w-0 overflow-hidden rounded-md border border-line bg-surface-2">
+          <div class="aspect-square overflow-hidden bg-ground">
+            <img data-photo-preview-image class="h-full w-full object-cover" alt="">
+          </div>
+          <span data-photo-preview-name class="block truncate px-1.5 py-1 text-2xs text-ink-soft"></span>
+          <button type="button"
+                  class="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full border border-line bg-surface/90 text-sm font-semibold text-ink shadow-e1"
+                  aria-label="<%= t(".remove_new_photo") %>"
+                  data-photo-preview-remove
+                  data-action="photo-preview#remove">×</button>
+        </div>
+      </template>
+
+      <div data-direct-upload-target="progress" hidden class="flex items-center gap-2">
+        <div class="h-1 flex-1 overflow-hidden rounded-sm bg-surface-3">
+          <div data-direct-upload-target="bar" class="h-full w-0 bg-primary transition-[width] duration-150 ease-brand"></div>
+        </div>
+        <span data-direct-upload-target="percent" class="num w-10 text-right text-xs text-primary">0%</span>
+      </div>
+
+      <div class="field">
+        <%= form.label :note, t(".note"), class: "label" %>
+        <%= form.text_field :note, class: "input", placeholder: t(".note_placeholder") %>
+      </div>
+
+      <div class="flex gap-2">
+        <button type="button" class="btn btn--ghost flex-none" data-action="sheet#close"><%= t(".cancel") %></button>
+        <%= form.submit t(".submit"), class: "btn btn--primary btn--lg flex-1",
+              data: { direct_upload_target: "submit" } %>
+      </div>
+    <% end %>
+  </div>
+</div>

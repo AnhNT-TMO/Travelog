@@ -1,0 +1,20 @@
+<% heading = t("nav.group_#{@kind}") %>
+<% content_for :title, "#{heading} · #{t("app.name")}" %>
+<% content_for :topbar_actions do %>
+  <%= link_to t(".manage_tags"), tags_path, class: "btn btn--outline btn--sm" %>
+<% end %>
+<% content_for :topbar do %>
+  <%= render "shared/topbar", title: heading, crumb: t("nav.collections") %>
+<% end %>
+
+<div class="flex flex-col gap-3.5">
+  <%= render "collections/group_nav", current: @kind, counts: @group_counts %>
+
+  <% if @tags.any? %>
+    <%= render "collections/collection_grid", tags: @tags, counts_by_tag: @counts_by_tag,
+               covers_by_tag: @collection_covers_by_tag %>
+  <% else %>
+    <%= render "shared/empty", icon: "⌗", title: t(".empty_title"),
+               description: t(".empty_description") %>
+  <% end %>
+</div>

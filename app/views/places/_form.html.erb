@@ -1,107 +1,132 @@
-<%= form_with model: user_place, url: (user_place.persisted? ? place_path(user_place) : places_path),
-              data: {
-                controller: "place-autocomplete",
-                place_autocomplete_autocomplete_url_value: api_places_autocomplete_path,
-                place_autocomplete_details_url_value: api_places_details_path,
-                place_autocomplete_error_message_value: t("places.autocomplete.error")
-              },
-              class: "mx-auto flex max-w-[560px] flex-col gap-3.5" do |form| %>
+<div data-controller="tag-sheet">
+  <%= form_with model: user_place, url: (user_place.persisted? ? place_path(user_place) : places_path),
+                data: {
+                  controller: "place-autocomplete",
+                  place_autocomplete_autocomplete_url_value: api_places_autocomplete_path,
+                  place_autocomplete_details_url_value: api_places_details_path,
+                  place_autocomplete_error_message_value: t("places.autocomplete.error")
+                },
+                class: "mx-auto flex max-w-[560px] flex-col gap-3.5" do |form| %>
 
-  <% if user_place.errors.any? %>
-    <div class="rounded-md bg-lacquer-tint px-3 py-2 text-sm text-lacquer">
-      <%= user_place.errors.full_messages.to_sentence %>
-    </div>
-  <% end %>
+    <% if user_place.errors.any? %>
+      <div class="rounded-md bg-lacquer-tint px-3 py-2 text-sm text-lacquer" role="alert">
+        <span class="font-semibold"><%= t(".error_title", count: user_place.errors.size) %></span>
+        <ul class="mt-1 list-disc pl-4">
+          <% user_place.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
 
-  <%= form.fields_for :place do |place_form| %>
+    <%= form.fields_for :place do |place_form| %>
+      <div class="flex flex-col gap-3.5 rounded-lg border border-line bg-surface p-3.5">
+        <%= place_form.hidden_field :google_place_id,
+              data: { place_autocomplete_target: "placeId" } %>
+
+        <div>
+          <%= render "shared/place_autocomplete",
+                builder: place_form,
+                method: :display_name,
+                value: user_place.place&.display_name,
+                label: t(".display_name"),
+                placeholder: t(".display_name_placeholder"),
+                required: true %>
+          <span class="hint"><%= t(".autocomplete_hint") %></span>
+        </div>
+
+        <div data-place-autocomplete-target="coordsStatus" class="flex items-center gap-1.5 text-xs"
+             <%= "hidden" if user_place.place&.display_name.blank? %>>
+          <span class="pill pill--visited" data-coords-state="present" <%= "hidden" unless user_place.place&.lat && user_place.place&.lng %>><%= t(".coords_present") %></span>
+          <span class="pill pill--wish" data-coords-state="missing" <%= "hidden" if user_place.place&.lat && user_place.place&.lng %>><%= t(".coords_missing") %></span>
+        </div>
+
+        <div class="field">
+          <%= place_form.label :place_type, t(".place_type"), class: "label" %>
+          <%= place_form.select :place_type,
+                Place.place_types.keys.map { |key| [ t("place_type.#{key}"), key ] },
+                {}, class: "select", data: { place_autocomplete_target: "placeType" } %>
+        </div>
+
+        <details class="group rounded-md border border-line-soft" <%= "open" if user_place.place&.errors&.any? %>>
+          <summary class="flex cursor-pointer items-center gap-1.5 px-2.5 py-2 text-xs font-semibold text-ink-soft marker:content-none">
+            <span class="inline-block transition-transform duration-150 ease-brand group-open:rotate-90">›</span>
+            <%= t(".advanced") %>
+          </summary>
+
+          <div class="flex flex-col gap-3.5 border-t border-line-soft p-2.5">
+            <span class="hint"><%= t(".advanced_hint") %></span>
+
+            <div class="field">
+              <%= place_form.label :cached_address, t(".address"), class: "label" %>
+              <%= place_form.text_field :cached_address, class: "input", placeholder: t(".address_placeholder"),
+                    data: { place_autocomplete_target: "address" } %>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+              <div class="field">
+                <%= place_form.label :district, t(".district"), class: "label" %>
+                <%= place_form.text_field :district, class: "input", placeholder: t(".district_placeholder"),
+                      data: { place_autocomplete_target: "district" } %>
+              </div>
+              <div class="field">
+                <%= place_form.label :city, t(".city"), class: "label" %>
+                <%= place_form.text_field :city, class: "input", placeholder: t(".city_placeholder"),
+                      data: { place_autocomplete_target: "city" } %>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+              <div class="field">
+                <%= place_form.label :lat, t(".lat"), class: "label" %>
+                <%= place_form.number_field :lat, step: "any", class: "input num",
+                      data: { place_autocomplete_target: "lat", action: "input->place-autocomplete#refreshCoords" } %>
+              </div>
+              <div class="field">
+                <%= place_form.label :lng, t(".lng"), class: "label" %>
+                <%= place_form.number_field :lng, step: "any", class: "input num",
+                      data: { place_autocomplete_target: "lng", action: "input->place-autocomplete#refreshCoords" } %>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    <% end %>
+
     <div class="flex flex-col gap-3.5 rounded-lg border border-line bg-surface p-3.5">
-      <%= place_form.hidden_field :google_place_id,
-            data: { place_autocomplete_target: "placeId" } %>
-
-      <div>
-        <%= render "shared/place_autocomplete",
-              builder: place_form,
-              method: :display_name,
-              value: user_place.place&.display_name,
-              label: t(".display_name"),
-              placeholder: t(".display_name_placeholder"),
-              required: true %>
-        <span class="hint"><%= t(".autocomplete_hint") %></span>
+      <div class="field">
+        <%= form.label :nickname, t(".nickname"), class: "label" %>
+        <%= form.text_field :nickname, class: "input", placeholder: t(".nickname_placeholder") %>
       </div>
 
       <div class="field">
-        <%= place_form.label :cached_address, t(".address"), class: "label" %>
-        <%= place_form.text_field :cached_address, class: "input", placeholder: t(".address_placeholder"),
-              data: { place_autocomplete_target: "address" } %>
+        <%= form.label :source_url, t(".source_url"), class: "label" %>
+        <%= form.url_field :source_url, class: "input", placeholder: t(".source_url_placeholder") %>
       </div>
-
-      <div class="grid grid-cols-2 gap-2.5">
-        <div class="field">
-          <%= place_form.label :district, t(".district"), class: "label" %>
-          <%= place_form.text_field :district, class: "input", placeholder: t(".district_placeholder"),
-                data: { place_autocomplete_target: "district" } %>
-        </div>
-        <div class="field">
-          <%= place_form.label :city, t(".city"), class: "label" %>
-          <%= place_form.text_field :city, class: "input", placeholder: t(".city_placeholder"),
-                data: { place_autocomplete_target: "city" } %>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2.5">
-        <div class="field">
-          <%= place_form.label :lat, t(".lat"), class: "label" %>
-          <%= place_form.number_field :lat, step: "any", class: "input num", placeholder: "21.0587",
-                data: { place_autocomplete_target: "lat" } %>
-        </div>
-        <div class="field">
-          <%= place_form.label :lng, t(".lng"), class: "label" %>
-          <%= place_form.number_field :lng, step: "any", class: "input num", placeholder: "105.8194",
-                data: { place_autocomplete_target: "lng" } %>
-        </div>
-      </div>
-      <span class="hint"><%= t(".coords_hint") %></span>
 
       <div class="field">
-        <%= place_form.label :place_type, t(".place_type"), class: "label" %>
-        <%= place_form.select :place_type,
-              Place.place_types.keys.map { |key| [ t("place_type.#{key}"), key ] },
-              {}, class: "select", data: { place_autocomplete_target: "placeType" } %>
+        <span class="label"><%= t(".tags") %></span>
+        <%= render "places/tag_picker", form: form, user_place: user_place,
+                   area_tags: area_tags, vibe_tags: vibe_tags %>
+        <span class="hint"><%= t(".tags_hint_html", link: link_to(t(".tags_manage"), tags_path, class: "text-primary")) %></span>
       </div>
+
+      <div class="field">
+        <%= form.label :note, t(".note"), class: "label" %>
+        <%= form.text_area :note, class: "textarea", placeholder: t(".note_placeholder") %>
+      </div>
+
+      <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-soft">
+        <%= form.check_box :priority, class: "accent-primary" %>
+        <%= t(".priority") %>
+      </label>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <%= form.submit(user_place.persisted? ? t(".save") : t(".create"), class: "btn btn--primary btn--lg flex-1") %>
+      <%= link_to t(".cancel"), (user_place.persisted? ? place_path(user_place) : root_path), class: "btn btn--ghost" %>
     </div>
   <% end %>
 
-  <div class="flex flex-col gap-3.5 rounded-lg border border-line bg-surface p-3.5">
-    <div class="field">
-      <%= form.label :nickname, t(".nickname"), class: "label" %>
-      <%= form.text_field :nickname, class: "input", placeholder: t(".nickname_placeholder") %>
-    </div>
-
-    <div class="field">
-      <%= form.label :source_url, t(".source_url"), class: "label" %>
-      <%= form.url_field :source_url, class: "input", placeholder: t(".source_url_placeholder") %>
-    </div>
-
-    <div class="field">
-      <span class="label"><%= t(".tags") %></span>
-      <%= render "places/tag_picker", form: form, user_place: user_place,
-                 area_tags: area_tags, vibe_tags: vibe_tags %>
-      <span class="hint"><%= t(".tags_hint_html", link: link_to(t(".tags_manage"), tags_path, class: "text-primary")) %></span>
-    </div>
-
-    <div class="field">
-      <%= form.label :note, t(".note"), class: "label" %>
-      <%= form.text_area :note, class: "textarea", placeholder: t(".note_placeholder") %>
-    </div>
-
-    <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-soft">
-      <%= form.check_box :priority, class: "accent-primary" %>
-      <%= t(".priority") %>
-    </label>
-  </div>
-
-  <div class="flex items-center gap-2">
-    <%= form.submit(user_place.persisted? ? t(".save") : t(".create"), class: "btn btn--primary btn--lg flex-1") %>
-    <%= link_to t(".cancel"), (user_place.persisted? ? place_path(user_place) : root_path), class: "btn btn--ghost" %>
-  </div>
-<% end %>
+  <%= render "places/tag_sheet" %>
+</div>

@@ -1,18 +1,27 @@
-<%# Expects user_place and photos. %>
+<%# Expects user_place, photos, and selected_photo_id. %>
 <% slides = [ user_place.cover_photo, *photos ].compact.uniq %>
+<% selected_index = slides.index { |photo| photo.id.to_s == selected_photo_id.to_s } || 0 %>
 
 <% if slides.any? %>
-  <div data-controller="carousel">
+  <div data-controller="carousel lightbox"
+       data-carousel-initial-index-value="<%= selected_index %>"
+       data-lightbox-initial-index-value="<%= selected_index %>"
+       data-action="carousel:change->lightbox#sync">
     <div class="relative">
       <div data-carousel-target="viewport"
-           data-action="scroll->carousel#scroll:passive"
-           class="flex aspect-[4/3] snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:aspect-[16/10] lg:h-[280px] lg:aspect-auto">
-        <% slides.each do |photo| %>
+           data-action="scroll->carousel#scroll:passive scrollend->carousel#scrollEnd"
+           class="flex aspect-[4/3] snap-x snap-mandatory overflow-x-auto overscroll-x-contain motion-safe:scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:aspect-[16/10] lg:h-[280px] lg:aspect-auto">
+        <% slides.each_with_index do |photo, index| %>
           <div data-carousel-target="slide"
                class="media-skeleton relative h-full w-full flex-none snap-center snap-always">
-            <%= photo_image_tag photo,
-                  sizes: "(max-width: 1023px) 100vw, 760px",
-                  derivative_size: Photos::ThumbnailUrl::PREVIEW %>
+            <button type="button" class="block h-full w-full cursor-zoom-in"
+                    aria-label="<%= t(".open_photo", number: index + 1) %>"
+                    data-lightbox-index="<%= index %>"
+                    data-action="lightbox#open">
+              <%= photo_image_tag photo,
+                    sizes: "(max-width: 1023px) 100vw, 760px",
+                    derivative_size: Photos::ThumbnailUrl::PREVIEW %>
+            </button>
 
             <div class="absolute right-2 top-2 flex gap-1.5">
               <%= button_to "✕", place_photo_path(user_place, photo), method: :delete,
@@ -54,30 +63,33 @@
       <% end %>
 
       <span data-carousel-target="position"
-            class="num absolute bottom-2.5 right-2.5 rounded-pill bg-black/50 px-2 py-0.5 text-2xs text-white backdrop-blur-[6px]">1 / <%= slides.size %></span>
+            class="num absolute bottom-2.5 right-2.5 rounded-pill bg-black/50 px-2 py-0.5 text-2xs text-white backdrop-blur-[6px]"><%= selected_index + 1 %> / <%= slides.size %></span>
     </div>
 
-    <div class="flex items-center gap-1.5 overflow-x-auto bg-surface-2 p-2">
+    <div data-carousel-target="thumbnailViewport"
+         class="flex items-center gap-1.5 overflow-x-auto bg-surface-2 p-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <% slides.each_with_index do |photo, index| %>
         <button type="button"
                 class="media-skeleton h-[52px] w-[52px] flex-none overflow-hidden rounded-sm border-2 border-transparent aria-pressed:border-primary aria-pressed:ring-1 aria-pressed:ring-primary"
                 aria-label="<%= t(".show_photo", number: index + 1) %>"
-                aria-pressed="<%= index.zero? %>"
+                aria-pressed="<%= index == selected_index %>"
                 data-carousel-target="thumbnail"
                 data-carousel-index="<%= index %>"
                 data-action="carousel#select">
           <%= photo_image_tag photo, sizes: "52px", derivative_size: Photos::ThumbnailUrl::THUMB %>
         </button>
       <% end %>
+    </div>
 
-      <%= form_with url: place_photos_path(user_place), class: "flex-none",
+    <div class="grid grid-cols-2 gap-2 border-t border-line-soft bg-surface-2 p-2 sm:flex sm:justify-end">
+      <%= form_with url: place_photos_path(user_place), class: "min-w-0 sm:flex-none",
                     data: {
                       controller: "autosubmit direct-upload",
                       action: "direct-upload:start->direct-upload#start " \
                               "direct-upload:progress->direct-upload#progress " \
                               "direct-upload:end->direct-upload#end"
                     } do |form| %>
-        <label class="btn btn--outline btn--sm h-[52px] cursor-pointer">
+        <label class="btn btn--outline btn--sm h-11 w-full cursor-pointer justify-center sm:w-auto">
           <%= t(".add_photos") %>
           <%= file_field_tag "photos[]", multiple: true, accept: "image/*", class: "sr-only",
                 "data-direct-upload-url": place_direct_uploads_url(user_place),
@@ -85,16 +97,18 @@
         </label>
       <% end %>
 
-      <div class="flex-none"
+      <div class="min-w-0 sm:flex-none"
            data-controller="bulk-download"
            data-bulk-download-url-value="<%= download_all_place_photos_path(user_place, format: :json) %>"
            data-bulk-download-progress-value="<%= t(".download_progress") %>"
            data-bulk-download-empty-value="<%= t(".nothing_to_download") %>">
-        <button type="button" class="btn btn--outline btn--sm h-[52px]"
+        <button type="button" class="btn btn--outline btn--sm h-11 w-full justify-center sm:w-auto"
                 data-bulk-download-target="button"
                 data-action="bulk-download#start"><%= t(".download_all") %></button>
       </div>
     </div>
+
+    <%= render "places/photo_lightbox", slides: slides %>
   </div>
 <% else %>
   <%= render "shared/place_media", user_place: user_place,
@@ -103,15 +117,15 @@
              derivative_size: Photos::ThumbnailUrl::PREVIEW,
              show_status: false %>
 
-  <div class="flex items-center gap-1.5 bg-surface-2 p-2">
-    <%= form_with url: place_photos_path(user_place), class: "flex-none",
+  <div class="flex justify-end border-t border-line-soft bg-surface-2 p-2">
+    <%= form_with url: place_photos_path(user_place), class: "w-full sm:w-auto",
                   data: {
                     controller: "autosubmit direct-upload",
                     action: "direct-upload:start->direct-upload#start " \
                             "direct-upload:progress->direct-upload#progress " \
                             "direct-upload:end->direct-upload#end"
                   } do |form| %>
-      <label class="btn btn--outline btn--sm h-[52px] cursor-pointer">
+      <label class="btn btn--outline btn--sm h-11 w-full cursor-pointer justify-center sm:w-auto">
         <%= t(".add_photos") %>
         <%= file_field_tag "photos[]", multiple: true, accept: "image/*", class: "sr-only",
               "data-direct-upload-url": place_direct_uploads_url(user_place),

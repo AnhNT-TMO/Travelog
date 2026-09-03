@@ -1,7 +1,6 @@
 <% content_for :title, "#{t(".title")} · #{t("app.name")}" %>
 <% content_for :topbar_actions do %>
   <%= render "shared/search_field", query: @query %>
-  <%= link_to t(".add_place"), new_place_path, class: "btn btn--primary btn--sm" %>
 <% end %>
 <% content_for :topbar do %>
   <%= render "shared/topbar", title: t(".title") %>

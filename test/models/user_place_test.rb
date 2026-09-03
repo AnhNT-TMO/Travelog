@@ -110,4 +110,44 @@ class UserPlaceTest < ActiveSupport::TestCase
     blob.service.upload(blob.key, StringIO.new(content), checksum: checksum)
     blob
   end
+
+  test "matching khớp tên quán không dấu" do
+    target = create(:user_place, user: @user, place: create(:place, display_name: "Sen Tây Hồ Deli"))
+
+    assert_equal [ target.id ], @user.user_places.matching("sen tay ho").map(&:id)
+  end
+
+  test "matching khớp nickname không dấu" do
+    target = create(:user_place, user: @user, nickname: "quán rooftop trong video")
+
+    assert_equal [ target.id ], @user.user_places.matching("ROOFTOP TRONG VIDEO").map(&:id)
+  end
+
+  test "matching khớp link đã lưu dù dán kèm tham số theo dõi" do
+    target = create(:user_place, user: @user,
+                    source_url: "https://www.tiktok.com/@hanoifood/video/7412903845100000011")
+
+    found = @user.user_places.matching(
+      "https://www.tiktok.com/@hanoifood/video/7412903845100000011?is_from_webapp=1&sender_device=pc"
+    )
+
+    assert_equal [ target.id ], found.map(&:id)
+  end
+
+  test "matching khớp link dán thiếu www hoặc thiếu scheme" do
+    target = create(:user_place, user: @user,
+                    source_url: "https://www.tiktok.com/@hanoifood/video/7412903845100000012")
+
+    assert_equal [ target.id ], @user.user_places.matching("tiktok.com/@hanoifood/video/7412903845100000012").map(&:id)
+  end
+
+  test "matching không lấy link khi từ khoá không phải link" do
+    create(:user_place, user: @user, source_url: "https://www.tiktok.com/@hanoicafe/video/7412903845100000013")
+
+    assert_empty @user.user_places.matching("hanoicafe")
+  end
+
+  test "matching rỗng không lọc gì" do
+    assert_equal @user.user_places.count, @user.user_places.matching("  ").count
+  end
 end

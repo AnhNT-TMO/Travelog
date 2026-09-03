@@ -1053,7 +1053,6 @@ CREATE TABLE public.visits (
     user_place_id bigint NOT NULL,
     visited_at timestamp(6) without time zone NOT NULL,
     note text,
-    companions character varying,
     photos_count integer DEFAULT 0 NOT NULL,
     source integer DEFAULT 0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
@@ -2210,6 +2209,7 @@ ALTER TABLE ONLY public.tags
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260903120000'),
 ('20260902170000'),
 ('20260902060000'),
 ('20260902020020'),

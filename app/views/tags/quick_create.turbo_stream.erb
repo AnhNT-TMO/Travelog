@@ -1,0 +1,12 @@
+<% if @tag.persisted? %>
+  <%= turbo_stream.append "#{@tag.kind}_tag_options" do %>
+    <%= render "places/tag_option", tag: @tag, checked: true %>
+  <% end %>
+  <%= turbo_stream.update "tag_sheet_errors", "" %>
+<% else %>
+  <%= turbo_stream.update "tag_sheet_errors" do %>
+    <div class="rounded-md bg-lacquer-tint px-3 py-2 text-sm text-lacquer">
+      <%= @tag.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+<% end %>

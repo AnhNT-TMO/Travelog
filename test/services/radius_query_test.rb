@@ -44,8 +44,35 @@ class RadiusQueryTest < ActiveSupport::TestCase
     assert_equal Geo::RadiusQuery::MAX_RADIUS_M, query(radius_m: 999_999).radius_m
   end
 
-  test "nơi thiếu toạ độ được đếm riêng để cảnh báo" do
-    assert_equal 1, query.places_without_coords.distinct.count
+  test "band_points chỉ lấy nơi nằm ngay ngoài bán kính" do
+    ids = query(radius_m: 1_000).band_points.map { |point| point[:id] }
+
+    assert_equal [ @near_visited.id ], ids
+    assert_not_includes ids, @near.id
+    assert_not_includes ids, @far.id
+  end
+
+  test "band_points không lặp lại nơi đã có trong danh sách" do
+    inside = query(radius_m: 1_000).call.map(&:id)
+    band   = query(radius_m: 1_000).band_points.map { |point| point[:id] }
+
+    assert_empty inside & band
+  end
+
+  test "band_points tôn trọng state và không lấy của user khác hay nơi thiếu toạ độ" do
+    assert_empty query(radius_m: 1_000, state: "wishlist").band_points
+
+    ids = query(radius_m: 3_000).band_points.map { |point| point[:id] }
+    assert_equal [ @far.id ], ids
+    assert_not_includes ids, @foreign.id
+    assert_not_includes ids, @no_coords.id
+  end
+
+  test "band_points đánh dấu status out_of_radius" do
+    point = query(radius_m: 1_000).band_points.first
+
+    assert_equal "out_of_radius", point[:status]
+    assert_equal %i[id lat lng name status].sort, point.keys.sort
   end
 
   test "map_points chỉ serialize id lat lng name status" do

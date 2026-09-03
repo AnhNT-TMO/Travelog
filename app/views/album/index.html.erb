@@ -16,7 +16,10 @@
     </div>
     <%= form.submit t(".submit"), class: "btn btn--outline" %>
     <span class="flex-1"></span>
-    <button type="button" class="btn" disabled title="<%= t(".export_pdf_title") %>"><%= t(".export_pdf") %></button>
+    <button type="button" class="btn" disabled title="<%= t(".export_pdf_title") %>">
+      <%= t(".export_pdf") %>
+      <span class="pill pill--soon"><%= t(".export_pdf_badge") %></span>
+    </button>
   <% end %>
 
   <div class="max-w-[760px]">

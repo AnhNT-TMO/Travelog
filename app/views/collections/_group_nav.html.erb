@@ -1,0 +1,17 @@
+<%# locals: current, counts %>
+<% groups = [
+     [ "area",     t("nav.group_area"),     tag_collections_path("area"), counts[:area] ],
+     [ "vibe",     t("nav.group_vibe"),     tag_collections_path("vibe"), counts[:vibe] ],
+     [ "untagged", t("nav.group_untagged"), untagged_collections_path,    counts[:untagged] ]
+   ] %>
+
+<div class="-mx-3.5 overflow-x-auto px-3.5">
+  <div class="seg" role="tablist">
+    <% groups.each do |value, label, path, count| %>
+      <%= link_to path, role: "tab", "aria-selected": (current.to_s == value).to_s,
+            class: "seg-item" do %>
+        <%= label %><span class="num"><%= count %></span>
+      <% end %>
+    <% end %>
+  </div>
+</div>

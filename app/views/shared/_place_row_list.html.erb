@@ -1,4 +1,8 @@
-<% numbered = local_assigns.fetch(:numbered, false) %>
+<%# locals: user_places, numbered (optional), empty_icon (optional), empty_title (optional), empty_description (optional) %>
+<% numbered          = local_assigns.fetch(:numbered, false) %>
+<% empty_icon        = local_assigns.fetch(:empty_icon, "⌖") %>
+<% empty_title       = local_assigns.fetch(:empty_title, t(".empty_title")) %>
+<% empty_description = local_assigns.fetch(:empty_description, t(".empty_description")) %>
 <%= turbo_frame_tag "place_list" do %>
   <% if user_places.any? %>
     <div class="flex flex-col gap-0.5">
@@ -9,8 +13,8 @@
     </div>
   <% else %>
     <%= render "shared/empty",
-               icon: "⌖",
-               title: t(".empty_title"),
-               description: t(".empty_description") %>
+               icon: empty_icon,
+               title: empty_title,
+               description: empty_description %>
   <% end %>
 <% end %>

@@ -6,7 +6,7 @@ class PlacesController < ApplicationController
   def index
     @query = params[:q].to_s.strip
     user_places = scoped_places.with_card_data.order(created_at: :desc, id: :desc)
-    user_places = user_places.where(place: Place.name_matching(@query)) if @query.present?
+    user_places = user_places.matching(@query) if @query.present?
 
     @total_places = user_places.count
     @total_pages = [ (@total_places.to_f / PER_PAGE).ceil, 1 ].max
@@ -21,6 +21,7 @@ class PlacesController < ApplicationController
   def show
     @visits = @user_place.visits.includes(:photos).chronological
     @photos = @user_place.photos.includes(file_attachment: :blob).ordered
+    @selected_photo_id = @photos.detect { |photo| photo.id.to_s == params[:photo].to_s }&.id
   end
 
   def new
@@ -77,7 +78,7 @@ class PlacesController < ApplicationController
 
   def load_form_tags
     @area_tags = scoped_tags.area.ordered
-    @vibe_tags = scoped_tags.where.not(kind: :area).ordered
+    @vibe_tags = scoped_tags.vibe.ordered
   end
 
   def user_place_params

@@ -10,9 +10,18 @@ en:
       visits: Visits
   activerecord:
     attributes:
+      place:
+        cached_address: Address
+        city: City
+        display_name: Place name
+        district: District
+        lat: Latitude
+        lng: Longitude
+        place_type: Type
       tag:
         kind: Kind
         name: Tag name
+        slug: Tag name
       user_place:
         my_rating: My rating
         nickname: My name for it
@@ -20,7 +29,6 @@ en:
         source_url: Source
         status: Status
       visit:
-        companions: With
         visited_at: Visited at
     models:
       photo: Photo
@@ -32,8 +40,9 @@ en:
     index:
       empty_description: Check in somewhere, or widen the date range.
       empty_title: No visits in this range yet
-      export_pdf: Export PDF (phase 2)
-      export_pdf_title: Phase 2
+      export_pdf: Export PDF
+      export_pdf_badge: Soon
+      export_pdf_title: Coming soon
       from: From
       month_summary: "%{month} — %{places} places · %{photos} photos"
       submit: Show
@@ -46,13 +55,25 @@ en:
     name: Travelog
   collections:
     index:
-      add_place: "＋ Add place"
       by_area: By area
       by_vibe: By vibe
       manage_tags: Manage tags
-      recent: Recently saved
-      see_all: See all
+      see_all_groups:
+        one: See all %{count} group
+        other: See all %{count} groups
+      see_all_places:
+        one: See all %{count} place
+        other: See all %{count} places
       title: Collections
+      untagged_hint: Places you saved in a hurry, not filed under any group yet.
+    tag_group:
+      empty_description: Create a tag to group places into a collection.
+      empty_title: No groups here yet
+      manage_tags: Manage tags
+    untagged:
+      empty_description: Every place belongs to at least one group.
+      empty_title: All tagged
+      hint: Open a place and hit Edit to file it under a group, rename it or add photos.
   common:
     distance_km: "%{value} km"
     groups_count:
@@ -62,9 +83,9 @@ en:
     photos_count:
       one: "%{count} photo"
       other: "%{count} photos"
-    places_pending:
-      one: "%{count} place to go"
-      other: "%{count} places to go"
+    places_count:
+      one: "%{count} place"
+      other: "%{count} places"
     powered_by_google: Powered by Google
     unknown_area: Area unknown
     visits_count:
@@ -114,6 +135,7 @@ en:
     album: Album
     collections: Collections
     group_area: Areas
+    group_untagged: Untagged
     group_vibe: Vibes
     manage_tags: Manage tags
     me: Me
@@ -124,14 +146,16 @@ en:
     index:
       as_the_crow_flies: Distances are straight-line, computed with Postgres earth_distance.
       center: Centre point
-      center_default: Hoan Kiem lake (default)
+      center_default: Hoan Kiem lake (fallback)
       center_placeholder: Search for a place on Google Maps
       current_location: Current location
       custom_center: Point selected on the map
-      missing_coords:
-        one: "%{count} place has no coordinates, so its distance can't be computed."
-        other: "%{count} places have no coordinates, so their distances can't be computed."
+      filtered_by: Filtered by
+      location_retry: Try again
+      location_unavailable: Location is off, so Hoan Kiem Lake is being used as the
+        centre. Allow location access in your browser, then tap “Use my location”.
       out_of_radius: Outside radius
+      out_of_radius_legend: Outside radius (within the next %{distance})
       radius: Radius
       title: Nearby
       use_my_location: "⌖ Use my location"
@@ -153,8 +177,6 @@ en:
     checkin_sheet:
       cancel: Cancel
       close: Close
-      companions: With
-      companions_placeholder: Linh, Minh
       note: Note (optional)
       note_placeholder: Who you went with, where you sat, what you ate…
       pick_photos: "＋ Choose photos"
@@ -172,35 +194,55 @@ en:
       destroy_confirm: Remove this place from your book? Its photos and visits go
         with it.
       title: Edit place
+    edit_visit_sheet:
+      cancel: Cancel
+      close: Close
+      existing_photos: Existing photos
+      existing_photos_hint: Select photos to delete from your library when you save.
+      note: Note (optional)
+      note_placeholder: Who you went with, where you sat, what you ate…
+      pick_photos: "＋ Add photos"
+      pick_photos_hint: New photos will be attached to this visit.
+      remove_new_photo: Remove this new photo
+      remove_photo: Delete this photo
+      submit: Save changes
+      title: Edit visit
+      visited_at: Date & time
     form:
       address: Address
-      address_placeholder: 614 Lac Long Quan, Tay Ho, Hanoi
+      address_placeholder: Filled in when you pick a suggestion
+      advanced: Advanced — address & coordinates
+      advanced_hint: These are filled in automatically when you pick a suggestion.
+        Edit only if Google got it wrong.
       autocomplete_hint: Type at least 3 characters and choose a Google Maps suggestion;
         the address and coordinates will be filled automatically.
       cancel: Cancel
       city: City
-      city_placeholder: Hanoi
-      coords_hint: Without coordinates this place can never show up on the Nearby
-        screen.
+      city_placeholder: Filled in when you pick a suggestion
+      coords_missing: No coordinates
+      coords_present: Coordinates set
       create: Save to my book
       display_name: Place name
-      display_name_placeholder: Sen Tay Ho Deli
+      display_name_placeholder: Type a place name to search Google Maps
       district: District
-      district_placeholder: Tay Ho
+      district_placeholder: Filled in when you pick a suggestion
+      error_title:
+        one: 'Not saved — %{count} problem to fix:'
+        other: 'Not saved — %{count} problems to fix:'
       lat: Latitude
       lng: Longitude
       nickname: My own name for it (optional)
-      nickname_placeholder: Lotus cake place in alley 614
+      nickname_placeholder: What you usually call this place
       note: Note
-      note_placeholder: Heard the lotus cake is good, go late afternoon.
+      note_placeholder: Anything you want to remember about this place
       place_type: Type
       priority: Mark as priority
       save: Save changes
       source_url: TikTok / Facebook link
       source_url_placeholder: Paste a link to find it again later
       tags: Tags
-      tags_hint_html: No tag fits? %{link}.
-      tags_manage: Create a new tag
+      tags_hint_html: Want to edit or delete a tag? %{link}.
+      tags_manage: Manage tags
     gallery:
       add_photos: "＋ Add photos"
       current_cover: Current cover photo
@@ -212,19 +254,34 @@ en:
       make_cover: Use as cover
       next_photo: Next photo
       nothing_to_download: There are no photos to download.
+      open_photo: View photo %{number} at full size
       previous_photo: Previous photo
       show_photo: Show photo %{number}
     index:
-      add_place: "＋ Add place"
       title: All places
     new:
       title: Add place
+    photo_lightbox:
+      close: Close
+      next_photo: Next photo
+      previous_photo: Previous photo
     show:
       add_visit: "＋ Add visit"
       crumb: Collections
       edit: "✎ Edit"
       no_visits_description: Tap “Check in” to record the first one.
       no_visits_title: No visits yet
+    tag_picker:
+      add: "＋ New tag"
+    tag_sheet:
+      cancel: Cancel
+      close: Close
+      color: Dot colour
+      kind: Tag kind
+      name: Tag name
+      name_placeholder: e.g. West Lake, chill, late night…
+      submit: Create tag
+      title: New tag
     update:
       updated: Updated.
   public_collections:
@@ -245,6 +302,8 @@ en:
     collection_card:
       counts_html: "<b>%{wishlist}</b> not yet"
       visited_html: "<b>%{visited}</b> been there"
+    flash:
+      dismiss: Dismiss notification
     place_detail:
       area: Area
       check_in: Check in
@@ -291,7 +350,9 @@ en:
     search_field:
       placeholder: Search or paste a link…
     visit_timeline:
-      companions: 'With: %{names}'
+      destroy: Delete
+      destroy_confirm: Delete this visit? Its photos will stay in your photo library.
+      edit: Edit
       title: Visits
   status:
     priority: Priority
@@ -299,7 +360,6 @@ en:
     wishlist: Want to go
   tag_kind:
     area: Area
-    free: Free
     vibe: Vibe
   tags:
     create:
@@ -315,7 +375,7 @@ en:
       kind_hint: Areas sit in the upper sidebar group; vibes sit below and double
         as filter chips.
       name: Tag name
-      name_placeholder: West Lake
+      name_placeholder: e.g. West Lake, chill, late night…
       submit: Save
     index:
       empty_description: Create a tag to group places into a collection.
@@ -325,7 +385,6 @@ en:
     new:
       title: New tag
     places:
-      add_place: "＋ Add to this group"
       crumb: Collections
       distance_sort_excluded:
         one: "%{count} place has no coordinates (or is too far away), so it is not
@@ -360,3 +419,5 @@ en:
       created: Visit recorded.
     destroy:
       destroyed: Visit deleted.
+    update:
+      updated: Visit updated.

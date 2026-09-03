@@ -1,36 +1,49 @@
 <% content_for :title, "#{t(".title")} · #{t("app.name")}" %>
 <% content_for :topbar_actions do %>
-  <div class="hidden sm:block"><%= render "shared/search_field" %></div>
-  <%= link_to t(".add_place"), new_place_path, class: "btn btn--primary btn--sm" %>
+  <div class="order-last w-full sm:order-none sm:w-auto">
+    <%= render "shared/search_field", width_class: "w-full sm:w-[220px] xl:w-[270px]" %>
+  </div>
 <% end %>
 <% content_for :topbar do %>
   <%= render "shared/topbar", title: t(".title") %>
 <% end %>
 
 <div class="flex flex-col gap-5">
-  <% [[t(".by_area"), @area_tags], [t(".by_vibe"), @vibe_tags]].each do |heading, tags| %>
+  <% [ [ t(".by_area"), "area", @area_tags ], [ t(".by_vibe"), "vibe", @vibe_tags ] ].each do |heading, kind, tags| %>
     <% next if tags.empty? %>
     <section>
       <div class="mb-2 flex items-baseline gap-2">
         <h3 class="text-md font-bold tracking-tight"><%= heading %></h3>
-        <span class="num text-xs text-muted"><%= t("common.groups_count", count: tags.size) %></span>
+        <span class="num text-xs text-muted"><%= t("common.groups_count", count: @group_counts[kind.to_sym]) %></span>
         <%= link_to t(".manage_tags"), tags_path, class: "ml-auto text-sm font-semibold text-primary no-underline" %>
       </div>
-      <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4">
-        <% tags.each do |tag| %>
-          <%= render "shared/collection_card", tag: tag, counts: @counts_by_tag[tag.id],
-                     cover: @collection_covers_by_tag[tag.id] %>
-        <% end %>
-      </div>
+
+      <%= render "collections/collection_grid", tags: tags, counts_by_tag: @counts_by_tag,
+                 covers_by_tag: @collection_covers_by_tag %>
+
+      <% if @group_counts[kind.to_sym] > tags.size %>
+        <%= render "collections/see_all", path: tag_collections_path(kind),
+                   label: t(".see_all_groups", count: @group_counts[kind.to_sym]) %>
+      <% end %>
     </section>
   <% end %>
 
-  <section>
-    <div class="mb-2 flex items-baseline gap-2">
-      <h3 class="text-md font-bold tracking-tight"><%= t(".recent") %></h3>
-      <span class="num text-xs text-muted"><%= t("common.places_pending", count: @recent_places.size) %></span>
-      <%= link_to t(".see_all"), places_path, class: "ml-auto text-sm font-semibold text-primary no-underline" %>
-    </div>
-    <%= render "shared/place_grid", user_places: @recent_places %>
-  </section>
+  <% if @untagged_places.any? %>
+    <section>
+      <div class="mb-1 flex items-baseline gap-2">
+        <h3 class="text-md font-bold tracking-tight"><%= t("nav.group_untagged") %></h3>
+        <span class="num text-xs text-muted"><%= t("common.places_count", count: @group_counts[:untagged]) %></span>
+      </div>
+      <p class="mb-2 text-sm text-muted"><%= t(".untagged_hint") %></p>
+
+      <div class="rounded-lg border border-line bg-surface p-1">
+        <%= render "shared/place_row_list", user_places: @untagged_places %>
+      </div>
+
+      <% if @group_counts[:untagged] > @untagged_places.size %>
+        <%= render "collections/see_all", path: untagged_collections_path,
+                   label: t(".see_all_places", count: @group_counts[:untagged]) %>
+      <% end %>
+    </section>
+  <% end %>
 </div>

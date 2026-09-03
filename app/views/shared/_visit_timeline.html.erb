@@ -1,6 +1,7 @@
+<%# locals: (visits:, user_place:) %>
 <div class="flex flex-col">
   <% visits.each_with_index do |visit, index| %>
-    <div class="grid grid-cols-[1.1rem_1fr] gap-x-2.5">
+    <div id="<%= dom_id(visit) %>" data-controller="sheet" class="grid grid-cols-[1.1rem_1fr] gap-x-2.5">
       <div class="relative">
         <div class="h-[11px] w-[11px] rounded-full border-2 border-primary bg-surface mt-1.5"></div>
         <% unless index == visits.size - 1 %>
@@ -13,9 +14,6 @@
         <% if visit.note.present? %>
           <span class="text-sm font-semibold"><%= visit.note %></span>
         <% end %>
-        <% if visit.companions.present? %>
-          <span class="text-xs text-muted"><%= t(".companions", names: visit.companions) %></span>
-        <% end %>
 
         <% if visit.photos.any? %>
           <div class="flex gap-1">
@@ -26,7 +24,16 @@
             <% end %>
           </div>
         <% end %>
+
+        <div class="mt-1 flex items-center gap-1.5">
+          <button type="button" class="btn btn--ghost btn--sm" data-action="sheet#open"><%= t(".edit") %></button>
+          <%= button_to t(".destroy"), place_visit_path(user_place, visit), method: :delete,
+                class: "btn btn--danger btn--sm",
+                form: { data: { turbo_confirm: t(".destroy_confirm") } } %>
+        </div>
       </div>
+
+      <%= render "places/edit_visit_sheet", user_place: user_place, visit: visit %>
     </div>
   <% end %>
 </div>

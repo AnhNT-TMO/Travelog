@@ -6,7 +6,7 @@ class TagsController < ApplicationController
 
   def index
     @area_tags = @sidebar_tags.select(&:area?)
-    @vibe_tags = @sidebar_tags.reject(&:area?)
+    @vibe_tags = @sidebar_tags.select(&:vibe?)
   end
 
   def new
@@ -24,6 +24,13 @@ class TagsController < ApplicationController
     else
       render :new, status: :unprocessable_entity
     end
+  end
+
+  def quick_create
+    @tag = scoped_tags.new(tag_params)
+    @tag.save
+
+    render :quick_create, status: (@tag.persisted? ? :created : :unprocessable_entity)
   end
 
   def update
