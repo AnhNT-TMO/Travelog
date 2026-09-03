@@ -32,6 +32,16 @@ class DirectUploadsTest < ActionDispatch::IntegrationTest
     assert_select "input[type='file'][data-direct-upload-url='#{place_direct_uploads_url(@user_place)}']", count: 2
   end
 
+  test "check-in form exposes selected-photo previews before upload" do
+    get place_path(@user_place)
+
+    assert_response :success
+    assert_select "form[data-controller~='photo-preview']", count: 1
+    assert_select "input[type='file'][data-photo-preview-target='input']", count: 1
+    assert_select "[data-photo-preview-target='output']", count: 1
+    assert_select "template[data-photo-preview-target='template']", count: 1
+  end
+
   private
 
   def upload_params(filename)

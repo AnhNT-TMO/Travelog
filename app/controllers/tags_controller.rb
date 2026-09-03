@@ -51,7 +51,7 @@ class TagsController < ApplicationController
 
   def places
     @tag      = scoped_tags.find_by!(slug: params[:id])
-    @state    = params[:state].presence_in(STATES) || "wishlist"
+    @state    = params[:state].presence_in(STATES) || "all"
     @sort     = params[:sort].presence_in(SORTS) || "recent"
     @vibe_ids = Array(params[:vibe]).reject(&:blank?)
     @center   = nearby_center if @sort == "distance"

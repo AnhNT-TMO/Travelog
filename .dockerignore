@@ -35,3 +35,14 @@
 
 /.dockerignore
 /Dockerfile*
+
+/infra/
+
+/test/
+/coverage/
+/docs/
+/README.md
+/.rubocop.yml
+/.claude/
+/.codex/
+/.git*

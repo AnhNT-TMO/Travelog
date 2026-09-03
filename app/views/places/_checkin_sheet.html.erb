@@ -12,7 +12,7 @@
 
     <%= form_with url: place_visits_path(user_place), class: "flex flex-col gap-2.5",
                   data: {
-                    controller: "direct-upload",
+                    controller: "direct-upload photo-preview",
                     action: "direct-upload:start->direct-upload#start " \
                             "direct-upload:progress->direct-upload#progress " \
                             "direct-upload:end->direct-upload#end"
@@ -28,8 +28,29 @@
           <%= t(".pick_photos") %>
           <span class="block text-xs"><%= t(".pick_photos_hint") %></span>
           <%= file_field_tag "photos[]", multiple: true, accept: "image/*", class: "sr-only",
-                "data-direct-upload-url": place_direct_uploads_url(user_place) %>
+                "data-direct-upload-url": place_direct_uploads_url(user_place),
+                data: {
+                  photo_preview_target: "input",
+                  action: "change->photo-preview#preview"
+                } %>
         </label>
+
+        <div data-photo-preview-target="output" hidden
+             class="grid grid-cols-3 gap-2 sm:grid-cols-4"></div>
+
+        <template data-photo-preview-target="template">
+          <div class="relative min-w-0 overflow-hidden rounded-md border border-line bg-surface-2">
+            <div class="aspect-square overflow-hidden bg-ground">
+              <img data-photo-preview-image class="h-full w-full object-cover" alt="">
+            </div>
+            <span data-photo-preview-name class="block truncate px-1.5 py-1 text-2xs text-ink-soft"></span>
+            <button type="button"
+                    class="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full border border-line bg-surface/90 text-sm font-semibold text-ink shadow-e1"
+                    aria-label="<%= t(".remove_photo") %>"
+                    data-photo-preview-remove
+                    data-action="photo-preview#remove">×</button>
+          </div>
+        </template>
 
         <div data-direct-upload-target="progress" hidden class="flex items-center gap-2">
           <div class="h-1 flex-1 overflow-hidden rounded-sm bg-surface-3">

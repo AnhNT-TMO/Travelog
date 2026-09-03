@@ -48,11 +48,17 @@
                 data-action="clipboard#copy"><%= t(".copy") %></button>
 
         <% if photos.selected.any? %>
-          <%= link_to t(".download_photos", count: photos.selected.size),
-                photos_zip_place_review_kit_path(user_place), class: "btn btn--sm", data: { turbo: false } %>
+          <div data-controller="bulk-download"
+               data-bulk-download-url-value="<%= download_photos_place_review_kit_path(user_place, format: :json) %>"
+               data-bulk-download-progress-value="<%= t(".download_progress") %>"
+               data-bulk-download-empty-value="<%= t(".nothing_selected") %>">
+            <button type="button" class="btn btn--sm"
+                    data-bulk-download-target="button"
+                    data-action="bulk-download#start"><%= t(".download_photos", count: photos.selected.size) %></button>
+          </div>
         <% end %>
 
-        <%= link_to t(".open_maps"), Google::ReviewLink.for(place),
+        <%= link_to t(".open_maps"), Google::ReviewLink.maps_for(place),
               target: "_blank", rel: "noopener", class: "btn btn--primary btn--sm" %>
       </div>
     </div>
@@ -68,16 +74,11 @@
     <% end %>
   <% else %>
     <div class="flex flex-wrap gap-1.5">
-      <%= link_to t(".open_maps"), Google::ReviewLink.fallback_for(place),
+      <%= link_to t(".open_maps"), Google::ReviewLink.maps_for(place),
             target: "_blank", rel: "noopener", class: "btn btn--sm" %>
       <%= link_to t(".directions"), Google::ReviewLink.directions_for(place),
             target: "_blank", rel: "noopener", class: "btn btn--sm" %>
     </div>
   <% end %>
 
-  <span class="text-2xs text-muted">
-    <%= t(".fallback_prefix") %>
-    <%= link_to t(".fallback_link"), Google::ReviewLink.fallback_for(place),
-          target: "_blank", rel: "noopener", class: "text-primary" %>
-  </span>
 </div>

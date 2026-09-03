@@ -159,6 +159,7 @@ en:
       note_placeholder: Who you went with, where you sat, what you ate…
       pick_photos: "＋ Choose photos"
       pick_photos_hint: Photos go into your own library.
+      remove_photo: Remove this photo
       submit: Save visit
       title: Check in
       visited_at: Date & time
@@ -202,12 +203,17 @@ en:
       tags_manage: Create a new tag
     gallery:
       add_photos: "＋ Add photos"
+      current_cover: Current cover photo
       destroy: Delete photo
       destroy_confirm: Delete this photo?
+      download_all: Download all photos
+      download_original: Download original
+      download_progress: Downloading…
       make_cover: Use as cover
-      photos_count:
-        one: "%{count} photo"
-        other: "%{count} photos"
+      next_photo: Next photo
+      nothing_to_download: There are no photos to download.
+      previous_photo: Previous photo
+      show_photo: Show photo %{number}
     index:
       add_place: "＋ Add place"
       title: All places
@@ -217,7 +223,7 @@ en:
       add_visit: "＋ Add visit"
       crumb: Collections
       edit: "✎ Edit"
-      no_visits_description: Tap “I've been here” to record the first one.
+      no_visits_description: Tap “Check in” to record the first one.
       no_visits_title: No visits yet
     update:
       updated: Updated.
@@ -235,15 +241,13 @@ en:
   review_kits:
     mark_reviewed:
       marked: 'Noted: you posted the review.'
-    photos_zip:
-      nothing_selected: No photos selected to download.
   shared:
     collection_card:
       counts_html: "<b>%{wishlist}</b> not yet"
       visited_html: "<b>%{visited}</b> been there"
     place_detail:
       area: Area
-      check_in: I've been here — check in
+      check_in: Check in
       check_in_again: "＋ Check in again"
       distance: Distance
       edit: Edit
@@ -269,14 +273,14 @@ en:
       download_photos:
         one: Download %{count} photo
         other: Download %{count} photos
+      download_progress: Downloading…
       draft: What you'll post
       draft_placeholder: Third-floor balcony looks straight over the lake, late afternoon
         light is lovely…
-      fallback_link: Try this link
-      fallback_prefix: Didn't open?
       mark_hint: Once you've posted, tap “Posted” so the app knows.
       mark_reviewed: 'Mark as: review posted'
       not_visited: Not visited yet, so no review
+      nothing_selected: No photos selected to download.
       open_maps: Open in Google Maps ↗
       pick_photos:
         one: Photos to attach — %{count} selected

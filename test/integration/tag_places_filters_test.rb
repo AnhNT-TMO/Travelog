@@ -37,6 +37,28 @@ class TagPlacesFiltersTest < ActionDispatch::IntegrationTest
     assert_select "a[role='tab'][data-turbo-frame]", count: 0
   end
 
+  test "area and vibe pages show all places by default and put the all tab first" do
+    get places_tag_path(@area)
+
+    assert_response :success
+    assert_select "a[role='tab'][aria-selected='true']", text: /Tất cả/
+    assert_select "a[role='tab']" do |tabs|
+      assert_match(/Tất cả/, tabs.first.text)
+    end
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@wishlist)}"
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@visited)}"
+
+    get places_tag_path(@chill)
+
+    assert_response :success
+    assert_select "a[role='tab'][aria-selected='true']", text: /Tất cả/
+    assert_select "a[role='tab']" do |tabs|
+      assert_match(/Tất cả/, tabs.first.text)
+    end
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@wishlist)}"
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@visited)}"
+  end
+
   test "place cards escape the list frame when opening details" do
     get places_tag_path(@area), params: { state: "wishlist" }
 

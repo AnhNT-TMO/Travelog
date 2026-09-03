@@ -14,7 +14,6 @@ gem "aws-sdk-s3", "~> 1.229", require: false
 gem "ferrum_pdf", "~> 3.1"
 gem "geocoder", "~> 1.8"
 gem "exifr", "~> 1.5"
-gem "rubyzip", "~> 3.0", require: "zip"
 
 gem "devise", "~> 4.9"
 

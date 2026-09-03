@@ -159,8 +159,9 @@ vi:
       note_placeholder: Đi với ai, ngồi đâu, ăn gì…
       pick_photos: "＋ Chọn ảnh từ máy"
       pick_photos_hint: Ảnh lưu vào kho ảnh của bạn.
+      remove_photo: Bỏ ảnh này
       submit: Lưu lần đến
-      title: Check-in
+      title: Check in
       visited_at: Ngày & giờ
     create:
       created: Đã lưu vào sổ.
@@ -202,12 +203,17 @@ vi:
       tags_manage: Tạo tag mới
     gallery:
       add_photos: "＋ Thêm ảnh"
+      current_cover: Ảnh bìa hiện tại
       destroy: Xoá ảnh
       destroy_confirm: Xoá ảnh này?
+      download_all: Tải tất cả ảnh
+      download_original: Tải ảnh gốc
+      download_progress: Đang tải…
       make_cover: Đặt làm ảnh bìa
-      photos_count:
-        one: "%{count} ảnh"
-        other: "%{count} ảnh"
+      next_photo: Ảnh tiếp theo
+      nothing_to_download: Chưa có ảnh nào để tải.
+      previous_photo: Ảnh trước
+      show_photo: Xem ảnh %{number}
     index:
       add_place: "＋ Thêm địa điểm"
       title: Tất cả địa điểm
@@ -217,7 +223,7 @@ vi:
       add_visit: "＋ Thêm lần đến"
       crumb: Bộ sưu tập
       edit: "✎ Sửa"
-      no_visits_description: Bấm “Đã đi rồi” để ghi lại lần đầu tiên.
+      no_visits_description: Bấm “Check in” để ghi lại lần đầu tiên.
       no_visits_title: Chưa có lần đến nào
     update:
       updated: Đã cập nhật.
@@ -235,15 +241,13 @@ vi:
   review_kits:
     mark_reviewed:
       marked: 'Đã ghi nhận: bạn đã đăng review.'
-    photos_zip:
-      nothing_selected: Chưa chọn ảnh nào để tải.
   shared:
     collection_card:
       counts_html: "<b>%{wishlist}</b> chưa đến"
       visited_html: "<b>%{visited}</b> đã đến"
     place_detail:
       area: Khu vực
-      check_in: Đã đi rồi — check-in
+      check_in: Check in
       check_in_again: "＋ Check-in lần nữa"
       distance: Cách tôi
       edit: Sửa
@@ -269,14 +273,14 @@ vi:
       download_photos:
         one: Tải %{count} ảnh
         other: Tải %{count} ảnh
+      download_progress: Đang tải…
       draft: Nội dung sẽ đăng
       draft_placeholder: Ban công tầng 3 nhìn thẳng ra hồ, chiều muộn nắng xiên rất
         đẹp…
-      fallback_link: Thử link này
-      fallback_prefix: Không mở được?
       mark_hint: Sau khi đăng xong, bấm “Đã đăng” để app ghi nhận.
       mark_reviewed: 'Đánh dấu: đã đăng review'
       not_visited: Chưa đến nên chưa review
+      nothing_selected: Chưa chọn ảnh nào để tải.
       open_maps: Mở trên Google Maps ↗
       pick_photos:
         one: Ảnh gửi kèm — đã chọn %{count}

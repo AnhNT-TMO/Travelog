@@ -22,14 +22,19 @@ Rails.application.routes.draw do
     resources :visits, only: [ :create, :destroy ]
 
     resources :photos, only: [ :create, :destroy ] do
+      collection do
+        get :download_all
+      end
+
       member do
+        get :download
         patch :make_cover
         patch :toggle_google_selection
       end
     end
 
     resource :review_kit, only: [ :update ] do
-      get   :photos_zip
+      get   :download_photos
       patch :mark_reviewed
     end
   end

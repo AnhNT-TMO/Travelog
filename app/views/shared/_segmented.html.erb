@@ -1,5 +1,7 @@
+<% states = local_assigns.fetch(:states, %w[wishlist visited all]) %>
+
 <div class="seg" role="tablist" data-controller="segmented">
-  <% %w[wishlist visited all].each do |value| %>
+  <% states.each do |value| %>
     <%= link_to url_for(base_params.merge(state: value)),
           role: "tab",
           "aria-selected": (current.to_s == value).to_s,

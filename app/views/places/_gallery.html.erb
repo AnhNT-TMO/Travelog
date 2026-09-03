@@ -1,50 +1,122 @@
-<div class="relative">
+<%# Expects user_place and photos. %>
+<% slides = [ user_place.cover_photo, *photos ].compact.uniq %>
+
+<% if slides.any? %>
+  <div data-controller="carousel">
+    <div class="relative">
+      <div data-carousel-target="viewport"
+           data-action="scroll->carousel#scroll:passive"
+           class="flex aspect-[4/3] snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:aspect-[16/10] lg:h-[280px] lg:aspect-auto">
+        <% slides.each do |photo| %>
+          <div data-carousel-target="slide"
+               class="media-skeleton relative h-full w-full flex-none snap-center snap-always">
+            <%= photo_image_tag photo,
+                  sizes: "(max-width: 1023px) 100vw, 760px",
+                  derivative_size: Photos::ThumbnailUrl::PREVIEW %>
+
+            <div class="absolute right-2 top-2 flex gap-1.5">
+              <%= button_to "✕", place_photo_path(user_place, photo), method: :delete,
+                    class: "btn h-11 w-11 border-white/50 bg-black/50 p-0 text-white backdrop-blur-[6px] hover:bg-black/70",
+                    title: t(".destroy"), aria: { label: t(".destroy") },
+                    form: { class: "contents", data: { turbo_confirm: t(".destroy_confirm") } } %>
+
+              <%= link_to "↓", download_place_photo_path(user_place, photo),
+                    class: "btn h-11 w-11 border-white/50 bg-black/50 p-0 text-lg text-white backdrop-blur-[6px] hover:bg-black/70",
+                    title: t(".download_original"), aria: { label: t(".download_original") },
+                    data: { turbo: false } %>
+
+              <% if user_place.cover_photo_id == photo.id %>
+                <button type="button" disabled
+                        class="btn h-11 w-11 border-white/50 bg-primary p-0 text-white backdrop-blur-[6px]"
+                        title="<%= t(".current_cover") %>" aria-label="<%= t(".current_cover") %>">★</button>
+              <% else %>
+                <%= button_to "☆", make_cover_place_photo_path(user_place, photo), method: :patch,
+                      class: "btn h-11 w-11 border-white/50 bg-black/50 p-0 text-lg text-white backdrop-blur-[6px] hover:bg-black/70",
+                      title: t(".make_cover"), aria: { label: t(".make_cover") },
+                      form: { class: "contents" } %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <% if slides.many? %>
+        <button type="button"
+                class="btn absolute left-2 top-1/2 hidden h-11 w-11 -translate-y-1/2 border-white/50 bg-black/50 p-0 text-xl text-white backdrop-blur-[6px] hover:bg-black/70 sm:inline-flex"
+                aria-label="<%= t(".previous_photo") %>"
+                data-carousel-target="previous"
+                data-action="carousel#previous">‹</button>
+        <button type="button"
+                class="btn absolute right-2 top-1/2 hidden h-11 w-11 -translate-y-1/2 border-white/50 bg-black/50 p-0 text-xl text-white backdrop-blur-[6px] hover:bg-black/70 sm:inline-flex"
+                aria-label="<%= t(".next_photo") %>"
+                data-carousel-target="next"
+                data-action="carousel#next">›</button>
+      <% end %>
+
+      <span data-carousel-target="position"
+            class="num absolute bottom-2.5 right-2.5 rounded-pill bg-black/50 px-2 py-0.5 text-2xs text-white backdrop-blur-[6px]">1 / <%= slides.size %></span>
+    </div>
+
+    <div class="flex items-center gap-1.5 overflow-x-auto bg-surface-2 p-2">
+      <% slides.each_with_index do |photo, index| %>
+        <button type="button"
+                class="media-skeleton h-[52px] w-[52px] flex-none overflow-hidden rounded-sm border-2 border-transparent aria-pressed:border-primary aria-pressed:ring-1 aria-pressed:ring-primary"
+                aria-label="<%= t(".show_photo", number: index + 1) %>"
+                aria-pressed="<%= index.zero? %>"
+                data-carousel-target="thumbnail"
+                data-carousel-index="<%= index %>"
+                data-action="carousel#select">
+          <%= photo_image_tag photo, sizes: "52px", derivative_size: Photos::ThumbnailUrl::THUMB %>
+        </button>
+      <% end %>
+
+      <%= form_with url: place_photos_path(user_place), class: "flex-none",
+                    data: {
+                      controller: "autosubmit direct-upload",
+                      action: "direct-upload:start->direct-upload#start " \
+                              "direct-upload:progress->direct-upload#progress " \
+                              "direct-upload:end->direct-upload#end"
+                    } do |form| %>
+        <label class="btn btn--outline btn--sm h-[52px] cursor-pointer">
+          <%= t(".add_photos") %>
+          <%= file_field_tag "photos[]", multiple: true, accept: "image/*", class: "sr-only",
+                "data-direct-upload-url": place_direct_uploads_url(user_place),
+                data: { action: "change->autosubmit#submit" } %>
+        </label>
+      <% end %>
+
+      <div class="flex-none"
+           data-controller="bulk-download"
+           data-bulk-download-url-value="<%= download_all_place_photos_path(user_place, format: :json) %>"
+           data-bulk-download-progress-value="<%= t(".download_progress") %>"
+           data-bulk-download-empty-value="<%= t(".nothing_to_download") %>">
+        <button type="button" class="btn btn--outline btn--sm h-[52px]"
+                data-bulk-download-target="button"
+                data-action="bulk-download#start"><%= t(".download_all") %></button>
+      </div>
+    </div>
+  </div>
+<% else %>
   <%= render "shared/place_media", user_place: user_place,
              ratio: "aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:h-[280px]",
              sizes: "(max-width: 1023px) 100vw, 760px",
              derivative_size: Photos::ThumbnailUrl::PREVIEW,
              show_status: false %>
 
-  <% if user_place.photos_count.positive? %>
-    <span class="num absolute bottom-2.5 right-2.5 rounded-pill bg-black/50 px-2 py-0.5 text-2xs text-white backdrop-blur-[6px]">
-      <%= t(".photos_count", count: user_place.photos_count) %>
-    </span>
-  <% end %>
-</div>
-
-<div class="flex items-center gap-1.5 overflow-x-auto bg-surface-2 p-2">
-  <% photos.each do |photo| %>
-    <div class="group relative h-[52px] w-[52px] flex-none">
-      <div class="media-skeleton h-full w-full overflow-hidden rounded-sm <%= "outline-2 outline-offset-1 outline-primary" if user_place.cover_photo_id == photo.id %>">
-        <%= photo_image_tag photo, sizes: "52px", derivative_size: Photos::ThumbnailUrl::THUMB %>
-      </div>
-
-      <div class="absolute inset-0 hidden place-items-center gap-1 rounded-sm bg-black/55 group-hover:grid group-focus-within:grid">
-        <div class="flex gap-1">
-          <% unless user_place.cover_photo_id == photo.id %>
-            <%= button_to "★", make_cover_place_photo_path(user_place, photo), method: :patch,
-                  class: "text-2xs text-white", title: t(".make_cover") %>
-          <% end %>
-          <%= button_to "✕", place_photo_path(user_place, photo), method: :delete,
-                class: "text-2xs text-white", title: t(".destroy"),
-                form: { data: { turbo_confirm: t(".destroy_confirm") } } %>
-        </div>
-      </div>
-    </div>
-  <% end %>
-
-  <%= form_with url: place_photos_path(user_place), class: "flex-none",
-                data: {
-                  controller: "autosubmit direct-upload",
-                  action: "direct-upload:start->direct-upload#start " \
-                          "direct-upload:progress->direct-upload#progress " \
-                          "direct-upload:end->direct-upload#end"
-                } do |form| %>
-    <label class="btn btn--outline btn--sm h-[52px] cursor-pointer">
-      <%= t(".add_photos") %>
-      <%= file_field_tag "photos[]", multiple: true, accept: "image/*", class: "sr-only",
-            "data-direct-upload-url": place_direct_uploads_url(user_place),
-            data: { action: "change->autosubmit#submit" } %>
-    </label>
-  <% end %>
-</div>
+  <div class="flex items-center gap-1.5 bg-surface-2 p-2">
+    <%= form_with url: place_photos_path(user_place), class: "flex-none",
+                  data: {
+                    controller: "autosubmit direct-upload",
+                    action: "direct-upload:start->direct-upload#start " \
+                            "direct-upload:progress->direct-upload#progress " \
+                            "direct-upload:end->direct-upload#end"
+                  } do |form| %>
+      <label class="btn btn--outline btn--sm h-[52px] cursor-pointer">
+        <%= t(".add_photos") %>
+        <%= file_field_tag "photos[]", multiple: true, accept: "image/*", class: "sr-only",
+              "data-direct-upload-url": place_direct_uploads_url(user_place),
+              data: { action: "change->autosubmit#submit" } %>
+      </label>
+    <% end %>
+  </div>
+<% end %>

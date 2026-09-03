@@ -3,12 +3,12 @@
 <%= form_with model: resource, scope: resource_name, url: session_path(resource_name), class: "flex flex-col gap-3" do |form| %>
   <div class="field">
     <%= form.label :email, t(".email"), class: "label" %>
-    <%= form.email_field :email, autofocus: true, autocomplete: "email", class: "input" %>
+    <%= form.email_field :email, autofocus: true, autocomplete: "email", class: "input", required: true %>
   </div>
 
   <div class="field">
     <%= form.label :password, t(".password"), class: "label" %>
-    <%= form.password_field :password, autocomplete: "current-password", class: "input" %>
+    <%= form.password_field :password, autocomplete: "current-password", class: "input", required: true %>
   </div>
 
   <label class="flex items-center gap-2 text-sm text-ink-soft">

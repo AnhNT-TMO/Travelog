@@ -5,7 +5,7 @@
 
   <div class="field">
     <%= form.label :password, t(".password"), class: "label" %>
-    <%= form.password_field :password, autofocus: true, autocomplete: "new-password", class: "input" %>
+    <%= form.password_field :password, autofocus: true, autocomplete: "new-password", class: "input", required: true %>
     <% if @minimum_password_length %>
       <span class="hint"><%= t(".hint", count: @minimum_password_length) %></span>
     <% end %>
@@ -13,7 +13,7 @@
 
   <div class="field">
     <%= form.label :password_confirmation, t(".password_confirmation"), class: "label" %>
-    <%= form.password_field :password_confirmation, autocomplete: "new-password", class: "input" %>
+    <%= form.password_field :password_confirmation, autocomplete: "new-password", class: "input", required: true %>
   </div>
 
   <%= form.submit t(".submit"), class: "btn btn--primary btn--block" %>

@@ -221,6 +221,10 @@
   .label {
     @apply text-xs font-semibold text-ink-soft;
   }
+  .field:has(:required) > .label::after {
+    content: " *";
+    @apply text-lacquer;
+  }
   .input,
   .select,
   .textarea {

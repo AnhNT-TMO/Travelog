@@ -56,6 +56,7 @@ Deliberately **not** in scope: no native app, no SPA, no public discovery feed, 
 - If a requirement is ambiguous, ask — **but first do every part that doesn't depend on the answer**, then ask.
 - **Verify data shape before normalizing it.** External payloads vary in field naming. Read a real response or fixture first; never write a parser from memory.
 - **No speculative abstraction.** Don't add a base class, concern, or service for a single call site. Branch business flows high up instead.
+- **Never add a comment on your own initiative — ask first.** New code ships without comments; names carry the meaning. If a piece of code genuinely cannot be read without one, stop and ask the owner, and write it only after they agree. Existing comments stay as they are, in the language of the file you are editing. The one standing exception is the locals declaration at the top of a partial, which `app/views/CLAUDE.md` requires.
 - Touching a model or scope means re-running **both** `bin/rails test` and `bin/rubocop`, not just the file you edited.
 - **Hand these back to a human:** creating or changing AWS resources, rotating Google API keys, running migrations against production, `kamal deploy`, deleting production data, toggling sharing on a real user's tag, widening the Google Places field mask.
 

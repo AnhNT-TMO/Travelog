@@ -15,7 +15,8 @@
                current: @state,
                counts: @counts,
                base_params: base_params,
-               url: nil %>
+               url: nil,
+               states: %w[all visited wishlist] %>
 
     <% if @vibe_tags.any? %>
       <%= render "shared/tag_chips",

@@ -15,17 +15,8 @@ class ReviewKitsController < ApplicationController
     redirect_to place_path(@user_place), notice: t(".marked")
   end
 
-  def photos_zip
-    photos = @user_place.photos.selected.ordered.select { |photo| photo.file.attached? }
-
-    if photos.empty?
-      redirect_to place_path(@user_place), alert: t(".nothing_selected")
-      return
-    end
-
-    send_data zip_for(photos),
-              filename: "#{Vietnamese.slugify(@user_place.label)}-review.zip",
-              type: "application/zip"
+  def download_photos
+    render json: { files: downloadable(@user_place.photos.selected.ordered) }
   end
 
   private
@@ -34,12 +25,11 @@ class ReviewKitsController < ApplicationController
     @user_place = scoped_places.find(params[:place_id])
   end
 
-  def zip_for(photos)
-    Zip::OutputStream.write_buffer do |zip|
-      photos.each_with_index do |photo, index|
-        zip.put_next_entry(format("%02d-%s", index + 1, photo.file.filename.to_s))
-        zip.write(photo.file.download)
-      end
-    end.string
+  def downloadable(photos)
+    photos.filter_map do |photo|
+      next unless photo.file.attached?
+
+      { url: rails_blob_path(photo.file, disposition: "attachment"), name: photo.file.filename.to_s }
+    end
   end
 end

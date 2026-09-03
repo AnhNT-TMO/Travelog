@@ -61,7 +61,7 @@ env:
     AWS_REGION: ap-southeast-1
     MAILER_SENDER: no-reply@travelog-ac.duckdns.org
 
-    GOOGLE_MAPS_MAP_ID: ""
+    GOOGLE_MAPS_MAP_ID: "42b44844963e83deb9f3a013"
     RAILS_LOG_LEVEL: info
 
   secret:
