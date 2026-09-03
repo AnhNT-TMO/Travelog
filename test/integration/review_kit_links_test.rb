@@ -13,7 +13,7 @@ class ReviewKitLinksTest < ActionDispatch::IntegrationTest
     get place_path(user_place)
 
     assert_response :success
-    assert_select "a[href='#{Google::ReviewLink.maps_for(@place)}']", text: /Mở trên Google Maps/, count: 1
+    assert_select "a[href='#{Google::ReviewLink.maps_for(@place)}']", text: /Google Maps/, count: 1
     assert_select "a[href*='search.google.com/local/writereview']", count: 0
     assert_select "a", text: /Thử link này/, count: 0
   end
@@ -24,7 +24,7 @@ class ReviewKitLinksTest < ActionDispatch::IntegrationTest
     get place_path(user_place)
 
     assert_response :success
-    assert_select "a[href='#{Google::ReviewLink.maps_for(@place)}']", text: /Mở trên Google Maps/, count: 1
+    assert_select "a[href='#{Google::ReviewLink.maps_for(@place)}']", text: /Google Maps/, count: 1
     assert_select "a[href*='search.google.com/local/writereview']", count: 0
   end
 end

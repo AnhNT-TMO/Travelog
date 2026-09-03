@@ -25,6 +25,12 @@
         <span class="hint"><%= t(".autosave_hint") %></span>
       <% end %>
 
+      <div class="mt-2">
+        <button type="button" class="btn btn--sm"
+                data-clipboard-target="button"
+                data-action="clipboard#copy"><%= t(".copy") %></button>
+      </div>
+
       <%= turbo_frame_tag dom_id(user_place, :review_attachments) do %>
         <% if photos.any? %>
           <div class="mt-2 flex flex-col gap-1">
@@ -45,9 +51,8 @@
         <% end %>
 
         <div class="mt-2 flex flex-wrap gap-1.5">
-          <button type="button" class="btn btn--sm"
-                  data-clipboard-target="button"
-                  data-action="clipboard#copy"><%= t(".copy") %></button>
+          <%= link_to t(".open_maps"), Google::ReviewLink.maps_for(place),
+                target: "_blank", rel: "noopener", class: "btn btn--primary btn--sm" %>
 
           <% if photos.selected.any? %>
             <div data-controller="bulk-download"
@@ -59,9 +64,6 @@
                       data-action="bulk-download#start"><%= t(".download_photos", count: photos.selected.size) %></button>
             </div>
           <% end %>
-
-          <%= link_to t(".open_maps"), Google::ReviewLink.maps_for(place),
-                target: "_blank", rel: "noopener", class: "btn btn--primary btn--sm" %>
         </div>
       <% end %>
     </div>

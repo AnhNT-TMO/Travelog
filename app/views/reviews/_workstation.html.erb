@@ -1,0 +1,137 @@
+<%# locals: (user_place:, photos:, position:, total:, next_user_place:) %>
+<% place = user_place.place %>
+<% selected_photos = photos.select(&:selected_for_google?) %>
+
+<div data-controller="clipboard" class="flex flex-col divide-y divide-line-soft">
+  <div class="flex flex-col gap-2.5 px-3.5 py-3">
+    <div class="flex items-start gap-2.5">
+      <span class="num flex h-[24px] flex-none items-center rounded-pill bg-primary-tint px-2 text-2xs font-semibold text-primary">
+        <%= position %>/<%= total %>
+      </span>
+
+      <div class="min-w-0 flex-1">
+        <div class="truncate text-lg font-bold tracking-tight"><%= user_place.label %></div>
+        <div class="truncate text-xs text-muted"><%= place.cached_address.presence || t(".no_address") %></div>
+      </div>
+
+      <%= link_to "↗", place_path(user_place), class: "btn btn--icon btn--ghost flex-none",
+            title: t(".open_place"), aria: { label: t(".open_place") } %>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <span class="<%= review_pill_class(user_place) %>"><%= review_label(user_place) %></span>
+      <% if user_place.last_visited_at.present? %>
+        <span class="num text-2xs text-muted">
+          <%= t(".last_visit", date: l(user_place.last_visited_at.to_date, format: :default)) %>
+        </span>
+      <% end %>
+      <% user_place.tags.each do |tag| %>
+        <span class="tag-mini"><%= tag.name %></span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2 px-3.5 py-3">
+    <%= render "reviews/step", number: 1, title: t(".step_maps"), hint: t(".step_maps_hint") %>
+
+    <div class="flex flex-wrap gap-1.5 pl-[1.7rem]">
+      <%= link_to t(".open_maps"), Google::ReviewLink.maps_for(place),
+            target: "_blank", rel: "noopener", class: "btn btn--primary btn--sm" %>
+      <%= link_to t(".directions"), Google::ReviewLink.directions_for(place),
+            target: "_blank", rel: "noopener", class: "btn btn--sm" %>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2 px-3.5 py-3">
+    <%= render "reviews/step", number: 2, title: t(".step_photos"), hint: t(".step_photos_hint") %>
+
+    <%= turbo_frame_tag dom_id(user_place, :review_photos) do %>
+      <% if photos.any? %>
+        <div class="grid grid-cols-3 gap-1.5 sm:grid-cols-5 lg:grid-cols-6">
+          <% photos.each do |photo| %>
+            <div class="relative">
+              <%= button_to toggle_google_selection_place_photo_path(user_place, photo), method: :patch,
+                    form: { class: "contents" },
+                    title: t(".toggle_photo"), aria: { label: t(".toggle_photo") },
+                    class: "media-skeleton relative block aspect-square w-full cursor-pointer overflow-hidden rounded-md border-2 " +
+                           (photo.selected_for_google? ? "border-primary" : "border-transparent") do %>
+                <%= photo_image_tag photo, sizes: "(max-width: 640px) 31vw, 150px" %>
+                <span class="absolute left-1 top-1 grid h-[19px] w-[19px] place-items-center rounded-full text-2xs backdrop-blur-[6px]
+                             <%= photo.selected_for_google? ? "bg-primary text-on-primary" : "border border-white/70 bg-black/30" %>"><%= "✓" if photo.selected_for_google? %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="mt-2 flex flex-wrap items-center gap-1.5">
+          <span class="num flex-none text-2xs text-muted"><%= t(".selected_count", count: selected_photos.size) %></span>
+
+          <% if selected_photos.any? %>
+            <div data-controller="bulk-download"
+                 data-bulk-download-url-value="<%= download_photos_place_review_kit_path(user_place, format: :json) %>"
+                 data-bulk-download-progress-value="<%= t(".download_progress") %>"
+                 data-bulk-download-empty-value="<%= t(".nothing_selected") %>">
+              <button type="button" class="btn btn--primary btn--sm"
+                      data-bulk-download-target="button"
+                      data-action="bulk-download#start"><%= t(".download_selected", count: selected_photos.size) %></button>
+            </div>
+          <% end %>
+
+          <div data-controller="bulk-download"
+               data-bulk-download-url-value="<%= download_all_place_photos_path(user_place, format: :json) %>"
+               data-bulk-download-progress-value="<%= t(".download_progress") %>"
+               data-bulk-download-empty-value="<%= t(".nothing_to_download") %>">
+            <button type="button" class="btn btn--outline btn--sm"
+                    data-bulk-download-target="button"
+                    data-action="bulk-download#start"><%= t(".download_all", count: photos.size) %></button>
+          </div>
+        </div>
+      <% else %>
+        <div class="flex flex-wrap items-center gap-2 rounded-md bg-ochre-tint px-2.5 py-2 text-xs text-ochre">
+          <span class="flex-1"><%= t(".no_photos") %></span>
+          <%= link_to t(".add_photos"), place_path(user_place), class: "btn btn--outline btn--sm" %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="flex flex-col gap-2 px-3.5 py-3">
+    <%= render "reviews/step", number: 3, title: t(".step_draft"), hint: t(".step_draft_hint") %>
+
+    <%= form_with url: place_review_kit_path(user_place), method: :patch,
+                  data: { controller: "autosave", action: "input->autosave#save" },
+                  class: "field" do |form| %>
+      <%= text_area_tag "user_place[review_body_draft]", user_place.review_body_draft,
+            id: dom_id(user_place, :review_body_draft), class: "textarea min-h-[110px]",
+            placeholder: t(".draft_placeholder"),
+            data: { clipboard_target: "source" } %>
+      <span class="hint"><%= t(".autosave_hint") %></span>
+    <% end %>
+
+    <div class="flex flex-wrap items-center gap-1.5">
+      <button type="button" class="btn btn--sm"
+              data-clipboard-target="button"
+              data-action="clipboard#copy"><%= t(".copy") %></button>
+
+      <button type="button" class="btn btn--outline btn--sm" disabled>✦ <%= t(".ai_rewrite") %></button>
+
+      <span class="pill pill--soon"><%= t(".ai_soon") %></span>
+    </div>
+
+    <span class="hint"><%= t(".ai_rewrite_hint") %></span>
+  </div>
+
+  <div class="flex flex-col gap-2 bg-surface-2 px-3.5 py-3">
+    <%= render "reviews/step", number: 4, title: t(".step_done"), hint: t(".step_done_hint") %>
+
+    <div class="flex flex-wrap items-stretch gap-1.5">
+      <%= button_to t(".mark_reviewed"), mark_reviewed_place_review_kit_path(user_place),
+            method: :patch, class: "btn btn--primary btn--sm btn--block",
+            form: { class: "min-w-[13rem] flex-1" } %>
+
+      <% if next_user_place.present? %>
+        <%= link_to t(".skip"), reviews_path(place: next_user_place.id), class: "btn btn--outline btn--sm" %>
+      <% end %>
+    </div>
+  </div>
+</div>

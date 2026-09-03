@@ -3,6 +3,7 @@ vi:
   account:
     show:
       all_places: Tất cả địa điểm
+      manage_reviews: Quản lý review
       manage_tags: Quản lý tag
       places: Địa điểm
       tags: Tag
@@ -137,9 +138,11 @@ vi:
     group_area: Khu vực
     group_untagged: Chưa đánh tag
     group_vibe: Vibe
+    manage_reviews: Quản lý review
     manage_tags: Quản lý tag
     me: Tôi
     nearby: Quanh đây
+    reviews: Review
     sign_out: Đăng xuất
     switch_language: Đổi ngôn ngữ
   nearby:
@@ -298,6 +301,59 @@ vi:
   review_kits:
     mark_reviewed:
       marked: 'Đã ghi nhận: bạn đã đăng review.'
+  reviews:
+    index:
+      done_of_total: đã review %{done}/%{total}
+      empty_description: Mọi chỗ bạn đã đến đều được đánh dấu là đã review. Check-in
+        thêm chỗ mới rồi quay lại đây.
+      empty_title: Không còn chỗ nào chờ review
+      oldest_first: Xếp theo thứ tự lưu vào — chỗ lưu trước nên review trước.
+      pending_label: chỗ chờ review
+      progress_label: Đã review %{percent}%%
+      queue: Hàng đợi
+      queue_hint: Bấm một chỗ để mở bộ kit review của chỗ đó.
+      title: Quản lý review
+    queue_row:
+      has_draft: có nháp
+    workstation:
+      add_photos: Thêm ảnh
+      ai_rewrite: AI viết lại
+      ai_rewrite_hint: Nhờ AI chỉnh lại chính đoạn trên cho gọn gàng, đủ ý — bạn xem
+        lại trước khi copy.
+      ai_soon: Sắp có
+      autosave_hint: Nháp tự lưu sau mỗi lần bạn ngừng gõ.
+      copy: Copy nội dung
+      directions: Chỉ đường
+      download_all:
+        one: Tải cả %{count} ảnh
+        other: Tải cả %{count} ảnh
+      download_progress: Đang tải…
+      download_selected:
+        one: Tải %{count} ảnh đã chọn
+        other: Tải %{count} ảnh đã chọn
+      draft_placeholder: Quán nhỏ, cà phê ngon, nhân viên thân thiện…
+      last_visit: Đến lần cuối %{date}
+      mark_reviewed: 'Đánh dấu: đã đăng review'
+      no_address: Chưa có địa chỉ
+      no_photos: Chỗ này chưa có ảnh nào của bạn để gửi kèm review.
+      nothing_selected: Chưa chọn ảnh nào để tải.
+      nothing_to_download: Chưa có ảnh nào để tải.
+      open_maps: Google Maps ↗
+      open_place: Mở trang địa điểm
+      selected_count:
+        one: Đã chọn %{count} ảnh
+        other: Đã chọn %{count} ảnh
+      skip: Để sau
+      step_done: Đánh dấu đã xong
+      step_done_hint: Đánh dấu rồi thì chỗ này rời khỏi hàng đợi.
+      step_draft: Soạn nội dung review
+      step_draft_hint: Gõ nháp, tự lưu, rồi copy sang Google Maps.
+      step_maps: Mở chỗ này trên Google Maps
+      step_maps_hint: Google không cho đăng review tự động — mở Maps rồi đăng bằng
+        tay.
+      step_photos: Chọn và tải ảnh gửi kèm
+      step_photos_hint: Bấm vào ảnh để chọn, rồi tải về máy để đính kèm khi review.
+      toggle_photo: Chọn hoặc bỏ chọn ảnh này
   shared:
     collection_card:
       counts_html: "<b>%{wishlist}</b> chưa đến"
@@ -340,7 +396,7 @@ vi:
       mark_reviewed: 'Đánh dấu: đã đăng review'
       not_visited: Chưa đến nên chưa review
       nothing_selected: Chưa chọn ảnh nào để tải.
-      open_maps: Mở trên Google Maps ↗
+      open_maps: Google Maps ↗
       pick_photos:
         one: Ảnh gửi kèm — đã chọn %{count}
         other: Ảnh gửi kèm — đã chọn %{count}

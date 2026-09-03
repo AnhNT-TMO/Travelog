@@ -1,10 +1,13 @@
-<nav class="flex flex-none items-center justify-around border-t border-line bg-surface px-1 pb-2 pt-1.5 lg:hidden">
-  <%= render "shared/tab_item", label: t("nav.collections"), icon: "◎", path: root_path, current: current_page?(root_path) %>
-  <%= render "shared/tab_item", label: t("nav.nearby"), icon: "⌖", path: nearby_path, current: current_page?(nearby_path) %>
-
+<div class="relative flex-none lg:hidden">
   <%= link_to new_place_path, aria: { label: t("nav.add_place") },
-        class: "-mt-3.5 grid h-[42px] w-[42px] flex-none place-items-center rounded-full bg-primary text-xl text-on-primary no-underline shadow-e2" do %>＋<% end %>
+        class: "absolute bottom-full right-3.5 mb-3 grid h-[48px] w-[48px] place-items-center rounded-full bg-primary text-xl text-on-primary no-underline shadow-e2" do %>＋<% end %>
 
-  <%= render "shared/tab_item", label: t("nav.album"), icon: "▤", path: album_path, current: current_page?(album_path) %>
-  <%= render "shared/tab_item", label: t("nav.me"), icon: "☺", path: me_path, current: current_page?(me_path) %>
-</nav>
+  <nav class="flex items-center justify-around border-t border-line bg-surface px-1 pb-2 pt-1.5">
+    <%= render "shared/tab_item", label: t("nav.collections"), icon: "◎", path: root_path, current: current_page?(root_path) %>
+    <%= render "shared/tab_item", label: t("nav.nearby"), icon: "⌖", path: nearby_path, current: current_page?(nearby_path) %>
+    <%= render "shared/tab_item", label: t("nav.reviews"), icon: "✎", path: reviews_path, current: current_page?(reviews_path),
+               badge: (@pending_reviews_count if @pending_reviews_count.to_i.positive?) %>
+    <%= render "shared/tab_item", label: t("nav.album"), icon: "▤", path: album_path, current: current_page?(album_path) %>
+    <%= render "shared/tab_item", label: t("nav.me"), icon: "☺", path: me_path, current: current_page?(me_path) %>
+  </nav>
+</div>

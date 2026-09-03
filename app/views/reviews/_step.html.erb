@@ -1,0 +1,8 @@
+<%# locals: (number:, title:, hint:) %>
+<div class="flex items-start gap-2">
+  <span class="num grid h-[19px] w-[19px] flex-none place-items-center rounded-full bg-surface-3 text-2xs font-semibold text-ink-soft"><%= number %></span>
+  <div class="flex min-w-0 flex-1 flex-col gap-px">
+    <span class="text-sm font-bold tracking-tight text-ink"><%= title %></span>
+    <span class="hint"><%= hint %></span>
+  </div>
+</div>

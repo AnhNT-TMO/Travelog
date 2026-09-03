@@ -3,6 +3,7 @@ en:
   account:
     show:
       all_places: All places
+      manage_reviews: Manage reviews
       manage_tags: Manage tags
       places: Places
       tags: Tags
@@ -137,9 +138,11 @@ en:
     group_area: Areas
     group_untagged: Untagged
     group_vibe: Vibes
+    manage_reviews: Manage reviews
     manage_tags: Manage tags
     me: Me
     nearby: Nearby
+    reviews: Reviews
     sign_out: Sign out
     switch_language: Change language
   nearby:
@@ -298,6 +301,60 @@ en:
   review_kits:
     mark_reviewed:
       marked: 'Noted: you posted the review.'
+  reviews:
+    index:
+      done_of_total: "%{done}/%{total} reviewed"
+      empty_description: Every place you have been to is marked as reviewed. Check
+        in somewhere new and come back here.
+      empty_title: Nothing waiting for a review
+      oldest_first: Ordered by when you saved them — review the oldest first.
+      pending_label: places awaiting a review
+      progress_label: "%{percent}%% reviewed"
+      queue: Queue
+      queue_hint: Pick a place to open its review kit.
+      title: Manage reviews
+    queue_row:
+      has_draft: draft ready
+    workstation:
+      add_photos: Add photos
+      ai_rewrite: AI rewrite
+      ai_rewrite_hint: Have the AI tidy the text above into a fuller review — read
+        it over before you copy.
+      ai_soon: Coming soon
+      autosave_hint: The draft saves itself shortly after you stop typing.
+      copy: Copy the text
+      directions: Directions
+      download_all:
+        one: Download all %{count} photos
+        other: Download all %{count} photos
+      download_progress: Downloading…
+      download_selected:
+        one: Download %{count} selected photo
+        other: Download %{count} selected photos
+      draft_placeholder: Small place, great coffee, friendly staff…
+      last_visit: Last visit %{date}
+      mark_reviewed: 'Mark as: review posted'
+      no_address: No address yet
+      no_photos: You have no photos of this place to attach to a review.
+      nothing_selected: No photos selected to download.
+      nothing_to_download: No photos to download yet.
+      open_maps: Google Maps ↗
+      open_place: Open the place page
+      selected_count:
+        one: "%{count} photo selected"
+        other: "%{count} photos selected"
+      skip: Later
+      step_done: Mark it done
+      step_done_hint: Once marked, this place leaves the queue.
+      step_draft: Write the review
+      step_draft_hint: Type a draft, it autosaves, then copy it into Google Maps.
+      step_maps: Open this place on Google Maps
+      step_maps_hint: Google has no API for posting reviews — open Maps and post it
+        by hand.
+      step_photos: Pick and download the photos
+      step_photos_hint: Tap a photo to select it, then download it to attach while
+        reviewing.
+      toggle_photo: Select or deselect this photo
   shared:
     collection_card:
       counts_html: "<b>%{wishlist}</b> not yet"
@@ -340,7 +397,7 @@ en:
       mark_reviewed: 'Mark as: review posted'
       not_visited: Not visited yet, so no review
       nothing_selected: No photos selected to download.
-      open_maps: Open in Google Maps ↗
+      open_maps: Google Maps ↗
       pick_photos:
         one: Photos to attach — %{count} selected
         other: Photos to attach — %{count} selected

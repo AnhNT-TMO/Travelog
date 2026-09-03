@@ -13,6 +13,7 @@
     <%= render "shared/sidebar_item", label: t("nav.nearby"), icon: "⌖", path: nearby_path, current: current_page?(nearby_path) %>
     <%= render "shared/sidebar_item", label: t("nav.album"), icon: "▤", path: album_path, current: current_page?(album_path) %>
     <%= render "shared/sidebar_item", label: t("nav.manage_tags"), icon: "⌗", path: tags_path, current: current_page?(tags_path) %>
+    <%= render "shared/sidebar_item", label: t("nav.manage_reviews"), icon: "✎", path: reviews_path, current: current_page?(reviews_path), count: (@pending_reviews_count if @pending_reviews_count.to_i.positive?) %>
 
     <% [[t("nav.group_area"), :area], [t("nav.group_vibe"), :vibe]].each do |group_label, kind| %>
       <% tags = Array(@sidebar_tags).select { |tag| tag.kind == kind.to_s } %>

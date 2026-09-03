@@ -8,6 +8,7 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_user!
   before_action :set_current_user
   before_action :load_sidebar_tags
+  before_action :set_pending_reviews_count
 
   stale_when_importmap_changes
 
@@ -42,5 +43,11 @@ class ApplicationController < ActionController::Base
     return unless user_signed_in?
 
     @sidebar_tags = scoped_tags.ordered.to_a
+  end
+
+  def set_pending_reviews_count
+    return unless user_signed_in?
+
+    @pending_reviews_count = scoped_places.needing_google_review.count
   end
 end

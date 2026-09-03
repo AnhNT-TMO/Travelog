@@ -2,6 +2,7 @@ class PublicCollectionsController < ApplicationController
   skip_before_action :authenticate_user!
   skip_before_action :set_current_user
   skip_before_action :load_sidebar_tags
+  skip_before_action :set_pending_reviews_count
   skip_forgery_protection
 
   layout "public"

@@ -1,0 +1,23 @@
+<%# locals: (user_place:, index:, active:) %>
+<%= link_to reviews_path(place: user_place.id),
+      "aria-current": (active ? "page" : nil),
+      class: "flex items-center gap-2.5 rounded-md p-1.5 no-underline transition-colors duration-150 ease-brand " +
+             (active ? "bg-primary-tint" : "hover:bg-surface-2") do %>
+  <span class="num flex h-[18px] w-[18px] flex-none items-center justify-center rounded-full text-2xs font-semibold
+               <%= active ? "bg-primary text-on-primary" : "bg-surface-3 text-ink-soft" %>"><%= index %></span>
+
+  <div class="h-[38px] w-[38px] flex-none overflow-hidden rounded-md">
+    <%= render "shared/place_media", user_place: user_place, ratio: "aspect-square", sizes: "38px", show_status: false %>
+  </div>
+
+  <div class="flex min-w-0 flex-1 flex-col gap-px">
+    <span class="truncate text-sm font-semibold <%= active ? "text-primary" : "text-ink" %>"><%= user_place.label %></span>
+    <span class="truncate text-2xs text-muted">
+      <span class="num"><%= t("common.photos_count", count: user_place.photos_count) %></span>
+      <% if user_place.review_body_draft.present? %>
+        · <span class="text-primary"><%= t(".has_draft") %></span>
+      <% end %>
+      <% if user_place.place.district.present? %>· <%= user_place.place.district %><% end %>
+    </span>
+  </div>
+<% end %>

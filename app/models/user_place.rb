@@ -41,6 +41,8 @@ class UserPlace < ApplicationRecord
     where(id: matching_ids)
   }
 
+  scope :needing_google_review, -> { visited.where.not(google_review_state: :reviewed) }
+
   scope :with_card_data, -> {
     includes(:place, :tags, cover_photo: { file_attachment: :blob })
   }

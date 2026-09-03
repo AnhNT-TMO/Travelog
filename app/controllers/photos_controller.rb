@@ -32,7 +32,7 @@ class PhotosController < ApplicationController
 
   def toggle_google_selection
     @photo.update!(selected_for_google: !@photo.selected_for_google?)
-    redirect_to place_path(@user_place)
+    redirect_back fallback_location: place_path(@user_place)
   end
 
   private

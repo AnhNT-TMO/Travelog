@@ -6,13 +6,13 @@ class ReviewKitsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream { head :no_content }
-      format.html { redirect_to place_path(@user_place) }
+      format.html { redirect_back fallback_location: place_path(@user_place) }
     end
   end
 
   def mark_reviewed
     @user_place.update!(google_review_state: :reviewed, reviewed_at: Time.current)
-    redirect_to place_path(@user_place), notice: t(".marked")
+    redirect_back fallback_location: place_path(@user_place), notice: t(".marked")
   end
 
   def download_photos

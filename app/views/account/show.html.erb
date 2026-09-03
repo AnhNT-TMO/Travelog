@@ -23,6 +23,14 @@
 
   <div class="flex flex-col overflow-hidden rounded-lg border border-line bg-surface">
     <%= link_to t(".manage_tags"), tags_path, class: "border-b border-line-soft px-3 py-2.5 text-sm text-ink no-underline hover:bg-surface-2" %>
+    <%= link_to reviews_path, class: "flex items-center gap-2 border-b border-line-soft px-3 py-2.5 text-sm text-ink no-underline hover:bg-surface-2" do %>
+      <span><%= t(".manage_reviews") %></span>
+      <% if @pending_reviews_count.to_i.positive? %>
+        <span class="num ml-auto rounded-pill bg-ochre-tint px-1.5 py-0.5 text-2xs font-semibold text-ochre"><%= @pending_reviews_count %></span>
+      <% else %>
+        <span class="ml-auto text-2xs text-primary">✓</span>
+      <% end %>
+    <% end %>
     <%= link_to t(".all_places"), places_path, class: "border-b border-line-soft px-3 py-2.5 text-sm text-ink no-underline hover:bg-surface-2" %>
     <div class="flex items-center gap-2 px-3 py-2.5">
       <span class="text-sm text-ink-soft"><%= t("nav.switch_language") %></span>

@@ -47,9 +47,10 @@ Rails.application.routes.draw do
     end
   end
 
-  get "nearby", to: "nearby#index"
-  get "album",  to: "album#index"
-  get "me",     to: "account#show"
+  get "nearby",  to: "nearby#index"
+  get "album",   to: "album#index"
+  get "reviews", to: "reviews#index"
+  get "me",      to: "account#show"
 
   namespace :api do
     get "places/autocomplete", to: "places#autocomplete"
