@@ -11,16 +11,20 @@ Rules for service objects: what earns a place in this folder, how each one is sh
 | `google/places_client.rb` | Server-side HTTP client for the Google Places API. Owns the field mask, the session-token discipline, timeouts, and response caching. |
 | `google/review_link.rb` | Builds Google Maps deep links. Pure; no network. |
 | `google/places_error.rb` | The one exception type `PlacesClient` raises. Carries HTTP status and Google's request id. |
+| `ai/review_rewrite.rb` | Turns the short notes typed into the review kit into a finished review, through Gemini. Owns the prompt templates, the locale of the output, and the input cap. |
+| `ai/prompts/review_rewrite.<locale>.txt` | The prompt, one file per locale. Placeholders: `{{place_type}}` and `{{review_notes}}`. |
+| `ai/gemini_error.rb` | The one exception type `ReviewRewrite` raises. |
 
-Namespaces are directories: `Geo::`, `Photos::`, `Google::`. A new service goes in an existing namespace or gets a new directory — never at the top level of `app/services/`.
+Namespaces are directories: `Geo::`, `Photos::`, `Google::`, `Ai::`. A new service goes in an existing namespace or gets a new directory — never at the top level of `app/services/`.
 
 ## Cost and Quota Surface
 
-The domain rule that makes this folder different from the rest of the app: **two of these services spend money or quota on every call.** Nothing else in the codebase does.
+The domain rule that makes this folder different from the rest of the app: **three of these services spend money or quota on every call.** Nothing else in the codebase does.
 
 - `Google::PlacesClient::DETAILS_MASK` is deliberately narrow. `rating`, `reviews`, `photos`, and opening hours sit in a much more expensive billing tier. **Widening the mask is a pricing decision, not a code change** — hand it back to a human.
 - Autocomplete is only free when its session token is reused by the following Details call. Breaking that pairing turns a free lookup into a billed one, and nothing in the code will complain.
 - `details` caches for 14 days. That TTL is doing two jobs at once: saving quota, and keeping third-party content from being retained longer than it should be. Do not extend it without checking both.
+- `Ai::ReviewRewrite` bills one Gemini call per click on "AI viết lại", against `settings.gemini.api_key`. There is no cache — the same notes rewritten twice cost twice — and no quota guard beyond `MAX_NOTES_CHARS`. Adding photos, place history, or Google reviews to the prompt raises the per-call price; treat it the same way as widening the Places mask.
 - The API key here is the **server-side, IP-restricted** one. The browser uses a different, referrer-restricted key. They are not interchangeable, and putting this one in a response body defeats its restriction.
 
 When a task touches this surface, say what it will cost before writing the code.
@@ -57,6 +61,7 @@ Services that hit the network are **never** exercised against the real API in te
 Never:
 
 - Add a field to `Google::PlacesClient::DETAILS_MASK` without a human confirming the billing tier.
+- Call Gemini from anywhere but `Ai::ReviewRewrite`, or put `settings.gemini.api_key` where the browser can read it.
 - Call Google Places from a view, a model, or a Stimulus controller. Server-side, through this client, always.
 - Put the server-side API key anywhere the browser can read it.
 - Reach for `params`, `session`, `current_user`, or `Current` inside a service.

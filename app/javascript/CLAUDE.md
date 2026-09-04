@@ -13,6 +13,7 @@ Rules for the client layer: how much behaviour a Stimulus controller is allowed 
 | `controllers/clipboard_controller.js` | Copies review text, with a transient "copied" label and a select-the-text fallback outside a secure context. |
 | `controllers/segmented_controller.js` | Flips `aria-selected` on click so the control feels responsive while the frame loads. Purely cosmetic. |
 | `controllers/nearby_map_controller.js` | Google Maps JS: vector map, radius circle, draggable centre pin, one numbered marker per place with collision-managed name labels, and a working no-SDK fallback. |
+| `controllers/dialog_controller.js` | Upgrades a server-rendered `<dialog open>` to a real modal (`showModal()`), and closes it on disconnect so a Turbo frame swap cannot leave the page inert. |
 | `controllers/direct_upload_controller.js` | Progress bar for Active Storage direct upload; disables submit buttons while files are still going to S3. |
 | `controllers/sheet_controller.js` · `autosave_controller.js` · `autosubmit_controller.js` · `geolocate_controller.js` | Check-in sheet, debounced review-draft save, submit-on-change, and the "use my location" button. |
 

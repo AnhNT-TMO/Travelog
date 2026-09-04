@@ -301,7 +301,20 @@ en:
   review_kits:
     mark_reviewed:
       marked: 'Noted: you posted the review.'
+    rewrite:
+      blank_notes: Jot down a few notes first — the AI needs something to work from.
+      failed: The AI could not rewrite this right now. Your draft is untouched — try
+        again in a moment.
   reviews:
+    draft:
+      ai_rewrite: AI rewrite
+      ai_rewrite_hint: The AI suggests a version based on the text above — you read
+        it, then decide whether it replaces your draft.
+      ai_soon: Coming soon
+      ai_working: Writing…
+      autosave_hint: The draft saves itself shortly after you stop typing.
+      copy: Copy the text
+      draft_placeholder: Small place, great coffee, friendly staff…
     index:
       done_of_total: "%{done}/%{total} reviewed"
       empty_description: Every place you have been to is marked as reviewed. Check
@@ -313,16 +326,16 @@ en:
       queue: Queue
       queue_hint: Pick a place to open its review kit.
       title: Manage reviews
+    proposal:
+      apply: Use this one
+      dismiss: Dismiss
+      hint: Read it over first. Using it replaces your current draft; dismissing it
+        changes nothing.
+      title: The AI's version
     queue_row:
       has_draft: draft ready
     workstation:
       add_photos: Add photos
-      ai_rewrite: AI rewrite
-      ai_rewrite_hint: Have the AI tidy the text above into a fuller review — read
-        it over before you copy.
-      ai_soon: Coming soon
-      autosave_hint: The draft saves itself shortly after you stop typing.
-      copy: Copy the text
       directions: Directions
       download_all:
         one: Download all %{count} photos
@@ -331,7 +344,6 @@ en:
       download_selected:
         one: Download %{count} selected photo
         other: Download %{count} selected photos
-      draft_placeholder: Small place, great coffee, friendly staff…
       last_visit: Last visit %{date}
       mark_reviewed: 'Mark as: review posted'
       no_address: No address yet

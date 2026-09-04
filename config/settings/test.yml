@@ -15,3 +15,7 @@ test:
     places_api_key: test-server-key
     maps_browser_key: test-browser-key
     maps_map_id: test-map-id
+
+  gemini:
+    api_key: test-gemini-key
+    model: gemini-test

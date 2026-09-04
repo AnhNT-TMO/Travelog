@@ -76,7 +76,7 @@ class ReviewsTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Không còn chỗ nào chờ review/
   end
 
-  test "bước soạn nội dung chỉ có một ô nhập, kèm nút copy và nút AI chưa bật" do
+  test "bước soạn nội dung chỉ có một ô nhập, kèm nút copy và nút AI viết lại" do
     user_place = create(:user_place, :visited, user: @user)
 
     get reviews_path
@@ -84,7 +84,7 @@ class ReviewsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "textarea", count: 1
     assert_select "textarea##{ActionView::RecordIdentifier.dom_id(user_place, :review_body_draft)}", count: 1
-    assert_select "button[disabled]", text: /AI viết lại/, count: 1
+    assert_select "button[formaction=?]", rewrite_place_review_kit_path(user_place), text: /AI viết lại/, count: 1
     assert_select "button:not([disabled])", text: /Copy nội dung/, count: 1
   end
 end

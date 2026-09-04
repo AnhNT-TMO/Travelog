@@ -31,7 +31,7 @@ Deliberately **not** in scope: no native app, no SPA, no public discovery feed, 
 | Module | Role |
 | --- | --- |
 | `app/models/` | Data layer. `Place` is objective and shared; `UserPlace` is one person's relationship to it. |
-| `app/services/` | `Geo::RadiusQuery`, `Photos::ThumbnailUrl`, `Google::PlacesClient`, `Google::ReviewLink`. |
+| `app/services/` | `Geo::RadiusQuery`, `Photos::ThumbnailUrl`, `Google::PlacesClient`, `Google::ReviewLink`, `Ai::ReviewRewrite`. |
 | `app/controllers/` | One controller per screen. `ApplicationController#scoped_places` is the only authorization gate. |
 | `app/views/` | `shared/` renders private data; `public_collections/` has its own partials. |
 | `app/helpers/` | Display strings and formatting. `status_label`, `distance_label`, `photo_image_tag`. |

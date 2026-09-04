@@ -44,6 +44,8 @@ Rails.application.routes.draw do
     resource :review_kit, only: [ :update ] do
       get   :download_photos
       patch :mark_reviewed
+      patch :rewrite
+      patch :apply_rewrite
     end
   end
 

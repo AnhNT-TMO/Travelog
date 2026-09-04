@@ -17,3 +17,7 @@ development:
     places_api_key: <%= ENV.fetch("GOOGLE_MAPS_API_KEY", "") %>
     maps_browser_key: <%= ENV.fetch("GOOGLE_MAPS_BROWSER_KEY", "") %>
     maps_map_id: <%= ENV.fetch("GOOGLE_MAPS_MAP_ID", "") %>
+
+  gemini:
+    api_key: <%= ENV.fetch("GEMINI_API_KEY", "") %>
+    model: <%= ENV.fetch("GEMINI_MODEL", "gemini-3-flash-preview") %>

@@ -301,7 +301,20 @@ vi:
   review_kits:
     mark_reviewed:
       marked: 'Đã ghi nhận: bạn đã đăng review.'
+    rewrite:
+      blank_notes: Gõ vài ý trước đã, AI mới có gì để viết lại.
+      failed: AI chưa viết lại được lúc này. Nháp của bạn vẫn giữ nguyên, thử lại
+        sau nhé.
   reviews:
+    draft:
+      ai_rewrite: AI viết lại
+      ai_rewrite_hint: AI sẽ đề xuất một bản dựa trên đoạn trên, bạn đọc rồi mới quyết
+        định có thay nháp hay không.
+      ai_soon: Sắp có
+      ai_working: Đang viết…
+      autosave_hint: Nháp tự lưu sau mỗi lần bạn ngừng gõ.
+      copy: Copy nội dung
+      draft_placeholder: Quán nhỏ, cà phê ngon, nhân viên thân thiện…
     index:
       done_of_total: đã review %{done}/%{total}
       empty_description: Mọi chỗ bạn đã đến đều được đánh dấu là đã review. Check-in
@@ -313,16 +326,16 @@ vi:
       queue: Hàng đợi
       queue_hint: Bấm một chỗ để mở bộ kit review của chỗ đó.
       title: Quản lý review
+    proposal:
+      apply: Dùng bản này
+      dismiss: Bỏ qua
+      hint: Đọc thử xem có đúng ý bạn không. Bấm dùng bản này thì nháp hiện tại bị
+        thay, bỏ qua thì giữ nguyên.
+      title: Bản AI đề xuất
     queue_row:
       has_draft: có nháp
     workstation:
       add_photos: Thêm ảnh
-      ai_rewrite: AI viết lại
-      ai_rewrite_hint: Nhờ AI chỉnh lại chính đoạn trên cho gọn gàng, đủ ý — bạn xem
-        lại trước khi copy.
-      ai_soon: Sắp có
-      autosave_hint: Nháp tự lưu sau mỗi lần bạn ngừng gõ.
-      copy: Copy nội dung
       directions: Chỉ đường
       download_all:
         one: Tải cả %{count} ảnh
@@ -331,7 +344,6 @@ vi:
       download_selected:
         one: Tải %{count} ảnh đã chọn
         other: Tải %{count} ảnh đã chọn
-      draft_placeholder: Quán nhỏ, cà phê ngon, nhân viên thân thiện…
       last_visit: Đến lần cuối %{date}
       mark_reviewed: 'Đánh dấu: đã đăng review'
       no_address: Chưa có địa chỉ

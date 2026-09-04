@@ -1,0 +1,24 @@
+<%# locals: (user_place:, proposal:) %>
+<dialog open data-controller="dialog"
+        class="m-auto max-h-[calc(100dvh-4rem)] w-[min(30rem,calc(100vw-2rem))] overflow-y-auto rounded-lg
+               border border-line bg-surface p-0 text-ink shadow-e3 backdrop:bg-black/40">
+  <div class="flex flex-col gap-2.5 px-3.5 py-3">
+    <div class="flex flex-col gap-px">
+      <h2 class="text-md font-bold tracking-tight"><%= t(".title") %></h2>
+      <span class="hint"><%= t(".hint") %></span>
+    </div>
+
+    <p class="whitespace-pre-line rounded-md border border-line-soft bg-surface-2 px-2.5 py-2 text-sm leading-relaxed"><%= proposal %></p>
+
+    <div class="flex flex-wrap items-center gap-1.5">
+      <%= form_with url: apply_rewrite_place_review_kit_path(user_place), method: :patch, class: "contents" do %>
+        <%= hidden_field_tag "user_place[review_body_draft]", proposal %>
+        <button type="submit" class="btn btn--primary btn--sm"><%= t(".apply") %></button>
+      <% end %>
+
+      <form method="dialog" class="contents">
+        <button type="submit" class="btn btn--outline btn--sm"><%= t(".dismiss") %></button>
+      </form>
+    </div>
+  </div>
+</dialog>

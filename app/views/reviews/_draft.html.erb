@@ -1,0 +1,39 @@
+<%# locals: (user_place:, proposal: nil, error: nil) %>
+<%= turbo_frame_tag dom_id(user_place, :review_draft) do %>
+  <%= form_with url: place_review_kit_path(user_place), method: :patch,
+                data: { controller: "autosave", action: "input->autosave#save" },
+                class: "flex flex-col gap-2" do |form| %>
+    <div class="field">
+      <%= text_area_tag "user_place[review_body_draft]", user_place.review_body_draft,
+            id: dom_id(user_place, :review_body_draft), class: "textarea min-h-[110px]",
+            placeholder: t(".draft_placeholder"),
+            data: { clipboard_target: "source" } %>
+      <span class="hint"><%= t(".autosave_hint") %></span>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-1.5">
+      <button type="button" class="btn btn--sm"
+              data-clipboard-target="button"
+              data-action="clipboard#copy"><%= t(".copy") %></button>
+
+      <% if Ai::ReviewRewrite.configured? %>
+        <button type="submit" class="btn btn--outline btn--sm"
+                formaction="<%= rewrite_place_review_kit_path(user_place) %>"
+                data-turbo-submits-with="<%= t(".ai_working") %>">✦ <%= t(".ai_rewrite") %></button>
+      <% else %>
+        <button type="button" class="btn btn--outline btn--sm" disabled>✦ <%= t(".ai_rewrite") %></button>
+        <span class="pill pill--soon"><%= t(".ai_soon") %></span>
+      <% end %>
+    </div>
+
+    <% if error.present? %>
+      <div class="rounded-md bg-ochre-tint px-2.5 py-2 text-xs text-ochre"><%= error %></div>
+    <% end %>
+
+    <span class="hint"><%= t(".ai_rewrite_hint") %></span>
+  <% end %>
+
+  <% if proposal.present? %>
+    <%= render "reviews/proposal", user_place: user_place, proposal: proposal %>
+  <% end %>
+<% end %>

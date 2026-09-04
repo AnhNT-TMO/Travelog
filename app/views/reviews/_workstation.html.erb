@@ -98,27 +98,7 @@
   <div class="flex flex-col gap-2 px-3.5 py-3">
     <%= render "reviews/step", number: 3, title: t(".step_draft"), hint: t(".step_draft_hint") %>
 
-    <%= form_with url: place_review_kit_path(user_place), method: :patch,
-                  data: { controller: "autosave", action: "input->autosave#save" },
-                  class: "field" do |form| %>
-      <%= text_area_tag "user_place[review_body_draft]", user_place.review_body_draft,
-            id: dom_id(user_place, :review_body_draft), class: "textarea min-h-[110px]",
-            placeholder: t(".draft_placeholder"),
-            data: { clipboard_target: "source" } %>
-      <span class="hint"><%= t(".autosave_hint") %></span>
-    <% end %>
-
-    <div class="flex flex-wrap items-center gap-1.5">
-      <button type="button" class="btn btn--sm"
-              data-clipboard-target="button"
-              data-action="clipboard#copy"><%= t(".copy") %></button>
-
-      <button type="button" class="btn btn--outline btn--sm" disabled>✦ <%= t(".ai_rewrite") %></button>
-
-      <span class="pill pill--soon"><%= t(".ai_soon") %></span>
-    </div>
-
-    <span class="hint"><%= t(".ai_rewrite_hint") %></span>
+    <%= render "reviews/draft", user_place: user_place %>
   </div>
 
   <div class="flex flex-col gap-2 bg-surface-2 px-3.5 py-3">
