@@ -45,7 +45,6 @@ vi:
       export_pdf_badge: Sắp có
       export_pdf_title: Tính năng đang được phát triển
       from: Từ ngày
-      month_summary: "%{month} — %{places} nơi · %{photos} ảnh"
       submit: Xem
       title: Album
       to: Đến ngày
@@ -316,13 +315,13 @@ vi:
       copy: Copy nội dung
       draft_placeholder: Quán nhỏ, cà phê ngon, nhân viên thân thiện…
     index:
-      done_of_total: đã review %{done}/%{total}
+      done_this_week: tuần này đã review %{done}/%{total}
       empty_description: Mọi chỗ bạn đã đến đều được đánh dấu là đã review. Check-in
         thêm chỗ mới rồi quay lại đây.
       empty_title: Không còn chỗ nào chờ review
       oldest_first: Xếp theo thứ tự lưu vào — chỗ lưu trước nên review trước.
       pending_label: chỗ chờ review
-      progress_label: Đã review %{percent}%%
+      progress_label: Tuần này đã review %{percent}%%
       queue: Hàng đợi
       queue_hint: Bấm một chỗ để mở bộ kit review của chỗ đó.
       title: Quản lý review

@@ -1,7 +1,7 @@
 class ReviewsController < ApplicationController
   def index
     @user_places = scoped_places.needing_google_review.with_card_data.order(:id).to_a
-    @reviewed_count = scoped_places.visited.review_reviewed.count
+    @reviewed_this_week = scoped_places.reviewed_since(Time.current.beginning_of_week).count
 
     @position = selected_position
     @user_place = @user_places[@position - 1] if @position.positive?

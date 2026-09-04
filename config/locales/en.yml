@@ -45,7 +45,6 @@ en:
       export_pdf_badge: Soon
       export_pdf_title: Coming soon
       from: From
-      month_summary: "%{month} — %{places} places · %{photos} photos"
       submit: Show
       title: Album
       to: To
@@ -316,13 +315,13 @@ en:
       copy: Copy the text
       draft_placeholder: Small place, great coffee, friendly staff…
     index:
-      done_of_total: "%{done}/%{total} reviewed"
+      done_this_week: "%{done}/%{total} reviewed this week"
       empty_description: Every place you have been to is marked as reviewed. Check
         in somewhere new and come back here.
       empty_title: Nothing waiting for a review
       oldest_first: Ordered by when you saved them — review the oldest first.
       pending_label: places awaiting a review
-      progress_label: "%{percent}%% reviewed"
+      progress_label: "%{percent}%% reviewed this week"
       queue: Queue
       queue_hint: Pick a place to open its review kit.
       title: Manage reviews

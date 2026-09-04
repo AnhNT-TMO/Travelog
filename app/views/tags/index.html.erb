@@ -3,7 +3,7 @@
   <%= link_to t(".new_tag"), new_tag_path, class: "btn btn--primary btn--sm" %>
 <% end %>
 <% content_for :topbar do %>
-  <%= render "shared/topbar", title: t(".title"), crumb: t("nav.collections") %>
+  <%= render "shared/topbar", title: t(".title") %>
 <% end %>
 
 <div class="mx-auto flex max-w-[760px] flex-col gap-5">

@@ -69,6 +69,20 @@ class ReviewsTest < ActionDispatch::IntegrationTest
     assert user_place.reload.review_reviewed?
   end
 
+  test "tiến độ chỉ đếm những chỗ đã review trong tuần này" do
+    create(:user_place, :visited, user: @user)
+    create(:user_place, :visited, user: @user)
+      .update!(google_review_state: :reviewed, reviewed_at: Time.current.beginning_of_week + 1.hour)
+    create(:user_place, :visited, user: @user)
+      .update!(google_review_state: :reviewed, reviewed_at: 2.weeks.ago)
+
+    get reviews_path
+
+    assert_response :success
+    assert_equal 1, @controller.view_assigns["reviewed_this_week"]
+    assert_select "body", text: /tuần này đã review 1\/2/
+  end
+
   test "hàng đợi rỗng thì hiện trạng thái trống" do
     get reviews_path
 

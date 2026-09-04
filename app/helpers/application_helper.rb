@@ -35,9 +35,7 @@ module ApplicationHelper
     user_place.review_reviewed? ? "pill pill--reviewed" : "pill pill--noreview"
   end
 
-  def month_label(date)
-    "#{I18n.t('date.month_names')[date.month]} · #{date.year}"
-  end
+  def month_label(date) = I18n.t("date.month_names")[date.month]
 
   def locale_switch_path(locale)
     url_for(request.query_parameters.merge(locale: locale))

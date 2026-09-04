@@ -22,18 +22,29 @@
     </button>
   <% end %>
 
-  <div class="max-w-[760px]">
+  <div class="flex max-w-[760px] flex-col gap-4">
   <% if @by_month.any? %>
     <% @by_month.each do |month, visits| %>
       <section>
-        <div class="num sticky top-0 z-[1] bg-ground py-1.5 text-xs uppercase tracking-[0.1em] text-muted">
-          <%= t(".month_summary", month: month_label(month),
-                        places: visits.map(&:user_place_id).uniq.size,
-                        photos: visits.sum { |visit| @photos_by_visit[visit].size }) %>
+        <div class="sticky top-0 z-[1] mb-2 bg-ground pb-2
+                    before:absolute before:inset-x-0 before:bottom-full before:h-3.5 before:bg-ground">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-line bg-surface px-3 py-2 shadow-e1">
+            <span aria-hidden="true" class="h-5 w-[3px] flex-none rounded-pill bg-primary"></span>
+            <h2 class="font-serif text-xl italic leading-none"><%= month_label(month) %></h2>
+            <span class="num text-sm font-semibold text-muted"><%= month.year %></span>
+            <span class="flex-1"></span>
+            <span class="num text-xs font-semibold text-ink-soft">
+              <%= t("common.places_count", count: visits.map(&:user_place_id).uniq.size) %>
+            </span>
+            <span aria-hidden="true" class="text-xs text-line">·</span>
+            <span class="num text-xs font-semibold text-ink-soft">
+              <%= t("common.photos_count", count: visits.sum { |visit| @photos_by_visit[visit].size }) %>
+            </span>
+          </div>
         </div>
 
         <% visits.each do |visit| %>
-          <div class="grid grid-cols-[5.6rem_1fr] gap-3 border-t border-line-soft py-2.5">
+          <div class="grid grid-cols-[6.4rem_1fr] gap-3 border-t border-line-soft py-2.5">
             <div class="num text-xs leading-tight text-ink-soft">
               <b class="block text-xl font-semibold text-ink"><%= visit.visited_at.day %></b>
               <%= l visit.visited_at, format: :album %>
