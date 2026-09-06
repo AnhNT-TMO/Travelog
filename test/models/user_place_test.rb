@@ -31,7 +31,7 @@ class UserPlaceTest < ActiveSupport::TestCase
   end
 
   test "tagged_with_all kết hợp được với join tag có sẵn" do
-    area = create(:tag, user: @user, name: "Hồ Tây", kind: :area)
+    area = create(:tag, user: @user, name: "Hồ Tây")
     Tagging.create!(tag: area, user_place: @both)
     Tagging.create!(tag: area, user_place: @only_chill)
 

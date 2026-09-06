@@ -8,9 +8,9 @@ Rules for the data layer: which model owns which fact, how denormalized counters
 | --- | --- |
 | `place.rb` | Objective, **shared across all users**, deduplicated by `google_place_id`. Owns coordinates, address cache, and every distance scope. |
 | `user_place.rb` | One person's **subjective** relationship to a `Place`: status, note, rating, priority, tags, cover photo, review state. The table almost every query starts from. |
-| `visit.rb` | One trip to a place. Many per `user_place`. Writing one is what flips a place to `visited`. |
+| `visit.rb` | One trip to a place, recorded as a **date** (`visited_on`), not a timestamp. Many per `user_place`. Writing one is what flips a place to `visited`. |
 | `photo.rb` | A user's own photo. Belongs to a `user_place` always, to a `visit` optionally (reference photos for places not yet visited have no visit). |
-| `tag.rb` | Multi-label tag owned by a user. Also owns **read-only sharing** — see "Sharing lives on Tag". |
+| `tag.rb` | Multi-label tag owned by a user. One flat kind — the user decides what a tag means. Also owns **read-only sharing** — see "Sharing lives on Tag". |
 | `tagging.rb` | Join between `tag` and `user_place`. Carries the counter cache for `tags.user_places_count`. |
 | `takeout_import.rb` / `takeout_candidate.rb` | Google Takeout backfill of review history. Parser and matcher are not written yet. |
 | `user.rb` | Devise. Owns `locale` and the display helpers `label` / `initials`. |
@@ -62,7 +62,7 @@ Read-only sharing is stored on `tags`, not on `user_places`: `visibility` (`priv
 docker compose exec web bin/rails test test/models/          # after any model change
 docker compose exec web bin/rails test test/models/place_test.rb   # after touching a distance scope
 docker compose exec web bin/rubocop
-docker compose exec web bin/rails runner 'puts UserPlace.statuses.inspect; puts Tag.kinds.inspect'
+docker compose exec web bin/rails runner 'puts UserPlace.statuses.inspect; puts Tag.visibilities.inspect'
 ```
 
 A change to a scope or a callback requires running the **whole** suite, not just the model test — services and integration tests depend on both.

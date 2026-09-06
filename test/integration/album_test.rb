@@ -8,7 +8,7 @@ class AlbumTest < ActionDispatch::IntegrationTest
   end
 
   test "ảnh của chính lần đến hiện trong dòng của lần đó" do
-    visit = create(:visit, user_place: @user_place, visited_at: 3.days.ago)
+    visit = create(:visit, user_place: @user_place, visited_on: 3.days.ago.to_date)
     photo = create(:photo, user_place: @user_place, visit: visit)
 
     get album_path
@@ -18,8 +18,8 @@ class AlbumTest < ActionDispatch::IntegrationTest
   end
 
   test "ảnh thêm ngoài luồng check-in gom vào lần đến gần nhất, chỉ hiện một lần" do
-    create(:visit, user_place: @user_place, visited_at: 20.days.ago)
-    recent = create(:visit, user_place: @user_place, visited_at: 2.days.ago)
+    create(:visit, user_place: @user_place, visited_on: 20.days.ago.to_date)
+    recent = create(:visit, user_place: @user_place, visited_on: 2.days.ago.to_date)
     photo  = create(:photo, user_place: @user_place, visit: nil)
 
     get album_path
@@ -30,7 +30,7 @@ class AlbumTest < ActionDispatch::IntegrationTest
   end
 
   test "thumbstrip chỉ tải bản 400, không phát srcset" do
-    visit = create(:visit, user_place: @user_place, visited_at: 1.day.ago)
+    visit = create(:visit, user_place: @user_place, visited_on: 1.day.ago.to_date)
     photo = create(:photo, user_place: @user_place, visit: visit)
 
     get album_path
@@ -43,7 +43,7 @@ class AlbumTest < ActionDispatch::IntegrationTest
   end
 
   test "ảnh rời của người khác không lọt vào album" do
-    visit = create(:visit, user_place: @user_place, visited_at: 1.day.ago)
+    visit = create(:visit, user_place: @user_place, visited_on: 1.day.ago.to_date)
     other = create(:user_place, user: create(:user), place: @user_place.place)
     stray = create(:photo, user_place: other, visit: nil)
 
@@ -55,7 +55,7 @@ class AlbumTest < ActionDispatch::IntegrationTest
   end
 
   test "ngoài khoảng ngày thì không hiện" do
-    visit = create(:visit, user_place: @user_place, visited_at: 2.years.ago)
+    visit = create(:visit, user_place: @user_place, visited_on: 2.years.ago.to_date)
     photo = create(:photo, user_place: @user_place, visit: visit)
 
     get album_path
@@ -65,7 +65,7 @@ class AlbumTest < ActionDispatch::IntegrationTest
   end
 
   test "ngày lọc không hợp lệ dùng khoảng mặc định thay vì làm trang lỗi" do
-    create(:visit, user_place: @user_place, visited_at: 1.day.ago)
+    create(:visit, user_place: @user_place, visited_on: 1.day.ago.to_date)
 
     get album_path, params: { from: "not-a-date", to: "also-not-a-date" }
 

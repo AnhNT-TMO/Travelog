@@ -27,12 +27,11 @@ FactoryBot.define do
   factory :tag do
     user
     sequence(:name) { |n| "tag-#{n}" }
-    kind { :vibe }
   end
 
   factory :visit do
     user_place
-    visited_at { 2.days.ago }
+    visited_on { 2.days.ago.to_date }
     source { :manual }
   end
 

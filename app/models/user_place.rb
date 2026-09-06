@@ -98,16 +98,16 @@ class UserPlace < ApplicationRecord
   end
 
   def recalc_visit_stats!
-    count, first_visited_at, last_visited_at = visits.unscope(:order).pick(
+    count, first_visited_on, last_visited_on = visits.unscope(:order).pick(
       Arel.sql("COUNT(*)::integer"),
-      Arel.sql("MIN(visited_at)"),
-      Arel.sql("MAX(visited_at)")
+      Arel.sql("MIN(visited_on)"),
+      Arel.sql("MAX(visited_on)")
     )
 
     update!(
       visits_count:     count,
-      first_visited_at: first_visited_at,
-      last_visited_at:  last_visited_at,
+      first_visited_on: first_visited_on,
+      last_visited_on:  last_visited_on,
       status:           count.positive? ? :visited : :wishlist
     )
   end

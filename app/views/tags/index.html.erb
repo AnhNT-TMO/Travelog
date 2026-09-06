@@ -7,22 +7,20 @@
 <% end %>
 
 <div class="mx-auto flex max-w-[760px] flex-col gap-5">
-  <% [ [ t("nav.group_area"), @area_tags ], [ t("nav.group_vibe"), @vibe_tags ] ].each do |heading, tags| %>
-    <section>
-      <div class="mb-2 flex items-baseline gap-2">
-        <h3 class="text-md font-bold tracking-tight"><%= heading %></h3>
-        <span class="num text-xs text-muted"><%= t("common.groups_count", count: tags.size) %></span>
-      </div>
+  <section>
+    <div class="mb-2 flex items-baseline gap-2">
+      <h3 class="text-md font-bold tracking-tight"><%= t("nav.group_tags") %></h3>
+      <span class="num text-xs text-muted"><%= t("common.tags_count", count: @tags.size) %></span>
+    </div>
 
-      <% if tags.any? %>
-        <div class="flex flex-col overflow-hidden rounded-lg border border-line bg-surface">
-          <% tags.each do |tag| %>
-            <%= render "tags/row", tag: tag %>
-          <% end %>
-        </div>
-      <% else %>
-        <%= render "shared/empty", icon: "·", title: t(".empty_title"), description: t(".empty_description") %>
-      <% end %>
-    </section>
-  <% end %>
+    <% if @tags.any? %>
+      <div class="flex flex-col overflow-hidden rounded-lg border border-line bg-surface">
+        <% @tags.each do |tag| %>
+          <%= render "tags/row", tag: tag %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render "shared/empty", icon: "·", title: t(".empty_title"), description: t(".empty_description") %>
+    <% end %>
+  </section>
 </div>

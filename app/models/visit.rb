@@ -4,11 +4,11 @@ class Visit < ApplicationRecord
   belongs_to :user_place
   has_many :photos, -> { order(:position, :id) }, dependent: :nullify
 
-  validates :visited_at, presence: true
+  validates :visited_on, presence: true
 
   after_commit :sync_parent
 
-  scope :chronological, -> { order(visited_at: :desc, id: :desc) }
+  scope :chronological, -> { order(visited_on: :desc, id: :desc) }
 
   private
 

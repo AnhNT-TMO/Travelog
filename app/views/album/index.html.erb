@@ -46,8 +46,8 @@
         <% visits.each do |visit| %>
           <div class="grid grid-cols-[6.4rem_1fr] gap-3 border-t border-line-soft py-2.5">
             <div class="num text-xs leading-tight text-ink-soft">
-              <b class="block text-xl font-semibold text-ink"><%= visit.visited_at.day %></b>
-              <%= l visit.visited_at, format: :album %>
+              <b class="block text-xl font-semibold text-ink"><%= visit.visited_on.day %></b>
+              <%= l visit.visited_on, format: :album %>
             </div>
 
             <div>

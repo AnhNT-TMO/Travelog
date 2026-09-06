@@ -1,4 +1,4 @@
-<% heading = t("nav.group_#{@kind}") %>
+<% heading = t("nav.group_tags") %>
 <% content_for :title, "#{heading} · #{t("app.name")}" %>
 <% content_for :topbar_actions do %>
   <%= link_to t(".manage_tags"), tags_path, class: "btn btn--outline btn--sm" %>
@@ -8,7 +8,7 @@
 <% end %>
 
 <div class="flex flex-col gap-3.5">
-  <%= render "collections/group_nav", current: @kind, counts: @group_counts %>
+  <%= render "collections/group_nav", current: "tags", counts: @group_counts %>
 
   <% if @tags.any? %>
     <%= render "collections/collection_grid", tags: @tags, counts_by_tag: @counts_by_tag,

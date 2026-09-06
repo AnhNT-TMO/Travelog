@@ -13,7 +13,6 @@ class CreatePhotos < ActiveRecord::Migration[8.1]
       t.datetime :taken_at
       t.float    :exif_lat
       t.float    :exif_lng
-      t.boolean  :thumb_ready, null: false, default: false
       t.integer  :position, null: false, default: 0
       t.boolean  :selected_for_google, null: false, default: false
 

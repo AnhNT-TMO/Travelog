@@ -49,7 +49,7 @@ class VisitsController < ApplicationController
   end
 
   def visit_params
-    params.require(:visit).permit(:visited_at, :note)
+    params.require(:visit).permit(:visited_on, :note)
   end
 
   def attach_photos(visit)

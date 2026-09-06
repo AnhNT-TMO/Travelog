@@ -20,8 +20,8 @@
                             "direct-upload:end->direct-upload#end"
                   } do |form| %>
       <div class="field">
-        <%= form.label :visited_at, t(".visited_at"), class: "label" %>
-        <%= form.datetime_field :visited_at, value: visit.visited_at.in_time_zone.strftime("%Y-%m-%dT%H:%M"),
+        <%= form.label :visited_on, t(".visited_on"), class: "label" %>
+        <%= form.date_field :visited_on, value: visit.visited_on,
               class: "input", required: true %>
       </div>
 

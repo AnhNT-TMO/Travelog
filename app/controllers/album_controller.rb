@@ -5,14 +5,14 @@ class AlbumController < ApplicationController
 
     @visits = Visit.joins(:user_place)
                    .where(user_places: { user_id: current_user.id })
-                   .where(visited_at: @from.beginning_of_day..@to.end_of_day)
+                   .where(visited_on: @from..@to)
                    .includes(:photos, user_place: :place)
                    .chronological
                    .to_a
 
     @photos_by_visit = photos_by_visit(@visits)
 
-    @by_month = @visits.group_by { |visit| visit.visited_at.beginning_of_month }
+    @by_month = @visits.group_by { |visit| visit.visited_on.beginning_of_month }
   end
 
   private

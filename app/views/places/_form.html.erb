@@ -107,7 +107,7 @@
       <div class="field">
         <span class="label"><%= t(".tags") %></span>
         <%= render "places/tag_picker", form: form, user_place: user_place,
-                   area_tags: area_tags, vibe_tags: vibe_tags %>
+                   tags: tags %>
         <span class="hint"><%= t(".tags_hint_html", link: link_to(t(".tags_manage"), tags_path, class: "text-primary")) %></span>
       </div>
 

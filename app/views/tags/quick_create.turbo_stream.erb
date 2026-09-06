@@ -1,5 +1,5 @@
 <% if @tag.persisted? %>
-  <%= turbo_stream.append "#{@tag.kind}_tag_options" do %>
+  <%= turbo_stream.append "tag_options" do %>
     <%= render "places/tag_option", tag: @tag, checked: true %>
   <% end %>
   <%= turbo_stream.update "tag_sheet_errors", "" %>

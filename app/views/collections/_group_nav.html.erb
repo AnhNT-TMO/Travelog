@@ -1,8 +1,7 @@
 <%# locals: current, counts %>
 <% groups = [
-     [ "area",     t("nav.group_area"),     tag_collections_path("area"), counts[:area] ],
-     [ "vibe",     t("nav.group_vibe"),     tag_collections_path("vibe"), counts[:vibe] ],
-     [ "untagged", t("nav.group_untagged"), untagged_collections_path,    counts[:untagged] ]
+     [ "tags",     t("nav.group_tags"),     tags_collections_path,     counts[:tags] ],
+     [ "untagged", t("nav.group_untagged"), untagged_collections_path, counts[:untagged] ]
    ] %>
 
 <div class="-mx-3.5 overflow-x-auto px-3.5">

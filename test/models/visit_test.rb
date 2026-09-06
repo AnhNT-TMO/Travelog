@@ -5,34 +5,34 @@ class VisitTest < ActiveSupport::TestCase
     @user_place = create(:user_place, status: :wishlist)
   end
 
-  test "tạo visit chuyển user_place sang visited và cập nhật mốc thời gian" do
-    visited_at = 3.days.ago.change(usec: 0)
-    create(:visit, user_place: @user_place, visited_at: visited_at)
+  test "tạo visit chuyển user_place sang visited và cập nhật mốc ngày" do
+    visited_on = 3.days.ago.to_date
+    create(:visit, user_place: @user_place, visited_on: visited_on)
     @user_place.reload
 
     assert @user_place.visited?
     assert_equal 1, @user_place.visits_count
-    assert_equal visited_at.to_i, @user_place.first_visited_at.to_i
-    assert_equal visited_at.to_i, @user_place.last_visited_at.to_i
+    assert_equal visited_on, @user_place.first_visited_on
+    assert_equal visited_on, @user_place.last_visited_on
   end
 
-  test "nhiều lần đến giữ đúng first và last visited_at" do
-    older = 40.days.ago.change(usec: 0)
-    newer = 2.days.ago.change(usec: 0)
+  test "nhiều lần đến giữ đúng first và last visited_on" do
+    older = 40.days.ago.to_date
+    newer = 2.days.ago.to_date
 
-    create(:visit, user_place: @user_place, visited_at: newer)
-    create(:visit, user_place: @user_place, visited_at: older)
+    create(:visit, user_place: @user_place, visited_on: newer)
+    create(:visit, user_place: @user_place, visited_on: older)
     @user_place.reload
 
     assert_equal 2, @user_place.visits_count
-    assert_equal older.to_i, @user_place.first_visited_at.to_i
-    assert_equal newer.to_i, @user_place.last_visited_at.to_i
+    assert_equal older, @user_place.first_visited_on
+    assert_equal newer, @user_place.last_visited_on
   end
 
-  test "hai visit trùng thời điểm vẫn có thứ tự timeline ổn định" do
-    visited_at = 1.day.ago.change(usec: 0)
-    first = create(:visit, user_place: @user_place, visited_at: visited_at)
-    second = create(:visit, user_place: @user_place, visited_at: visited_at)
+  test "hai visit trùng ngày vẫn có thứ tự timeline ổn định" do
+    visited_on = 1.day.ago.to_date
+    first = create(:visit, user_place: @user_place, visited_on: visited_on)
+    second = create(:visit, user_place: @user_place, visited_on: visited_on)
 
     assert_equal [ second.id, first.id ], @user_place.visits.chronological.ids
   end
@@ -44,8 +44,8 @@ class VisitTest < ActiveSupport::TestCase
 
     assert_equal 0, @user_place.visits_count
     assert @user_place.wishlist?
-    assert_nil @user_place.first_visited_at
-    assert_nil @user_place.last_visited_at
+    assert_nil @user_place.first_visited_on
+    assert_nil @user_place.last_visited_on
   end
 
   test "destroy user_place kéo theo visit mà không nổ FrozenError" do

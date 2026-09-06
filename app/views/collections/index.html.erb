@@ -9,21 +9,20 @@
 <% end %>
 
 <div class="flex flex-col gap-5">
-  <% [ [ t(".by_area"), "area", @area_tags ], [ t(".by_vibe"), "vibe", @vibe_tags ] ].each do |heading, kind, tags| %>
-    <% next if tags.empty? %>
+  <% if @tags.any? %>
     <section>
       <div class="mb-2 flex items-baseline gap-2">
-        <h3 class="text-md font-bold tracking-tight"><%= heading %></h3>
-        <span class="num text-xs text-muted"><%= t("common.groups_count", count: @group_counts[kind.to_sym]) %></span>
+        <h3 class="text-md font-bold tracking-tight"><%= t(".by_tag") %></h3>
+        <span class="num text-xs text-muted"><%= t("common.tags_count", count: @group_counts[:tags]) %></span>
         <%= link_to t(".manage_tags"), tags_path, class: "ml-auto text-sm font-semibold text-primary no-underline" %>
       </div>
 
-      <%= render "collections/collection_grid", tags: tags, counts_by_tag: @counts_by_tag,
+      <%= render "collections/collection_grid", tags: @tags, counts_by_tag: @counts_by_tag,
                  covers_by_tag: @collection_covers_by_tag %>
 
-      <% if @group_counts[kind.to_sym] > tags.size %>
-        <%= render "collections/see_all", path: tag_collections_path(kind),
-                   label: t(".see_all_groups", count: @group_counts[kind.to_sym]) %>
+      <% if @group_counts[:tags] > @tags.size %>
+        <%= render "collections/see_all", path: tags_collections_path,
+                   label: t(".see_all_tags", count: @group_counts[:tags]) %>
       <% end %>
     </section>
   <% end %>

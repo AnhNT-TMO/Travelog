@@ -4,8 +4,7 @@ Rails.application.routes.draw do
   root "collections#index"
 
   get "collections/untagged", to: "collections#untagged", as: :untagged_collections
-  get "collections/:kind",    to: "collections#tag_group", as: :tag_collections,
-      constraints: { kind: /area|vibe/ }
+  get "collections/tags",     to: "collections#tags",     as: :tags_collections
 
   resources :tags, except: [ :show ] do
     collection do

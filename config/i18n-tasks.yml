@@ -22,7 +22,6 @@ ignore_unused:
   - review.*
   - filters.state.*
   - place_type.*
-  - tag_kind.*
   - filters.sort.*
   - locale_name.*
   - date.formats.*

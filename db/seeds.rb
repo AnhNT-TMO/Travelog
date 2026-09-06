@@ -21,7 +21,7 @@ unless Rails.env.development?
   return
 end
 
-AREA_TAGS = [
+SEED_TAGS = [
   [ "Hồ Tây",    "#0E6E63" ],
   [ "Phố cổ",    "#A06E10" ],
   [ "Hồ Gươm",   "#7E9BB8" ],
@@ -30,25 +30,22 @@ AREA_TAGS = [
   [ "Cầu Giấy",  "#8A5F3C" ],
   [ "Đống Đa",   "#5F7E8A" ],
   [ "Hai Bà Trưng", "#8A527E" ],
-  [ "Mỹ Đình",   "#A0873C" ]
+  [ "Mỹ Đình",   "#A0873C" ],
+  [ "chill",     "#6E8452" ],
+  [ "rooftop",   "#A85F52" ],
+  [ "làm việc",  "#5F7E8A" ],
+  [ "view hồ",   "#7E9BB8" ],
+  [ "tiktok",    "#8A527E" ],
+  [ "hẹn hò",    "#A06E10" ],
+  [ "ăn khuya",  "#8A5F3C" ],
+  [ "brunch",    "#A0873C" ]
 ].freeze
 
-VIBE_TAGS = [ "chill", "rooftop", "làm việc", "view hồ", "tiktok", "hẹn hò", "ăn khuya", "brunch" ].freeze
-
-area_tags = AREA_TAGS.each_with_index.map do |(name, color), index|
+tags_by_name = SEED_TAGS.each_with_index.to_h do |(name, color), index|
   tag = user.tags.find_or_initialize_by(slug: Vietnamese.slugify(name))
-  tag.update!(name: name, kind: :area, color: color, position: index)
-  tag
+  tag.update!(name: name, color: color, position: index)
+  [ name, tag ]
 end
-
-vibe_tags = VIBE_TAGS.each_with_index.map do |name, index|
-  tag = user.tags.find_or_initialize_by(slug: Vietnamese.slugify(name))
-  tag.update!(name: name, kind: :vibe, position: index)
-  tag
-end
-
-area_by_name = area_tags.index_by(&:name)
-vibe_by_name = vibe_tags.index_by(&:name)
 
 PLACES = [
   [ "Sen Tây Hồ Deli",          :cafe,  21.0680, 105.8180, "Tây Hồ",     "Hồ Tây",    %w[chill], false ],
@@ -80,7 +77,7 @@ PLACES = [
   [ "Brunch House Mỹ Đình",     :cafe,  21.0290, 105.7640, "Nam Từ Liêm", "Mỹ Đình",   [ "brunch", "làm việc" ], false ]
 ].freeze
 
-user_places = PLACES.map do |name, type, lat, lng, district, area, vibes, been|
+user_places = PLACES.map do |name, type, lat, lng, district, primary_tag, extra_tags, been|
   place = Place.find_or_initialize_by(display_name: name)
   place.update!(
     place_type: type,
@@ -94,10 +91,10 @@ user_places = PLACES.map do |name, type, lat, lng, district, area, vibes, been|
 
   user_place = user.user_places.find_or_initialize_by(place: place)
   user_place.priority = [ true, false, false ].sample if user_place.new_record?
-  user_place.source_url = "https://www.tiktok.com/@hanoifood/video/#{rand(10**18)}" if vibes.include?("tiktok")
+  user_place.source_url = "https://www.tiktok.com/@hanoifood/video/#{rand(10**18)}" if extra_tags.include?("tiktok")
   user_place.save!
 
-  ([ area_by_name[area] ] + vibes.map { |vibe| vibe_by_name[vibe] }).compact.each do |tag|
+  ([ primary_tag ] + extra_tags).filter_map { |name| tags_by_name[name] }.each do |tag|
     Tagging.find_or_create_by!(tag: tag, user_place: user_place)
   end
 
@@ -105,11 +102,11 @@ user_places = PLACES.map do |name, type, lat, lng, district, area, vibes, been|
 end
 
 user_places.select { |_, been| been }.each_with_index do |(user_place, _), index|
-  visited_at = (index * 22).days.ago.change(hour: 10 + (index % 8))
-  next if user_place.visits.where(visited_at: visited_at).exists?
+  visited_on = (index * 22).days.ago.to_date
+  next if user_place.visits.where(visited_on: visited_on).exists?
 
   user_place.visits.create!(
-    visited_at: visited_at,
+    visited_on: visited_on,
     note: [ "Bánh sen ngon", "Đi buổi chiều muộn", nil, "Đông quá, lần sau đi sớm" ].sample,
     source: :manual
   )

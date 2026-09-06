@@ -847,7 +847,6 @@ CREATE TABLE public.tags (
     user_id bigint NOT NULL,
     name character varying NOT NULL,
     slug character varying NOT NULL,
-    kind integer DEFAULT 0 NOT NULL,
     color character varying,
     "position" integer DEFAULT 0 NOT NULL,
     user_places_count integer DEFAULT 0 NOT NULL,
@@ -970,8 +969,8 @@ CREATE TABLE public.user_places (
     my_rating integer,
     priority boolean DEFAULT false NOT NULL,
     source_url character varying,
-    first_visited_at timestamp(6) without time zone,
-    last_visited_at timestamp(6) without time zone,
+    first_visited_on date,
+    last_visited_on date,
     visits_count integer DEFAULT 0 NOT NULL,
     photos_count integer DEFAULT 0 NOT NULL,
     cover_photo_id bigint,
@@ -1019,9 +1018,9 @@ CREATE TABLE public.users (
     current_sign_in_ip character varying,
     last_sign_in_ip character varying,
     display_name character varying,
+    locale character varying,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL,
-    locale character varying
+    updated_at timestamp(6) without time zone NOT NULL
 );
 
 
@@ -1051,7 +1050,7 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 CREATE TABLE public.visits (
     id bigint NOT NULL,
     user_place_id bigint NOT NULL,
-    visited_at timestamp(6) without time zone NOT NULL,
+    visited_on date NOT NULL,
     note text,
     photos_count integer DEFAULT 0 NOT NULL,
     source integer DEFAULT 0 NOT NULL,
@@ -1900,10 +1899,10 @@ CREATE INDEX index_tags_on_user_id ON public.tags USING btree (user_id);
 
 
 --
--- Name: index_tags_on_user_id_and_kind_and_position; Type: INDEX; Schema: public; Owner: -
+-- Name: index_tags_on_user_id_and_position; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_tags_on_user_id_and_kind_and_position ON public.tags USING btree (user_id, kind, "position");
+CREATE INDEX index_tags_on_user_id_and_position ON public.tags USING btree (user_id, "position");
 
 
 --
@@ -1970,10 +1969,10 @@ CREATE INDEX index_user_places_on_user_id_and_google_review_state ON public.user
 
 
 --
--- Name: index_user_places_on_user_id_and_last_visited_at; Type: INDEX; Schema: public; Owner: -
+-- Name: index_user_places_on_user_id_and_last_visited_on; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_user_places_on_user_id_and_last_visited_at ON public.user_places USING btree (user_id, last_visited_at DESC);
+CREATE INDEX index_user_places_on_user_id_and_last_visited_on ON public.user_places USING btree (user_id, last_visited_on DESC);
 
 
 --
@@ -2012,10 +2011,10 @@ CREATE INDEX index_visits_on_user_place_id ON public.visits USING btree (user_pl
 
 
 --
--- Name: index_visits_on_user_place_id_and_visited_at; Type: INDEX; Schema: public; Owner: -
+-- Name: index_visits_on_user_place_id_and_visited_on; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_visits_on_user_place_id_and_visited_at ON public.visits USING btree (user_place_id, visited_at DESC);
+CREATE INDEX index_visits_on_user_place_id_and_visited_on ON public.visits USING btree (user_place_id, visited_on DESC);
 
 
 --
@@ -2209,13 +2208,9 @@ ALTER TABLE ONLY public.tags
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
-('20260903120000'),
-('20260902170000'),
-('20260902060000'),
 ('20260902020020'),
 ('20260902020010'),
 ('20260902020000'),
-('20260901170000'),
 ('20260901163050'),
 ('20260901163040'),
 ('20260901163030'),

@@ -20,7 +20,6 @@ en:
         lng: Longitude
         place_type: Type
       tag:
-        kind: Kind
         name: Tag name
         slug: Tag name
       user_place:
@@ -30,7 +29,7 @@ en:
         source_url: Source
         status: Status
       visit:
-        visited_at: Visited at
+        visited_on: Visited on
     models:
       photo: Photo
       place: Place
@@ -55,20 +54,19 @@ en:
     name: Travelog
   collections:
     index:
-      by_area: By area
-      by_vibe: By vibe
+      by_tag: By tag
       manage_tags: Manage tags
-      see_all_groups:
-        one: See all %{count} group
-        other: See all %{count} groups
       see_all_places:
         one: See all %{count} place
         other: See all %{count} places
+      see_all_tags:
+        one: See all %{count} tag
+        other: See all %{count} tags
       title: Collections
-      untagged_hint: Places you saved in a hurry, not filed under any group yet.
-    tag_group:
+      untagged_hint: Places you saved in a hurry, not tagged yet.
+    tags:
       empty_description: Create a tag to group places into a collection.
-      empty_title: No groups here yet
+      empty_title: No tags yet
       manage_tags: Manage tags
     untagged:
       empty_description: Every place belongs to at least one group.
@@ -76,9 +74,6 @@ en:
       hint: Open a place and hit Edit to file it under a group, rename it or add photos.
   common:
     distance_km: "%{value} km"
-    groups_count:
-      one: "%{count} group"
-      other: "%{count} groups"
     image_unavailable: Image unavailable
     photos_count:
       one: "%{count} photo"
@@ -87,12 +82,17 @@ en:
       one: "%{count} place"
       other: "%{count} places"
     powered_by_google: Powered by Google
+    save_to_photos: Save to Photos
+    tags_count:
+      one: "%{count} tag"
+      other: "%{count} tags"
     unknown_area: Area unknown
     visits_count:
       one: "%{count} visit"
       other: "%{count} visits"
   date:
     formats:
+      album: "%a"
       default: "%d.%m.%Y"
       long: "%B %-d, %Y"
       short: "%d.%m"
@@ -134,9 +134,8 @@ en:
     add_place: Add place
     album: Album
     collections: Collections
-    group_area: Areas
+    group_tags: Tags
     group_untagged: Untagged
-    group_vibe: Vibes
     manage_reviews: Manage reviews
     manage_tags: Manage tags
     me: Me
@@ -186,7 +185,7 @@ en:
       remove_photo: Remove this photo
       submit: Save visit
       title: Check in
-      visited_at: Date & time
+      visited_on: Visit date
     create:
       created: Saved to your book.
     destroy:
@@ -209,7 +208,7 @@ en:
       remove_photo: Delete this photo
       submit: Save changes
       title: Edit visit
-      visited_at: Date & time
+      visited_on: Visit date
     form:
       address: Address
       address_placeholder: Filled in when you pick a suggestion
@@ -279,7 +278,6 @@ en:
       cancel: Cancel
       close: Close
       color: Dot colour
-      kind: Tag kind
       name: Tag name
       name_placeholder: e.g. West Lake, chill, late night…
       submit: Create tag
@@ -426,9 +424,6 @@ en:
     priority: Priority
     visited: Been there
     wishlist: Want to go
-  tag_kind:
-    area: Area
-    vibe: Vibe
   tags:
     create:
       created: Tag created.
@@ -439,15 +434,12 @@ en:
     form:
       cancel: Cancel
       color: Dot colour
-      kind: Tag kind
-      kind_hint: Areas sit in the upper sidebar group; vibes sit below and double
-        as filter chips.
       name: Tag name
       name_placeholder: e.g. West Lake, chill, late night…
       submit: Save
     index:
       empty_description: Create a tag to group places into a collection.
-      empty_title: No tags in this group yet
+      empty_title: No tags yet
       new_tag: "＋ New tag"
       title: Manage tags
     new:
@@ -478,7 +470,6 @@ en:
       updated: Tag updated.
   time:
     formats:
-      album: "%a · %H:%M"
       default: "%d.%m.%Y %H:%M"
       long: "%d.%m.%Y · %H:%M"
       short: "%d.%m"

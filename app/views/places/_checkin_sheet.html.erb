@@ -19,8 +19,8 @@
                   } do |form| %>
       <%= fields_for :visit do |visit_form| %>
         <div class="field">
-          <%= visit_form.label :visited_at, t(".visited_at"), class: "label" %>
-          <%= visit_form.datetime_field :visited_at, value: Time.current.strftime("%Y-%m-%dT%H:%M"),
+          <%= visit_form.label :visited_on, t(".visited_on"), class: "label" %>
+          <%= visit_form.date_field :visited_on, value: Date.current,
                 class: "input", required: true %>
         </div>
 

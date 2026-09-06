@@ -1,7 +1,7 @@
 <%= turbo_frame_tag "nearby_content", class: "lg:block lg:h-full" do %>
   <% base_params = { controller: "nearby", action: "index", lat: @lat, lng: @lng,
                      center_name: @center_name, radius: @radius_m, state: @state,
-                     vibe: @filter_tags.map { |tag| tag.id.to_s } } %>
+                     tags: @filter_tags.map { |tag| tag.id.to_s } } %>
 
   <div class="flex flex-col gap-3 lg:h-full">
     <%= form_with url: nearby_path, method: :get, id: "radius_form",
@@ -26,7 +26,7 @@
             data: { geolocate_target: "lng", place_autocomplete_target: "lng" } %>
       <%= form.hidden_field :state, value: @state %>
       <% @filter_tags.each do |tag| %>
-        <%= hidden_field_tag "vibe[]", tag.id, id: nil %>
+        <%= hidden_field_tag "tags[]", tag.id, id: nil %>
       <% end %>
 
       <div class="min-w-[220px] flex-1">
@@ -77,7 +77,7 @@
       <div class="flex flex-wrap items-center gap-1.5">
         <span class="hint"><%= t("nearby.index.filtered_by") %></span>
         <% @filter_tags.each do |tag| %>
-          <%= link_to url_for(base_params.merge(vibe: @filter_tags.map { |other| other.id.to_s } - [ tag.id.to_s ])),
+          <%= link_to url_for(base_params.merge(tags: @filter_tags.map { |other| other.id.to_s } - [ tag.id.to_s ])),
                 "aria-pressed": "true", class: "chip", data: { turbo_action: "advance" } do %>
             <%= tag.name %><span class="text-2xs opacity-70">✕</span>
           <% end %>

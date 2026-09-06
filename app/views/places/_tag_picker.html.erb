@@ -1,23 +1,17 @@
-<%# locals: form, user_place, area_tags, vibe_tags %>
+<%# locals: form, user_place, tags %>
 <% selected = user_place.tag_ids.map(&:to_s) %>
 
 <div class="flex flex-col gap-2">
-  <% [ [ "area", t("nav.group_area"), area_tags ], [ "vibe", t("nav.group_vibe"), vibe_tags ] ].each do |kind, group_label, tags| %>
-    <div class="flex flex-col gap-1">
-      <span class="font-mono text-2xs uppercase tracking-[0.1em] text-muted"><%= group_label %></span>
-      <div class="flex flex-wrap items-center gap-1.5">
-        <div id="<%= kind %>_tag_options" class="contents">
-          <% tags.each do |tag| %>
-            <%= render "places/tag_option", tag: tag, checked: selected.include?(tag.id.to_s) %>
-          <% end %>
-        </div>
-        <button type="button" class="chip border-dashed text-muted"
-                data-action="tag-sheet#open" data-tag-sheet-kind-param="<%= kind %>">
-          <%= t(".add") %>
-        </button>
-      </div>
+  <div class="flex flex-wrap items-center gap-1.5">
+    <div id="tag_options" class="contents">
+      <% tags.each do |tag| %>
+        <%= render "places/tag_option", tag: tag, checked: selected.include?(tag.id.to_s) %>
+      <% end %>
     </div>
-  <% end %>
+    <button type="button" class="chip border-dashed text-muted" data-action="tag-sheet#open">
+      <%= t(".add") %>
+    </button>
+  </div>
 
   <%= hidden_field_tag "user_place[tag_ids][]", "" %>
 </div>

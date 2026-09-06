@@ -3,7 +3,7 @@ require "test_helper"
 class PublicCollectionTest < ActionDispatch::IntegrationTest
   setup do
     @user = create(:user)
-    @tag  = create(:tag, user: @user, name: "Cafe hồ Tây", kind: :area)
+    @tag  = create(:tag, user: @user, name: "Cafe hồ Tây")
 
     @user_place = create(:user_place, :visited,
                          user: @user,

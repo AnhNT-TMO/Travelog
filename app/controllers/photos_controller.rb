@@ -18,7 +18,10 @@ class PhotosController < ApplicationController
   def download
     raise ActiveRecord::RecordNotFound unless @photo.file.attached?
 
-    redirect_to rails_blob_path(@photo.file, disposition: "attachment")
+    respond_to do |format|
+      format.html { redirect_to rails_blob_path(@photo.file, disposition: "attachment") }
+      format.json { render json: { files: downloadable([ @photo ]) } }
+    end
   end
 
   def download_all

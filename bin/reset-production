@@ -1,0 +1,69 @@
+#!/bin/bash
+# Xoá sạch database production rồi deploy lại từ đầu.
+#
+#   bin/reset-production
+#
+# Chạy ở HOST (máy Mac), giống bin/kamal — không phải trong container web.
+# Script này KHÔNG đụng vào S3: ảnh trong bucket originals và derivatives giữ
+# nguyên, nhưng sau khi reset sẽ thành file mồ côi vì không còn record nào trỏ
+# tới. Muốn dọn thì xoá tay, có chủ đích, ở lần khác.
+#
+# Cần: Docker Desktop đang chạy, ssh-agent đã add key EC2, AWS CLI đã cấu hình.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+DB_NAME=$(awk '/^ *POSTGRES_DB:/ { print $2; exit }' config/deploy.yml)
+DB_USER=$(awk '/^ *POSTGRES_USER:/ { print $2; exit }' config/deploy.yml)
+APP_HOST=$(awk '/^ *APP_HOST:/ { print $2; exit }' config/deploy.yml)
+
+[ -n "$DB_NAME" ] && [ -n "$DB_USER" ] && [ -n "$APP_HOST" ] \
+  || { echo "Không đọc được POSTGRES_DB / POSTGRES_USER / APP_HOST từ config/deploy.yml"; exit 1; }
+
+[ -f .kamal/secrets ] \
+  || { echo "Thiếu .kamal/secrets — xem .kamal/secrets.example"; exit 1; }
+
+cat <<WARN
+
+  ┌──────────────────────────────────────────────────────────┐
+  │  XOÁ TOÀN BỘ DATABASE PRODUCTION                         │
+  └──────────────────────────────────────────────────────────┘
+
+  Host      : $APP_HOST
+  Database  : $DB_NAME (user $DB_USER)
+
+  Sẽ làm:
+    1. Dừng app
+    2. DROP DATABASE $DB_NAME rồi tạo lại rỗng
+    3. Deploy lại — db:prepare nạp db/structure.sql khi container khởi động
+    4. Tạo tài khoản đăng nhập (nhập mật khẩu ở bước đó)
+
+  Mất vĩnh viễn: mọi user, địa điểm, lần đến, tag, và mọi record ảnh.
+  Giữ nguyên: file ảnh trong S3 (thành mồ côi).
+
+WARN
+
+read -r -p "  Gõ đúng '$APP_HOST' để xác nhận: " confirmation
+[ "$confirmation" = "$APP_HOST" ] || { echo "Đã huỷ."; exit 1; }
+
+echo
+echo "==> 1/4 Dừng app"
+bin/kamal app stop
+
+echo
+echo "==> 2/4 Tạo lại database rỗng"
+bin/kamal accessory exec db --reuse \
+  "psql -U $DB_USER -d postgres -v ON_ERROR_STOP=1 \
+     -c 'DROP DATABASE IF EXISTS $DB_NAME WITH (FORCE)' \
+     -c 'CREATE DATABASE $DB_NAME OWNER $DB_USER'"
+
+echo
+echo "==> 3/4 Deploy lại"
+bin/kamal deploy
+
+echo
+echo "==> 4/4 Tạo tài khoản đăng nhập"
+bin/kamal app exec --interactive --reuse "bin/rails runner script/create_user.rb"
+
+echo
+echo "Xong. Kiểm tra: https://$APP_HOST/up"

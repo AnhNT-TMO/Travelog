@@ -77,8 +77,7 @@ class PlacesController < ApplicationController
   end
 
   def load_form_tags
-    @area_tags = scoped_tags.area.ordered
-    @vibe_tags = scoped_tags.vibe.ordered
+    @tags = scoped_tags.ordered
   end
 
   def user_place_params

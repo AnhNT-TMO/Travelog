@@ -4,7 +4,7 @@ class NearbyController < ApplicationController
   def index
     center = resolve_center
     @state = params[:state].presence_in(TagsController::STATES) || "all"
-    @filter_tags = scoped_tags.where(id: Array(params[:vibe])).ordered.to_a
+    @filter_tags = scoped_tags.where(id: Array(params[:tags])).ordered.to_a
 
     @query = Geo::RadiusQuery.new(
       user:     current_user,

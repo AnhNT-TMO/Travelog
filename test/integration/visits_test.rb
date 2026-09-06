@@ -12,7 +12,7 @@ class VisitsTest < ActionDispatch::IntegrationTest
 
     assert_no_difference([ "Visit.count", "Photo.count" ]) do
       post place_visits_path(@user_place), params: {
-        visit: { visited_at: Time.current },
+        visit: { visited_on: Date.current },
         photos: [ blob.signed_id, blob.signed_id ]
       }
       assert_response :unprocessable_content
@@ -37,15 +37,15 @@ class VisitsTest < ActionDispatch::IntegrationTest
 
   test "cập nhật nội dung của lần đến" do
     visit = create(:visit, user_place: @user_place, note: "Cũ")
-    visited_at = Time.zone.local(2026, 9, 1, 18, 30)
+    visited_on = Date.new(2026, 9, 1)
 
     patch place_visit_path(@user_place, visit), params: {
-      visit: { visited_at: visited_at, note: "Nội dung mới" }
+      visit: { visited_on: visited_on, note: "Nội dung mới" }
     }
 
     assert_redirected_to place_path(@user_place, anchor: "visit_#{visit.id}")
     visit.reload
-    assert_equal visited_at, visit.visited_at
+    assert_equal visited_on, visit.visited_on
     assert_equal "Nội dung mới", visit.note
   end
 
@@ -58,7 +58,7 @@ class VisitsTest < ActionDispatch::IntegrationTest
 
     assert_no_difference("Photo.count") do
       patch place_visit_path(@user_place, visit), params: {
-        visit: { visited_at: visit.visited_at, note: visit.note },
+        visit: { visited_on: visit.visited_on, note: visit.note },
         remove_photo_ids: [ removed_photo.id, kept_photo.id ],
         photos: [ blob.signed_id ]
       }
@@ -74,7 +74,7 @@ class VisitsTest < ActionDispatch::IntegrationTest
     other_visit = create(:visit)
 
     patch place_visit_path(other_visit.user_place, other_visit), params: {
-      visit: { visited_at: Time.current, note: "Không được phép" }
+      visit: { visited_on: Date.current, note: "Không được phép" }
     }
 
     assert_response :not_found

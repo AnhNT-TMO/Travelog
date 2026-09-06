@@ -55,13 +55,14 @@
                 target: "_blank", rel: "noopener", class: "btn btn--primary btn--sm" %>
 
           <% if photos.selected.any? %>
-            <div data-controller="bulk-download"
-                 data-bulk-download-url-value="<%= download_photos_place_review_kit_path(user_place, format: :json) %>"
-                 data-bulk-download-progress-value="<%= t(".download_progress") %>"
-                 data-bulk-download-empty-value="<%= t(".nothing_selected") %>">
+            <div data-controller="photo-save"
+                 data-photo-save-url-value="<%= download_photos_place_review_kit_path(user_place, format: :json) %>"
+                 data-photo-save-progress-value="<%= t(".download_progress") %>"
+                 data-photo-save-ready-value="<%= t("common.save_to_photos") %>"
+                 data-photo-save-empty-value="<%= t(".nothing_selected") %>">
               <button type="button" class="btn btn--sm"
-                      data-bulk-download-target="button"
-                      data-action="bulk-download#start"><%= t(".download_photos", count: photos.selected.size) %></button>
+                      data-photo-save-target="button label"
+                      data-action="photo-save#start"><%= t(".download_photos", count: photos.selected.size) %></button>
             </div>
           <% end %>
         </div>

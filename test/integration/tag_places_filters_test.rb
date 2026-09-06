@@ -3,14 +3,14 @@ require "test_helper"
 class TagPlacesFiltersTest < ActionDispatch::IntegrationTest
   setup do
     @user = create(:user)
-    @area = create(:tag, user: @user, name: "Hồ Tây", kind: :area)
-    @chill = create(:tag, user: @user, name: "chill", kind: :vibe)
+    @area = create(:tag, user: @user, name: "Hồ Tây")
+    @chill = create(:tag, user: @user, name: "chill")
 
     @wishlist = create(:user_place, user: @user, status: :wishlist)
     @visited = create(:user_place, :visited, user: @user)
-    @without_vibe = create(:user_place, user: @user, status: :wishlist)
+    @without_chill = create(:user_place, user: @user, status: :wishlist)
 
-    [ @wishlist, @visited, @without_vibe ].each do |user_place|
+    [ @wishlist, @visited, @without_chill ].each do |user_place|
       Tagging.create!(tag: @area, user_place: user_place)
     end
     Tagging.create!(tag: @chill, user_place: @wishlist)
@@ -19,12 +19,12 @@ class TagPlacesFiltersTest < ActionDispatch::IntegrationTest
     sign_in @user
   end
 
-  test "vibe filter composes with the area tag and marks the chip selected" do
-    get places_tag_path(@area), params: { state: "wishlist", vibe: [ @chill.id ] }
+  test "tag filter composes with the current tag and marks the chip selected" do
+    get places_tag_path(@area), params: { state: "wishlist", tags: [ @chill.id ] }
 
     assert_response :success
     assert_select "##{ActionView::RecordIdentifier.dom_id(@wishlist)}"
-    assert_select "##{ActionView::RecordIdentifier.dom_id(@without_vibe)}", count: 0
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@without_chill)}", count: 0
     assert_select ".chip[aria-pressed='true']", text: /chill/
   end
 
@@ -37,7 +37,7 @@ class TagPlacesFiltersTest < ActionDispatch::IntegrationTest
     assert_select "a[role='tab'][data-turbo-frame]", count: 0
   end
 
-  test "area and vibe pages show all places by default and put the all tab first" do
+  test "tag pages show all places by default and put the all tab first" do
     get places_tag_path(@area)
 
     assert_response :success

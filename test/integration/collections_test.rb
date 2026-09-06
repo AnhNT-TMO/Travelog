@@ -21,20 +21,20 @@ class CollectionsTest < ActionDispatch::IntegrationTest
   end
 
   test "trang chủ chỉ hiện 6 nhóm nhiều nơi nhất và nút xem tất cả" do
-    7.times { |index| create(:tag, user: @user, kind: :vibe, name: "vibe-#{index}") }
+    7.times { |index| create(:tag, user: @user, name: "tag-#{index}") }
 
     get root_path
 
     assert_response :success
-    assert_equal 6, @controller.view_assigns["vibe_tags"].size
-    assert_equal 8, @controller.view_assigns["group_counts"][:vibe]
-    assert_select "a[href=?]", tag_collections_path("vibe")
+    assert_equal 6, @controller.view_assigns["tags"].size
+    assert_equal 8, @controller.view_assigns["group_counts"][:tags]
+    assert_select "a[href=?]", tags_collections_path
   end
 
-  test "trang nhóm hiện toàn bộ tag của loại đó" do
-    7.times { |index| create(:tag, user: @user, kind: :vibe, name: "vibe-#{index}") }
+  test "trang tag hiện toàn bộ tag" do
+    7.times { |index| create(:tag, user: @user, name: "tag-#{index}") }
 
-    get tag_collections_path("vibe")
+    get tags_collections_path
 
     assert_response :success
     assert_equal 8, @controller.view_assigns["tags"].size
@@ -60,13 +60,13 @@ class CollectionsTest < ActionDispatch::IntegrationTest
     assert_equal [ first, second ], @controller.view_assigns["user_places"]
   end
 
-  test "trang nhóm sắp tag theo số địa điểm giảm dần" do
-    busy  = create(:tag, user: @user, kind: :vibe, name: "aaa-busy")
-    quiet = create(:tag, user: @user, kind: :vibe, name: "aaa-quiet")
+  test "trang tag sắp theo số địa điểm giảm dần" do
+    busy  = create(:tag, user: @user, name: "aaa-busy")
+    quiet = create(:tag, user: @user, name: "aaa-quiet")
     3.times { Tagging.create!(tag: busy, user_place: create(:user_place, user: @user)) }
     2.times { Tagging.create!(tag: quiet, user_place: create(:user_place, user: @user)) }
 
-    get tag_collections_path("vibe")
+    get tags_collections_path
 
     assert_response :success
     assert_equal [ busy, quiet ], @controller.view_assigns["tags"].first(2)

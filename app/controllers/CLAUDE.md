@@ -8,8 +8,8 @@ Rules for the request layer: the single authorization gate every action goes thr
 | --- | --- |
 | `application_controller.rb` | The gate. Authentication, `Current.user`, sidebar tag loading, and the `scoped_places` / `scoped_tags` accessors every other controller uses. |
 | `concerns/localizable.rb` | Locale resolution and persistence. Included once, in `ApplicationController`. |
-| `collections_controller.rb` | Home. Tag groups plus recently saved places. Computes per-tag counts in one grouped query rather than N+1. |
-| `tags_controller.rb` | Places filtered by tag, with the three-state segmented control and vibe chip intersection. Renders a partial for Turbo Frame requests. |
+| `collections_controller.rb` | Home. One flat tag list plus untagged places. Computes per-tag counts in one grouped query rather than N+1. |
+| `tags_controller.rb` | Places filtered by tag, with the three-state segmented control and `tags[]` chip intersection. Renders a partial for Turbo Frame requests. |
 | `places_controller.rb` | Place CRUD, the detail screen and the full list. |
 | `direct_uploads_controller.rb` | Authenticated Active Storage direct-upload handshake. Scopes the route-facing place id and creates `{place-id}/{image-name}.{ext}` keys before the browser PUT. |
 | `nearby_controller.rb` | Distance filtering. Delegates entirely to `Geo::RadiusQuery`; remembers the last centre in the session. |

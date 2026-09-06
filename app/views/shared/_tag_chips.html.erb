@@ -3,7 +3,7 @@
     <% pressed = selected_ids.map(&:to_s).include?(tag.id.to_s) %>
     <% next_ids = pressed ? selected_ids.map(&:to_s) - [tag.id.to_s] : selected_ids.map(&:to_s) + [tag.id.to_s] %>
 
-    <%= link_to url_for(base_params.merge(vibe: next_ids)),
+    <%= link_to url_for(base_params.merge(tags: next_ids)),
           "aria-pressed": pressed.to_s,
           class: "chip" do %>
       <%= tag.name %><% if pressed %><span class="text-2xs opacity-70">✕</span><% end %>

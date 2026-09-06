@@ -1,20 +1,17 @@
 class CollectionsController < ApplicationController
   HOME_LIMIT = 6
-  TAG_KINDS  = %w[area vibe].freeze
 
   def index
-    @area_tags = top_tags("area")
-    @vibe_tags = top_tags("vibe")
+    @tags = tags_by_place_count.first(HOME_LIMIT)
     @counts_by_tag = counts_by_tag
-    @collection_covers_by_tag = collection_covers_by_tag(@area_tags + @vibe_tags)
+    @collection_covers_by_tag = collection_covers_by_tag(@tags)
     @group_counts = group_counts
 
     @untagged_places = untagged_places.with_card_data.order(:id).limit(HOME_LIMIT).to_a
   end
 
-  def tag_group
-    @kind = params[:kind].presence_in(TAG_KINDS) || TAG_KINDS.first
-    @tags = tags_by_place_count(@kind)
+  def tags
+    @tags = tags_by_place_count
     @counts_by_tag = counts_by_tag
     @collection_covers_by_tag = collection_covers_by_tag(@tags)
     @group_counts = group_counts
@@ -31,22 +28,13 @@ class CollectionsController < ApplicationController
     scoped_places.where.missing(:taggings)
   end
 
-  def tags_of_kind(kind)
-    @sidebar_tags.select { |tag| tag.kind == kind }
-  end
-
-  def tags_by_place_count(kind)
-    tags_of_kind(kind).sort_by { |tag| [ -tag.user_places_count, tag.position, tag.name ] }
-  end
-
-  def top_tags(kind)
-    tags_by_place_count(kind).first(HOME_LIMIT)
+  def tags_by_place_count
+    Array(@sidebar_tags).sort_by { |tag| [ -tag.user_places_count, tag.position, tag.name ] }
   end
 
   def group_counts
     {
-      area:     tags_of_kind("area").size,
-      vibe:     tags_of_kind("vibe").size,
+      tags:     Array(@sidebar_tags).size,
       untagged: untagged_places.count
     }
   end

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["panel", "form", "name", "kind"]
+  static targets = ["panel", "form", "name"]
 
   connect() {
     this.close()
@@ -11,11 +11,7 @@ export default class extends Controller {
     document.documentElement.classList.remove("overflow-hidden")
   }
 
-  open(event) {
-    this.kindTargets.forEach((input) => {
-      input.checked = input.value === event.params.kind
-    })
-
+  open() {
     this.panelTarget.hidden = false
     document.documentElement.classList.add("overflow-hidden")
     this.nameTarget.focus()

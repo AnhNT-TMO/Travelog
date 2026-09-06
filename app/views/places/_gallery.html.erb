@@ -29,10 +29,18 @@
                     title: t(".destroy"), aria: { label: t(".destroy") },
                     form: { class: "contents", data: { turbo_confirm: t(".destroy_confirm") } } %>
 
-              <%= link_to "↓", download_place_photo_path(user_place, photo),
-                    class: "btn h-11 w-11 border-white/50 bg-black/50 p-0 text-lg text-white backdrop-blur-[6px] hover:bg-black/70",
-                    title: t(".download_original"), aria: { label: t(".download_original") },
-                    data: { turbo: false } %>
+              <span data-controller="photo-save"
+                    data-photo-save-url-value="<%= download_place_photo_path(user_place, photo, format: :json) %>"
+                    data-photo-save-progress-value="<%= t(".download_progress") %>"
+                    data-photo-save-ready-value="<%= t("common.save_to_photos") %>"
+                    data-photo-save-empty-value="<%= t(".nothing_to_download") %>">
+                <button type="button"
+                        class="btn h-11 w-11 border-white/50 bg-black/50 p-0 text-lg text-white backdrop-blur-[6px] hover:bg-black/70
+                               [[data-state=ready]_&]:border-white [[data-state=ready]_&]:bg-primary"
+                        title="<%= t(".download_original") %>" aria-label="<%= t(".download_original") %>"
+                        data-photo-save-target="button"
+                        data-action="photo-save#start">↓</button>
+              </span>
 
               <% if user_place.cover_photo_id == photo.id %>
                 <button type="button" disabled
@@ -98,13 +106,14 @@
       <% end %>
 
       <div class="min-w-0 sm:flex-none"
-           data-controller="bulk-download"
-           data-bulk-download-url-value="<%= download_all_place_photos_path(user_place, format: :json) %>"
-           data-bulk-download-progress-value="<%= t(".download_progress") %>"
-           data-bulk-download-empty-value="<%= t(".nothing_to_download") %>">
+           data-controller="photo-save"
+           data-photo-save-url-value="<%= download_all_place_photos_path(user_place, format: :json) %>"
+           data-photo-save-progress-value="<%= t(".download_progress") %>"
+           data-photo-save-ready-value="<%= t("common.save_to_photos") %>"
+           data-photo-save-empty-value="<%= t(".nothing_to_download") %>">
         <button type="button" class="btn btn--outline btn--sm h-11 w-full justify-center sm:w-auto"
-                data-bulk-download-target="button"
-                data-action="bulk-download#start"><%= t(".download_all") %></button>
+                data-photo-save-target="button label"
+                data-action="photo-save#start"><%= t(".download_all") %></button>
       </div>
     </div>
 

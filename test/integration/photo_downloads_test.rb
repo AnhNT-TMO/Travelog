@@ -18,14 +18,26 @@ class PhotoDownloadsTest < ActionDispatch::IntegrationTest
     assert_select "[data-carousel-target='slide'].media-skeleton", count: 2
     assert_select "button[data-carousel-target='thumbnail']", count: 2
     assert_select "[data-carousel-target='thumbnailViewport']", count: 1 do
-      assert_select "[data-controller='bulk-download']", count: 0
+      assert_select "[data-controller='photo-save']", count: 0
       assert_select "form", count: 0
     end
-    assert_select "a[href='#{download_place_photo_path(@user_place, @first_photo)}']", count: 1
-    assert_select "[data-controller='bulk-download']" \
-                  "[data-bulk-download-url-value='#{download_all_place_photos_path(@user_place, format: :json)}']",
+    assert_select "[data-controller='photo-save']" \
+                  "[data-photo-save-url-value='#{download_place_photo_path(@user_place, @first_photo, format: :json)}']",
                   count: 1
-    assert_select "button[data-bulk-download-target='button']", count: 1
+    assert_select "[data-controller='photo-save']" \
+                  "[data-photo-save-url-value='#{download_all_place_photos_path(@user_place, format: :json)}']",
+                  count: 1
+    assert_select "button[data-photo-save-target~='button']", count: 3
+  end
+
+  test "tải một ảnh trả JSON cùng định dạng với tải hàng loạt" do
+    get download_place_photo_path(@user_place, @first_photo, format: :json)
+
+    assert_response :success
+    files = response.parsed_body["files"]
+    assert_equal 1, files.size
+    assert_equal "first-original.jpg", files.first["name"]
+    assert_includes files.first["url"], "disposition=attachment"
   end
 
   test "deleting a photo selects the following photo" do

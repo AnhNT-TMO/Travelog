@@ -16,6 +16,7 @@ class CreateUsers < ActiveRecord::Migration[8.1]
       t.string   :last_sign_in_ip
 
       t.string :display_name
+      t.string :locale
 
       t.timestamps null: false
     end

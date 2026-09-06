@@ -5,12 +5,11 @@ class TagsController < ApplicationController
   before_action :set_tag, only: [ :edit, :update, :destroy, :share ]
 
   def index
-    @area_tags = @sidebar_tags.select(&:area?)
-    @vibe_tags = @sidebar_tags.select(&:vibe?)
+    @tags = @sidebar_tags
   end
 
   def new
-    @tag = scoped_tags.new(kind: params[:kind].presence_in(Tag.kinds.keys) || "area")
+    @tag = scoped_tags.new
   end
 
   def edit
@@ -57,14 +56,14 @@ class TagsController < ApplicationController
   end
 
   def places
-    @tag      = scoped_tags.find_by!(slug: params[:id])
-    @state    = params[:state].presence_in(STATES) || "all"
-    @sort     = params[:sort].presence_in(SORTS) || "recent"
-    @vibe_ids = Array(params[:vibe]).reject(&:blank?)
-    @center   = nearby_center if @sort == "distance"
+    @tag       = scoped_tags.find_by!(slug: params[:id])
+    @state     = params[:state].presence_in(STATES) || "all"
+    @sort      = params[:sort].presence_in(SORTS) || "recent"
+    @filter_ids = Array(params[:tags]).reject(&:blank?)
+    @center    = nearby_center if @sort == "distance"
 
     base = scoped_places.joins(:taggings).where(taggings: { tag_id: @tag.id })
-    base = base.tagged_with_all(@vibe_ids) if @vibe_ids.any?
+    base = base.tagged_with_all(@filter_ids) if @filter_ids.any?
 
     @counts = {
       wishlist: base.wishlist.distinct.count,
@@ -72,7 +71,7 @@ class TagsController < ApplicationController
       all:      base.distinct.count
     }
 
-    @vibe_tags = scoped_tags.vibe.ordered
+    @filter_tags = scoped_tags.where.not(id: @tag.id).ordered
     @user_places = sorted_places(base)
     @distance_excluded_count = @counts[@state.to_sym] - @user_places.size if @center.present?
 
@@ -87,7 +86,7 @@ class TagsController < ApplicationController
   end
 
   def tag_params
-    params.require(:tag).permit(:name, :kind, :color, :position)
+    params.require(:tag).permit(:name, :color, :position)
   end
 
   def sorted_places(base)
@@ -98,7 +97,7 @@ class TagsController < ApplicationController
         lng:      @center["lng"],
         radius_m: Geo::RadiusQuery::MAX_RADIUS_M,
         state:    @state,
-        tag_ids:  [ @tag.id ] + @vibe_ids
+        tag_ids:  [ @tag.id ] + @filter_ids
       ).call.to_a
     else
       base.for_state(@state).with_card_data.order(sort_clause).distinct

@@ -1,5 +1,4 @@
 class Tag < ApplicationRecord
-  enum :kind,       { area: 0, vibe: 1 }
   enum :visibility, { private_only: 0, unlisted: 1 }, prefix: :share
 
   belongs_to :user
@@ -11,7 +10,7 @@ class Tag < ApplicationRecord
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: { scope: :user_id }
 
-  scope :ordered, -> { order(:kind, :position, :name) }
+  scope :ordered, -> { order(:position, :name) }
 
   def to_param = slug
 

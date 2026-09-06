@@ -20,7 +20,6 @@ vi:
         lng: Kinh độ
         place_type: Loại
       tag:
-        kind: Loại
         name: Tên tag
         slug: Tên tag
       user_place:
@@ -30,7 +29,7 @@ vi:
         source_url: Nguồn
         status: Trạng thái
       visit:
-        visited_at: Thời điểm đến
+        visited_on: Ngày đến
     models:
       photo: Ảnh
       place: Địa điểm
@@ -55,20 +54,19 @@ vi:
     name: Travelog
   collections:
     index:
-      by_area: Theo khu vực
-      by_vibe: Theo vibe
+      by_tag: Theo tag
       manage_tags: Quản lý tag
-      see_all_groups:
-        one: Xem tất cả %{count} nhóm
-        other: Xem tất cả %{count} nhóm
       see_all_places:
         one: Xem tất cả %{count} chỗ
         other: Xem tất cả %{count} chỗ
+      see_all_tags:
+        one: Xem tất cả %{count} tag
+        other: Xem tất cả %{count} tag
       title: Bộ sưu tập
-      untagged_hint: Những chỗ bạn lưu nhanh, chưa gắn nhóm nào.
-    tag_group:
+      untagged_hint: Những chỗ bạn lưu nhanh, chưa gắn tag nào.
+    tags:
       empty_description: Tạo tag để gom các địa điểm lại thành bộ sưu tập.
-      empty_title: Chưa có nhóm nào ở đây
+      empty_title: Chưa có tag nào
       manage_tags: Quản lý tag
     untagged:
       empty_description: Mọi địa điểm đều đã nằm trong ít nhất một nhóm.
@@ -76,9 +74,6 @@ vi:
       hint: Bấm vào từng chỗ rồi chọn Sửa để gắn nhóm, đổi tên hoặc thêm ảnh.
   common:
     distance_km: "%{value} km"
-    groups_count:
-      one: "%{count} nhóm"
-      other: "%{count} nhóm"
     image_unavailable: Ảnh không tải được
     photos_count:
       one: "%{count} ảnh"
@@ -87,12 +82,17 @@ vi:
       one: "%{count} chỗ"
       other: "%{count} chỗ"
     powered_by_google: Powered by Google
+    save_to_photos: Lưu vào Ảnh
+    tags_count:
+      one: "%{count} tag"
+      other: "%{count} tag"
     unknown_area: Chưa rõ khu vực
     visits_count:
       one: "%{count} lần đến"
       other: "%{count} lần đến"
   date:
     formats:
+      album: "%a"
       default: "%d.%m.%Y"
       long: "%d tháng %-m, %Y"
       short: "%d.%m"
@@ -134,9 +134,8 @@ vi:
     add_place: Thêm địa điểm
     album: Album
     collections: Bộ sưu tập
-    group_area: Khu vực
+    group_tags: Tag
     group_untagged: Chưa đánh tag
-    group_vibe: Vibe
     manage_reviews: Quản lý review
     manage_tags: Quản lý tag
     me: Tôi
@@ -186,7 +185,7 @@ vi:
       remove_photo: Bỏ ảnh này
       submit: Lưu lần đến
       title: Check in
-      visited_at: Ngày & giờ
+      visited_on: Ngày đến
     create:
       created: Đã lưu vào sổ.
     destroy:
@@ -209,7 +208,7 @@ vi:
       remove_photo: Xoá ảnh này
       submit: Lưu thay đổi
       title: Sửa lần đến
-      visited_at: Ngày & giờ
+      visited_on: Ngày đến
     form:
       address: Địa chỉ
       address_placeholder: Tự điền khi bạn chọn gợi ý
@@ -279,7 +278,6 @@ vi:
       cancel: Huỷ
       close: Đóng
       color: Màu chấm
-      kind: Loại tag
       name: Tên tag
       name_placeholder: 'Ví dụ: Hồ Tây, chill, ăn khuya…'
       submit: Tạo tag
@@ -425,9 +423,6 @@ vi:
     priority: Ưu tiên
     visited: Đã đến
     wishlist: Muốn đến
-  tag_kind:
-    area: Khu vực
-    vibe: Vibe
   tags:
     create:
       created: Đã tạo tag.
@@ -438,15 +433,12 @@ vi:
     form:
       cancel: Huỷ
       color: Màu chấm
-      kind: Loại tag
-      kind_hint: Khu vực hiện ở nhóm trên của sidebar, vibe hiện ở nhóm dưới và dùng
-        làm chip lọc.
       name: Tên tag
       name_placeholder: 'Ví dụ: Hồ Tây, chill, ăn khuya…'
       submit: Lưu
     index:
       empty_description: Tạo tag để gom các địa điểm lại thành bộ sưu tập.
-      empty_title: Chưa có tag nào ở nhóm này
+      empty_title: Chưa có tag nào
       new_tag: "＋ Tag mới"
       title: Quản lý tag
     new:
@@ -476,7 +468,6 @@ vi:
       updated: Đã cập nhật tag.
   time:
     formats:
-      album: "%a · %H:%M"
       default: "%d.%m.%Y %H:%M"
       long: "%d.%m.%Y · %H:%M"
       short: "%d.%m"

@@ -25,18 +25,6 @@
       </div>
 
       <div class="field">
-        <span class="label"><%= t(".kind") %></span>
-        <div class="seg w-full">
-          <% Tag.kinds.keys.each do |value| %>
-            <label class="seg-item flex-1 justify-center has-[:checked]:bg-surface has-[:checked]:text-ink has-[:checked]:shadow-e1">
-              <%= form.radio_button :kind, value, class: "sr-only", data: { tag_sheet_target: "kind" } %>
-              <%= t("tag_kind.#{value}") %>
-            </label>
-          <% end %>
-        </div>
-      </div>
-
-      <div class="field">
         <%= form.label :color, t(".color"), class: "label" %>
         <%= form.color_field :color, value: "#0E6E63", class: "input-color" %>
       </div>

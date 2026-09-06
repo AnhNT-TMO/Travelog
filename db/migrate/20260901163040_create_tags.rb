@@ -4,7 +4,6 @@ class CreateTags < ActiveRecord::Migration[8.1]
       t.references :user, null: false, foreign_key: true
       t.string  :name, null: false
       t.string  :slug, null: false
-      t.integer :kind, null: false, default: 0
       t.string  :color
       t.integer :position, null: false, default: 0
       t.integer :user_places_count, null: false, default: 0
@@ -18,7 +17,7 @@ class CreateTags < ActiveRecord::Migration[8.1]
     end
 
     add_index :tags, [ :user_id, :slug ], unique: true
-    add_index :tags, [ :user_id, :kind, :position ]
+    add_index :tags, [ :user_id, :position ]
     add_index :tags, :public_token, unique: true, where: "public_token IS NOT NULL"
 
     create_table :taggings do |t|

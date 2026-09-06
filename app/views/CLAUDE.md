@@ -9,8 +9,8 @@ Rules for the template layer: which partials may be reused where, when a Tailwin
 | `layouts/` | `application` (sidebar + tab bar shell), `public` (share page — no nav, no actions), `auth` (sign-in / password reset), `mailer`. |
 | `shared/` | Partials reused across screens **and across desktop/mobile**. These render private data. |
 | `public_collections/` | The share page and **its own** card partial. Deliberately duplicated rather than shared. |
-| `collections/` | Home: tag groups plus recently saved. |
-| `tags/` | Places filtered by tag: segmented control, vibe chips, grid. |
+| `collections/` | Home: one flat tag list plus untagged places. |
+| `tags/` | Places filtered by tag: segmented control, tag chips, grid. |
 | `places/` | Detail and full list. Detail delegates to `shared/_place_detail`. |
 | `nearby/` | Map, radius slider, result rows. |
 | `album/` | Month-grouped visit timeline. |
