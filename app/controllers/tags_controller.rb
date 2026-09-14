@@ -62,8 +62,8 @@ class TagsController < ApplicationController
     @filter_ids = Array(params[:tags]).reject(&:blank?)
     @center    = nearby_center if @sort == "distance"
 
-    base = scoped_places.joins(:taggings).where(taggings: { tag_id: @tag.id })
-    base = base.tagged_with_all(@filter_ids) if @filter_ids.any?
+    collection = scoped_places.joins(:taggings).where(taggings: { tag_id: @tag.id })
+    base       = @filter_ids.any? ? collection.tagged_with_all(@filter_ids) : collection
 
     @counts = {
       wishlist: base.wishlist.distinct.count,
@@ -71,7 +71,7 @@ class TagsController < ApplicationController
       all:      base.distinct.count
     }
 
-    @filter_tags = scoped_tags.where.not(id: @tag.id).ordered
+    @filter_tags = sibling_tags(collection)
     @user_places = sorted_places(base)
     @distance_excluded_count = @counts[@state.to_sym] - @user_places.size if @center.present?
 
@@ -83,6 +83,13 @@ class TagsController < ApplicationController
 
   def set_tag
     @tag = scoped_tags.find_by!(slug: params[:id])
+  end
+
+  def sibling_tags(collection)
+    tag_ids = Tagging.where(user_place_id: collection.select(:id)).distinct.pluck(:tag_id)
+    tag_ids |= @filter_ids.map(&:to_i)
+
+    scoped_tags.where(id: tag_ids - [ @tag.id ]).ordered
   end
 
   def tag_params

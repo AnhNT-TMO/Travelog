@@ -1899,6 +1899,13 @@ CREATE INDEX index_tags_on_user_id ON public.tags USING btree (user_id);
 
 
 --
+-- Name: index_tags_on_user_id_and_lower_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_tags_on_user_id_and_lower_name ON public.tags USING btree (user_id, lower((name)::text));
+
+
+--
 -- Name: index_tags_on_user_id_and_position; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2208,6 +2215,7 @@ ALTER TABLE ONLY public.tags
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260914030000'),
 ('20260902020020'),
 ('20260902020010'),
 ('20260902020000'),
